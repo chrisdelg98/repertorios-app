@@ -14,9 +14,9 @@ function logout() {
 
 const navItems = [
     { label: 'nav.home', href: '/dashboard', icon: 'home' },
-    { label: 'nav.services', href: '#', icon: 'calendar' },
-    { label: 'nav.add', href: '#', icon: 'plus', primary: true },
-    { label: 'nav.songs', href: '#', icon: 'music' },
+    { label: 'nav.services', href: '/services', icon: 'calendar' },
+    { label: 'nav.add', href: '/services/create', icon: 'plus', primary: true },
+    { label: 'nav.songs', href: '/songs', icon: 'music' },
 ];
 </script>
 

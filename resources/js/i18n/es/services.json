@@ -1,0 +1,34 @@
+{
+  "title": "Servicios",
+  "create": "Nuevo Servicio",
+  "edit": "Editar Servicio",
+  "empty": "Aún no hay servicios. ¡Crea el primero!",
+  "form": {
+    "date": "Fecha",
+    "time": "Hora (opcional)",
+    "type": "Tipo",
+    "notes": "Notas (opcional)",
+    "save": "Guardar Servicio",
+    "saving": "Guardando…",
+    "cancel": "Cancelar"
+  },
+  "types": {
+    "sunday_am": "Domingo AM",
+    "sunday_pm": "Domingo PM",
+    "wednesday": "Miércoles",
+    "rehearsal": "Ensayo",
+    "other": "Otro"
+  },
+  "songs_count": "{n} canción | {n} canciones",
+  "no_songs": "Sin canciones — agrega la primera",
+  "add_song": "Agregar Canción",
+  "adding": "Agregando…",
+  "duplicate": "Duplicar",
+  "duplicate_title": "Duplicar Servicio",
+  "duplicate_date_label": "Nueva fecha para la copia",
+  "delete": "Eliminar",
+  "delete_confirm": "¿Eliminar este servicio y todas sus canciones?",
+  "song_search_placeholder": "Busca o escribe una canción nueva…",
+  "version_label": "Versión",
+  "new_song_hint": "Se creará como canción nueva"
+}

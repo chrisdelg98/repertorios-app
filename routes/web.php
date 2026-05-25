@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MemberLoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Services\ServiceController;
+use App\Http\Controllers\Services\ServiceSongController;
+use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,15 +18,34 @@ Route::get('/', function () {
     ]);
 });
 
-// Auth routes
+// Auth
 Route::get('/login', [AdminLoginController::class, 'show'])->name('auth.login');
 Route::post('/login', [AdminLoginController::class, 'store'])->name('auth.admin.login');
 Route::post('/join', [MemberLoginController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('auth.join');
 
-// Protected routes
+// Protected
 Route::middleware('band.access')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.logout');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Services
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
+    Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
+    Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+    Route::get('/services/{service}/edit', [ServiceController::class, 'edit'])->name('services.edit');
+    Route::put('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
+    Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
+    Route::post('/services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
+
+    // Service songs
+    Route::post('/services/{service}/songs', [ServiceSongController::class, 'store'])->name('service-songs.store');
+    Route::delete('/services/{service}/songs/{serviceSong}', [ServiceSongController::class, 'destroy'])->name('service-songs.destroy');
+
+    // Songs library
+    Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
+    Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
+    Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
 });

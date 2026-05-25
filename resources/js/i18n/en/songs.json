@@ -1,0 +1,22 @@
+{
+  "title": "Songs",
+  "library": "Song Library",
+  "create": "Add Song",
+  "empty": "No songs yet. Start building your library!",
+  "form": {
+    "name": "Song Name",
+    "version": "Version",
+    "version_hint": "e.g. Original, Live, Acoustic",
+    "key": "Key",
+    "bpm": "BPM",
+    "notes": "Notes",
+    "youtube_url": "YouTube URL",
+    "save": "Save Song",
+    "saving": "Saving…",
+    "cancel": "Cancel"
+  },
+  "versions_preset": ["Original", "Live", "Acoustic", "Custom"],
+  "delete": "Delete",
+  "delete_confirm": "Delete this song and all its versions?",
+  "duplicate_warning": "This version already exists for this song."
+}

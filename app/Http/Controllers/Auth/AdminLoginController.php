@@ -14,7 +14,7 @@ class AdminLoginController extends Controller
 {
     public function show(Request $request): Response|RedirectResponse
     {
-        if (auth()->check() || $request->session()->has('band_id')) {
+        if (Auth::check() || $request->session()->has('band_id')) {
             return redirect()->route('dashboard');
         }
 

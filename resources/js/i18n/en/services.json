@@ -1,0 +1,34 @@
+{
+  "title": "Services",
+  "create": "New Service",
+  "edit": "Edit Service",
+  "empty": "No services yet. Create your first one!",
+  "form": {
+    "date": "Date",
+    "time": "Time (optional)",
+    "type": "Type",
+    "notes": "Notes (optional)",
+    "save": "Save Service",
+    "saving": "Saving…",
+    "cancel": "Cancel"
+  },
+  "types": {
+    "sunday_am": "Sunday AM",
+    "sunday_pm": "Sunday PM",
+    "wednesday": "Wednesday",
+    "rehearsal": "Rehearsal",
+    "other": "Other"
+  },
+  "songs_count": "{n} song | {n} songs",
+  "no_songs": "No songs yet — add the first one",
+  "add_song": "Add Song",
+  "adding": "Adding…",
+  "duplicate": "Duplicate",
+  "duplicate_title": "Duplicate Service",
+  "duplicate_date_label": "New date for the copy",
+  "delete": "Delete",
+  "delete_confirm": "Delete this service and all its songs?",
+  "song_search_placeholder": "Search or type a new song…",
+  "version_label": "Version",
+  "new_song_hint": "Will be created as a new song"
+}
