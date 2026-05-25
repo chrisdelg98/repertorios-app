@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "Repertorios",
+    "tagline": "Worship band repertoire platform"
+  },
+  "nav": {
+    "home": "Home",
+    "songs": "Songs",
+    "services": "Services",
+    "setlists": "Setlists"
+  },
+  "lang": {
+    "en": "English",
+    "es": "Español",
+    "switch": "Change language"
+  },
+  "welcome": {
+    "title": "Welcome",
+    "status": "Inertia.js + Vue 3 + Tailwind running",
+    "versions": "Laravel {laravel} · PHP {php}",
+    "phase0": "Phase 0: Setup & Foundation — done",
+    "phase1": "Phase 1: i18n + PWA base — done",
+    "next": "Next: Authentication"
+  }
+}

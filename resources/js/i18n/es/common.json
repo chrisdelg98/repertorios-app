@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "Repertorios",
+    "tagline": "Plataforma de repertorios para banda de alabanza"
+  },
+  "nav": {
+    "home": "Inicio",
+    "songs": "Canciones",
+    "services": "Servicios",
+    "setlists": "Repertorios"
+  },
+  "lang": {
+    "en": "English",
+    "es": "Español",
+    "switch": "Cambiar idioma"
+  },
+  "welcome": {
+    "title": "Bienvenido",
+    "status": "Inertia.js + Vue 3 + Tailwind ejecutándose",
+    "versions": "Laravel {laravel} · PHP {php}",
+    "phase0": "Fase 0: Configuración y Fundación — completada",
+    "phase1": "Fase 1: i18n + base PWA — completada",
+    "next": "Siguiente: Autenticación"
+  }
+}
