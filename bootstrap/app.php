@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+        $middleware->alias([
+            'band.access' => \App\Http\Middleware\EnsureBandAccess::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

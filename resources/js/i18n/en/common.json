@@ -7,7 +7,9 @@
     "home": "Home",
     "songs": "Songs",
     "services": "Services",
-    "setlists": "Setlists"
+    "setlists": "Setlists",
+    "add": "Add",
+    "logout": "Logout"
   },
   "lang": {
     "en": "English",
@@ -21,5 +23,9 @@
     "phase0": "Phase 0: Setup & Foundation — done",
     "phase1": "Phase 1: i18n + PWA base — done",
     "next": "Next: Authentication"
+  },
+  "dashboard": {
+    "welcome": "Ready to plan your next service?",
+    "next_phase": "Next: Services & Songs"
   }
 }

@@ -2,22 +2,27 @@
 
 namespace Database\Seeders;
 
+use App\Models\Band;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $band = Band::create([
+            'name' => 'Praise Team',
+            'code' => 'TEST01',
+            'access_pin' => Hash::make('1234'),
+            'edit_pin' => Hash::make('5678'),
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::create([
+            'band_id' => $band->id,
+            'name' => 'Admin',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password'),
         ]);
     }
 }

@@ -7,7 +7,9 @@
     "home": "Inicio",
     "songs": "Canciones",
     "services": "Servicios",
-    "setlists": "Repertorios"
+    "setlists": "Repertorios",
+    "add": "Agregar",
+    "logout": "Salir"
   },
   "lang": {
     "en": "English",
@@ -21,5 +23,9 @@
     "phase0": "Fase 0: Configuración y Fundación — completada",
     "phase1": "Fase 1: i18n + base PWA — completada",
     "next": "Siguiente: Autenticación"
+  },
+  "dashboard": {
+    "welcome": "¿Listo para planear el próximo culto?",
+    "next_phase": "Siguiente: Servicios y Canciones"
   }
 }

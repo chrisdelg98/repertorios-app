@@ -1,6 +1,8 @@
 import { createI18n } from 'vue-i18n';
-import en from './en/common.json';
-import es from './es/common.json';
+import enCommon from './en/common.json';
+import enAuth from './en/auth.json';
+import esCommon from './es/common.json';
+import esAuth from './es/auth.json';
 
 function detectLocale() {
     const saved = localStorage.getItem('locale');
@@ -13,7 +15,10 @@ const i18n = createI18n({
     legacy: false,
     locale: detectLocale(),
     fallbackLocale: 'en',
-    messages: { en, es },
+    messages: {
+        en: { ...enCommon, auth: enAuth },
+        es: { ...esCommon, auth: esAuth },
+    },
 });
 
 export function setLocale(code) {

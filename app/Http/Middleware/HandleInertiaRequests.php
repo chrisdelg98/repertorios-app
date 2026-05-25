@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Band;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,9 +36,24 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
-            //
+            'auth' => [
+                'user' => fn () => $user ? $user->only(['id', 'name', 'email', 'band_id']) : null,
+                'band' => function () use ($user, $request) {
+                    $bandId = $user?->band_id ?? $request->session()->get('band_id');
+                    return $bandId ? Band::find($bandId, ['id', 'name', 'code']) : null;
+                },
+                'access' => fn () => $user
+                    ? 'admin'
+                    : $request->session()->get('access_level'),
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
         ];
     }
 }
