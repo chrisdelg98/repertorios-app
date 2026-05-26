@@ -26,8 +26,22 @@
     "next": "Siguiente: Autenticación"
   },
   "dashboard": {
-    "welcome": "¿Listo para planear el próximo culto?",
-    "next_phase": "Siguiente: Servicios y Canciones"
+    "greeting_morning": "Buenos días",
+    "greeting_afternoon": "Buenas tardes",
+    "greeting_evening": "Buenas noches",
+    "next_service": "Próximo servicio",
+    "upcoming": "Próximos",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "in_days": "en {count} días",
+    "songs_count": "{count} canciones | {count} canción | {count} canciones",
+    "no_upcoming_title": "No hay servicios próximos",
+    "no_upcoming_body": "Toca para planear el siguiente",
+    "quick_actions": "Acciones rápidas",
+    "new_service": "Nuevo servicio",
+    "new_service_hint": "Crear un repertorio",
+    "browse_library": "Biblioteca",
+    "browse_library_hint": "Ver canciones"
   },
   "public": {
     "powered_by": "Hecho con Repertorios",

@@ -26,8 +26,22 @@
     "next": "Next: Authentication"
   },
   "dashboard": {
-    "welcome": "Ready to plan your next service?",
-    "next_phase": "Next: Services & Songs"
+    "greeting_morning": "Good morning",
+    "greeting_afternoon": "Good afternoon",
+    "greeting_evening": "Good evening",
+    "next_service": "Next service",
+    "upcoming": "Upcoming",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "in_days": "in {count} days",
+    "songs_count": "{count} songs | {count} song | {count} songs",
+    "no_upcoming_title": "No upcoming services",
+    "no_upcoming_body": "Tap to plan your next one",
+    "quick_actions": "Quick actions",
+    "new_service": "New service",
+    "new_service_hint": "Plan a setlist",
+    "browse_library": "Song library",
+    "browse_library_hint": "View all songs"
   },
   "public": {
     "powered_by": "Made with Repertorios",
