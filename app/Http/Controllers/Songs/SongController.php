@@ -6,6 +6,7 @@ use App\Actions\Songs\NormalizeSongName;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Requests\Songs\StoreSongRequest;
+use App\Http\Requests\Songs\UpdateSongRequest;
 use App\Models\Song;
 use App\Models\SongVersion;
 use Illuminate\Http\RedirectResponse;
@@ -57,6 +58,20 @@ class SongController extends Controller
         ]);
 
         return redirect()->route('songs.index')->with('success', 'Song added.');
+    }
+
+    public function update(UpdateSongRequest $request, NormalizeSongName $normalizer, Song $song): RedirectResponse
+    {
+        $this->requireWrite();
+        abort_unless($song->band_id === $this->bandId(), 403);
+
+        $song->update([
+            'name'            => $request->name,
+            'normalized_name' => $normalizer->execute($request->name),
+            'artist'          => trim($request->artist ?? ''),
+        ]);
+
+        return redirect()->route('songs.index');
     }
 
     public function destroy(Song $song): RedirectResponse

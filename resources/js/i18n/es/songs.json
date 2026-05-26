@@ -20,6 +20,8 @@
     "cancel": "Cancelar"
   },
   "versions_preset": ["Original", "En Vivo", "Acústica", "Personalizada"],
+  "edit": "Editar",
+  "edit_title": "Editar Canción",
   "delete": "Eliminar",
   "delete_confirm": "¿Eliminar esta canción y todas sus versiones?",
   "duplicate_warning": "Esta versión ya existe para esta canción."

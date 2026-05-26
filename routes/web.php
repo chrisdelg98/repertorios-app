@@ -54,6 +54,7 @@ Route::middleware('band.access')->group(function () {
     // Songs library
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
+    Route::put('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
 
     // Settings — admin only
