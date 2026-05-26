@@ -81,7 +81,27 @@ class ServiceController extends Controller
             ]);
 
         return Inertia::render('Services/Show', [
-            'service' => $service,
+            'service' => [
+                'id'    => $service->id,
+                'date'  => $service->date->toDateString(),
+                'time'  => $service->time,
+                'type'  => $service->type,
+                'notes' => $service->notes,
+                'service_songs' => $service->serviceSongs->map(fn ($ss) => [
+                    'id' => $ss->id,
+                    'position' => $ss->position,
+                    'song_version' => [
+                        'id'   => $ss->songVersion->id,
+                        'name' => $ss->songVersion->name,
+                        'key'  => $ss->songVersion->key,
+                        'song' => [
+                            'id'     => $ss->songVersion->song->id,
+                            'name'   => $ss->songVersion->song->name,
+                            'artist' => $ss->songVersion->song->artist ?? '',
+                        ],
+                    ],
+                ]),
+            ],
             'song_versions' => $songVersions,
             'can_write' => $this->canWrite(),
         ]);
