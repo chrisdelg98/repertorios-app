@@ -29,5 +29,11 @@
   "delete_confirm": "¿Eliminar este servicio y todas sus canciones?",
   "song_search_placeholder": "Busca o escribe una canción nueva…",
   "version_label": "Versión",
-  "new_song_hint": "Se creará como canción nueva"
+  "new_song_hint": "Se creará como canción nueva",
+  "share": "Compartir",
+  "share_title": "Compartir Repertorio",
+  "share_copy": "Copiar enlace",
+  "share_copied": "¡Copiado!",
+  "share_whatsapp": "Abrir en WhatsApp",
+  "share_generating": "Generando…"
 }

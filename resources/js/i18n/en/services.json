@@ -29,5 +29,11 @@
   "delete_confirm": "Delete this service and all its songs?",
   "song_search_placeholder": "Search or type a new song…",
   "version_label": "Version",
-  "new_song_hint": "Will be created as a new song"
+  "new_song_hint": "Will be created as a new song",
+  "share": "Share",
+  "share_title": "Share Repertoire",
+  "share_copy": "Copy link",
+  "share_copied": "Copied!",
+  "share_whatsapp": "Open in WhatsApp",
+  "share_generating": "Generating…"
 }

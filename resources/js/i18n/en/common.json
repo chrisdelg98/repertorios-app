@@ -28,5 +28,11 @@
   "dashboard": {
     "welcome": "Ready to plan your next service?",
     "next_phase": "Next: Services & Songs"
+  },
+  "public": {
+    "powered_by": "Made with Repertorios",
+    "no_songs": "No songs in this service",
+    "expired_title": "Link expired",
+    "expired_body": "This link is no longer valid."
   }
 }

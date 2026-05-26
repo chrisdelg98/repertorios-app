@@ -5,11 +5,15 @@ use App\Http\Controllers\Auth\MemberLoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
+use App\Http\Controllers\Services\ShareController;
 use App\Http\Controllers\Settings\ScheduleTemplateController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// Public shared repertoire (no auth)
+Route::get('/r/{token}', [ShareController::class, 'show'])->name('share.show');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -40,6 +44,7 @@ Route::middleware('band.access')->group(function () {
     Route::put('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     Route::post('/services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
+    Route::post('/services/{service}/share', [ShareController::class, 'store'])->name('services.share');
 
     // Service songs
     Route::post('/services/{service}/songs', [ServiceSongController::class, 'store'])->name('service-songs.store');
