@@ -12,13 +12,12 @@
     "saving": "Saving…",
     "cancel": "Cancel"
   },
-  "types": {
-    "sunday_am": "Sunday AM",
-    "sunday_pm": "Sunday PM",
-    "wednesday": "Wednesday",
-    "rehearsal": "Rehearsal",
-    "other": "Other"
-  },
+  "type_other": "Other",
+  "type_custom": "Custom",
+  "custom_name_hint": "enter a name",
+  "custom_name_placeholder": "Service name (max 20 chars)",
+  "type_search": "Search types…",
+  "no_type_results": "No types found",
   "songs_count": "{n} song | {n} songs",
   "no_songs": "No songs yet — add the first one",
   "add_song": "Add Song",

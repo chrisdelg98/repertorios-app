@@ -12,13 +12,12 @@
     "saving": "Guardando…",
     "cancel": "Cancelar"
   },
-  "types": {
-    "sunday_am": "Domingo AM",
-    "sunday_pm": "Domingo PM",
-    "wednesday": "Miércoles",
-    "rehearsal": "Ensayo",
-    "other": "Otro"
-  },
+  "type_other": "Otro",
+  "type_custom": "Personalizado",
+  "custom_name_hint": "escribe un nombre",
+  "custom_name_placeholder": "Nombre del servicio (máx. 20 chars)",
+  "type_search": "Buscar tipos…",
+  "no_type_results": "Sin resultados",
   "songs_count": "{n} canción | {n} canciones",
   "no_songs": "Sin canciones — agrega la primera",
   "add_song": "Agregar Canción",

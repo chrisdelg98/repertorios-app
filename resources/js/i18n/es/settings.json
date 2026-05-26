@@ -1,0 +1,27 @@
+{
+  "title": "Ajustes",
+  "templates": {
+    "title": "Plantillas de Horario",
+    "subtitle": "Define los tipos de servicio recurrentes para tu banda",
+    "add": "Agregar Plantilla",
+    "edit": "Editar Plantilla",
+    "empty": "Sin plantillas aún. Agrega la primera.",
+    "delete_confirm": "¿Eliminar esta plantilla?",
+    "name_label": "Nombre",
+    "name_placeholder": "ej. Domingo 10 AM",
+    "day_label": "Día de la semana",
+    "time_label": "Hora",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar"
+  },
+  "days": {
+    "0": "Domingo",
+    "1": "Lunes",
+    "2": "Martes",
+    "3": "Miércoles",
+    "4": "Jueves",
+    "5": "Viernes",
+    "6": "Sábado"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Settings",
+  "templates": {
+    "title": "Schedule Templates",
+    "subtitle": "Define the recurring service types for your band",
+    "add": "Add Template",
+    "edit": "Edit Template",
+    "empty": "No templates yet. Add your first one.",
+    "delete_confirm": "Delete this template?",
+    "name_label": "Name",
+    "name_placeholder": "e.g. Sunday 10 AM",
+    "day_label": "Day of week",
+    "time_label": "Time",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel"
+  },
+  "days": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  }
+}

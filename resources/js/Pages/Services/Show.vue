@@ -80,7 +80,7 @@ function formatDate(d) {
 </script>
 
 <template>
-    <Head :title="t('services.types.' + service.type)" />
+    <Head :title="service.type === 'other' ? t('services.type_other') : service.type" />
 
     <AppLayout>
         <div class="px-4 py-5 max-w-lg mx-auto">
@@ -88,7 +88,7 @@ function formatDate(d) {
             <div class="mb-5">
                 <div class="flex items-start justify-between gap-2">
                     <div>
-                        <h1 class="text-lg font-semibold text-slate-900">{{ t('services.types.' + service.type) }}</h1>
+                        <h1 class="text-lg font-semibold text-slate-900">{{ service.type === 'other' ? t('services.type_other') : service.type }}</h1>
                         <p class="text-sm text-slate-500 mt-0.5">
                             {{ formatDate(service.date) }}
                             <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>

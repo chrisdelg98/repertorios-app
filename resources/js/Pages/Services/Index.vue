@@ -10,10 +10,8 @@ const props = defineProps({
     services: Object,
 });
 
-const SERVICE_TYPES = ['sunday_am', 'sunday_pm', 'wednesday', 'rehearsal', 'other'];
-
 function typeLabel(type) {
-    return t('services.types.' + type);
+    return type === 'other' ? t('services.type_other') : type;
 }
 
 function formatDate(dateStr) {
