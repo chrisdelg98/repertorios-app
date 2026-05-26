@@ -11,6 +11,7 @@ use App\Models\ServiceSong;
 use App\Models\Song;
 use App\Models\SongVersion;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class ServiceSongController extends Controller
 {
@@ -45,6 +46,23 @@ class ServiceSongController extends Controller
         ]);
 
         return back()->with('success', 'Song added.');
+    }
+
+    public function reorder(Request $request, Service $service): RedirectResponse
+    {
+        $this->requireWrite();
+        abort_unless($service->band_id === $this->bandId(), 403);
+
+        $validated = $request->validate([
+            'ids'   => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        foreach ($validated['ids'] as $position => $id) {
+            $service->serviceSongs()->where('id', $id)->update(['position' => $position + 1]);
+        }
+
+        return back();
     }
 
     public function destroy(Service $service, ServiceSong $serviceSong): RedirectResponse

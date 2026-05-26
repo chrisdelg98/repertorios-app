@@ -35,5 +35,9 @@
   "share_copy": "Copy link",
   "share_copied": "Copied!",
   "share_whatsapp": "Open in WhatsApp",
-  "share_generating": "Generating…"
+  "share_generating": "Generating…",
+  "move_up": "Move up",
+  "move_down": "Move down",
+  "edit_service": "Edit service",
+  "delete_service": "Delete service"
 }
