@@ -11,9 +11,8 @@ const props = defineProps({
     can_write: Boolean,
 });
 
-// ── Add form ──────────────────────────────────────────────────────────────────
+// ── Add sheet ─────────────────────────────────────────────────────────────────
 const showAddForm = ref(false);
-const showAddDetails = ref(false);
 
 const form = useForm({
     name: '',
@@ -31,7 +30,6 @@ function submit() {
     form.post('/songs', {
         onSuccess: () => {
             showAddForm.value = false;
-            showAddDetails.value = false;
             form.reset();
             form.version_name = 'Original';
         },
@@ -40,7 +38,6 @@ function submit() {
 
 function cancelAdd() {
     showAddForm.value = false;
-    showAddDetails.value = false;
     form.reset();
     form.version_name = 'Original';
 }
@@ -107,7 +104,7 @@ function deleteSong(id) {
                 <h1 class="text-base font-semibold text-slate-900">{{ t('songs.library') }}</h1>
                 <button
                     v-if="can_write"
-                    @click="showAddForm = !showAddForm"
+                    @click="showAddForm = true"
                     class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg"
                 >
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -115,116 +112,6 @@ function deleteSong(id) {
                     </svg>
                     {{ t('songs.create') }}
                 </button>
-            </div>
-
-            <!-- Add form (inline) -->
-            <div v-if="showAddForm && can_write" class="bg-white rounded-2xl border border-indigo-200 p-4 mb-4 space-y-3">
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
-                    <input
-                        v-model="form.name"
-                        type="text"
-                        required
-                        autofocus
-                        :placeholder="t('songs.form.name')"
-                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <p v-if="form.errors.name" class="text-xs text-red-600">{{ form.errors.name }}</p>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
-                    <input
-                        v-model="form.artist"
-                        type="text"
-                        :placeholder="t('songs.form.artist_placeholder')"
-                        maxlength="50"
-                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.version') }}</label>
-                    <div class="flex gap-2 flex-wrap">
-                        <button
-                            v-for="v in PRESET_VERSIONS"
-                            :key="v"
-                            type="button"
-                            @click="form.version_name = v"
-                            :class="[
-                                'px-2.5 py-1 text-xs font-medium rounded-md border transition-colors',
-                                form.version_name === v
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                    : 'border-slate-300 text-slate-600',
-                            ]"
-                        >{{ v }}</button>
-                    </div>
-                    <input
-                        v-model="form.version_name"
-                        type="text"
-                        :placeholder="t('songs.form.version_hint')"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <p v-if="form.errors.version_name" class="text-xs text-red-600">{{ form.errors.version_name }}</p>
-                </div>
-
-                <!-- Toggle for extra details -->
-                <button
-                    type="button"
-                    @click="showAddDetails = !showAddDetails"
-                    class="text-xs text-indigo-600 font-medium"
-                >
-                    {{ showAddDetails ? t('songs.form.less_details') : t('songs.form.more_details') }}
-                </button>
-
-                <div v-if="showAddDetails" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.key') }}</label>
-                            <input
-                                v-model="form.key"
-                                type="text"
-                                placeholder="C, Am, Bb…"
-                                maxlength="10"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
-                            <input
-                                v-model="form.bpm"
-                                type="number"
-                                min="20" max="300"
-                                placeholder="120"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                        </div>
-                    </div>
-
-                    <input
-                        v-model="form.youtube_url"
-                        type="url"
-                        :placeholder="t('songs.form.youtube_url')"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <button
-                        type="button"
-                        @click="cancelAdd"
-                        class="flex-1 py-2 text-sm font-medium text-slate-600 rounded-lg border border-slate-300"
-                    >
-                        {{ t('songs.form.cancel') }}
-                    </button>
-                    <button
-                        @click="submit"
-                        :disabled="form.processing"
-                        class="flex-1 py-2 bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg"
-                    >
-                        {{ form.processing ? t('songs.form.saving') : t('songs.form.save') }}
-                    </button>
-                </div>
             </div>
 
             <!-- Empty state -->
@@ -286,6 +173,171 @@ function deleteSong(id) {
                 </div>
             </div>
         </div>
+
+        <!-- Add bottom sheet -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="showAddForm && can_write"
+                    class="fixed inset-0 z-40 bg-black/40"
+                    @click="cancelAdd"
+                />
+            </Transition>
+
+            <Transition
+                enter-active-class="transition duration-250 ease-out"
+                enter-from-class="translate-y-full"
+                enter-to-class="translate-y-0"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="translate-y-0"
+                leave-to-class="translate-y-full"
+            >
+                <div
+                    v-if="showAddForm && can_write"
+                    class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                >
+                    <!-- Header (sticky) -->
+                    <div class="px-4 pt-3 pb-2 border-b border-slate-100">
+                        <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
+                        <h2 class="text-base font-semibold text-slate-900">{{ t('songs.create') }}</h2>
+                    </div>
+
+                    <!-- Scrollable body -->
+                    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                        <!-- Song-level fields -->
+                        <div class="space-y-3">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
+                                <input
+                                    v-model="form.name"
+                                    type="text"
+                                    required
+                                    autofocus
+                                    :placeholder="t('songs.form.name')"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <p v-if="form.errors.name" class="text-xs text-red-600">{{ form.errors.name }}</p>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
+                                <input
+                                    v-model="form.artist"
+                                    type="text"
+                                    :placeholder="t('songs.form.artist_placeholder')"
+                                    maxlength="50"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Version section (matches edit-sheet card anatomy) -->
+                        <div class="space-y-2">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                {{ t('songs.form.version') }}
+                            </p>
+
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <div class="px-3 py-2.5 bg-slate-50 space-y-2">
+                                    <div class="flex gap-1.5 flex-wrap">
+                                        <button
+                                            v-for="v in PRESET_VERSIONS"
+                                            :key="v"
+                                            type="button"
+                                            @click="form.version_name = v"
+                                            :class="[
+                                                'px-2.5 py-1 text-xs font-medium rounded-md border transition-colors',
+                                                form.version_name === v
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'border-slate-300 text-slate-600 bg-white',
+                                            ]"
+                                        >{{ v }}</button>
+                                    </div>
+                                    <input
+                                        v-model="form.version_name"
+                                        type="text"
+                                        :placeholder="t('songs.form.version_hint')"
+                                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                    <p v-if="form.errors.version_name" class="text-xs text-red-600">{{ form.errors.version_name }}</p>
+                                </div>
+
+                                <div class="p-3 space-y-3 bg-white">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="space-y-1.5">
+                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.key') }}</label>
+                                            <input
+                                                v-model="form.key"
+                                                type="text"
+                                                placeholder="C, Am, Bb…"
+                                                maxlength="10"
+                                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
+                                            <input
+                                                v-model="form.bpm"
+                                                type="number"
+                                                min="20" max="300"
+                                                placeholder="120"
+                                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
+                                        <input
+                                            v-model="form.youtube_url"
+                                            type="url"
+                                            placeholder="https://youtube.com/…"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
+                                        <textarea
+                                            v-model="form.notes"
+                                            rows="2"
+                                            maxlength="1000"
+                                            :placeholder="t('songs.form.notes_placeholder')"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer (sticky) -->
+                    <div class="px-4 py-3 border-t border-slate-100 flex gap-2">
+                        <button
+                            type="button"
+                            @click="cancelAdd"
+                            class="flex-1 py-2.5 text-sm font-medium text-slate-600 rounded-xl border border-slate-300"
+                        >
+                            {{ t('songs.form.cancel') }}
+                        </button>
+                        <button
+                            @click="submit"
+                            :disabled="form.processing"
+                            class="flex-1 py-2.5 bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl"
+                        >
+                            {{ form.processing ? t('songs.form.saving') : t('songs.form.save') }}
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
 
         <!-- Edit bottom sheet -->
         <Teleport to="body">
