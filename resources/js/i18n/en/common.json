@@ -25,6 +25,51 @@
     "phase1": "Phase 1: i18n + PWA base — done",
     "next": "Next: Authentication"
   },
+  "landing": {
+    "meta_title": "Repertorios — Worship setlists, simplified",
+    "nav": {
+      "sign_in": "Sign in"
+    },
+    "hero": {
+      "badge": "Built for worship teams",
+      "title_pre": "Worship setlists,",
+      "title_accent": "beautifully organized.",
+      "subtitle": "Plan services, keep your song library in one place, and share the setlist with your team in seconds — straight to WhatsApp.",
+      "cta_primary": "Get started",
+      "cta_donate": "Support the project"
+    },
+    "features": {
+      "eyebrow": "Everything you need",
+      "title": "Built around the way worship teams actually work",
+      "subtitle": "Three tools, working together so Sunday morning runs smoothly.",
+      "plan_title": "Plan every service",
+      "plan_body": "Create services for any day, set the time, add notes — reorder songs with a tap.",
+      "library_title": "Keep your song library",
+      "library_body": "Save songs with artist, version, key, BPM and YouTube link. Find anything in seconds.",
+      "share_title": "Share with one tap",
+      "share_body": "Send the full repertoire to your team via WhatsApp or a public link — no app required."
+    },
+    "steps": {
+      "eyebrow": "How it works",
+      "title": "Get set up in minutes",
+      "one_title": "Create your band",
+      "one_body": "Sign in as the admin. Your team joins with a code — no separate accounts to manage.",
+      "two_title": "Build your library",
+      "two_body": "Add the songs your team plays. Mark the key, the version, and the link.",
+      "three_title": "Plan and share",
+      "three_body": "Build the setlist for next service and share the link in your WhatsApp group."
+    },
+    "donate": {
+      "title": "Support the project",
+      "body": "Repertorios is built to make worship leaders' lives easier. If it has helped your team, a small donation keeps it running and improving.",
+      "cta": "Donate"
+    },
+    "final": {
+      "title": "Ready for your next service?",
+      "subtitle": "Sign in and have your setlist ready in minutes.",
+      "cta": "Get started"
+    }
+  },
   "dashboard": {
     "greeting_morning": "Good morning",
     "greeting_afternoon": "Good afternoon",

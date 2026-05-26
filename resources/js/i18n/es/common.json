@@ -25,6 +25,51 @@
     "phase1": "Fase 1: i18n + base PWA — completada",
     "next": "Siguiente: Autenticación"
   },
+  "landing": {
+    "meta_title": "Repertorios — Repertorios de alabanza, simplificados",
+    "nav": {
+      "sign_in": "Iniciar sesión"
+    },
+    "hero": {
+      "badge": "Hecho para equipos de alabanza",
+      "title_pre": "Repertorios de alabanza,",
+      "title_accent": "perfectamente organizados.",
+      "subtitle": "Planea servicios, mantén tu biblioteca de canciones en un solo lugar y comparte el repertorio con tu equipo en segundos — directo a WhatsApp.",
+      "cta_primary": "Empezar",
+      "cta_donate": "Apoya el proyecto"
+    },
+    "features": {
+      "eyebrow": "Todo lo que necesitas",
+      "title": "Diseñado para la forma en que realmente funciona un equipo de alabanza",
+      "subtitle": "Tres herramientas que trabajan juntas para que el domingo fluya sin estrés.",
+      "plan_title": "Planea cada servicio",
+      "plan_body": "Crea servicios para cualquier día, define la hora, agrega notas y reordena las canciones con un toque.",
+      "library_title": "Tu biblioteca de canciones",
+      "library_body": "Guarda canciones con artista, versión, tonalidad, BPM y enlace de YouTube. Encuentra cualquiera en segundos.",
+      "share_title": "Comparte en un toque",
+      "share_body": "Envía el repertorio completo a tu equipo por WhatsApp o un enlace público — sin necesidad de instalar nada."
+    },
+    "steps": {
+      "eyebrow": "Cómo funciona",
+      "title": "Configúralo en minutos",
+      "one_title": "Crea tu banda",
+      "one_body": "Entra como administrador. Tu equipo se une con un código — sin cuentas separadas que administrar.",
+      "two_title": "Arma tu biblioteca",
+      "two_body": "Agrega las canciones que tu equipo toca. Marca la tonalidad, la versión y el enlace.",
+      "three_title": "Planea y comparte",
+      "three_body": "Arma el repertorio del próximo servicio y comparte el enlace en el grupo de WhatsApp."
+    },
+    "donate": {
+      "title": "Apoya el proyecto",
+      "body": "Repertorios fue creado para hacerle la vida más fácil a los líderes de alabanza. Si te ha servido, una pequeña donación lo mantiene funcionando y mejorando.",
+      "cta": "Donar"
+    },
+    "final": {
+      "title": "¿Listo para el próximo servicio?",
+      "subtitle": "Inicia sesión y ten tu repertorio listo en minutos.",
+      "cta": "Empezar"
+    }
+  },
   "dashboard": {
     "greeting_morning": "Buenos días",
     "greeting_afternoon": "Buenas tardes",
