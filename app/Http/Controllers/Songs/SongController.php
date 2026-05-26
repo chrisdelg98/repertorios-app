@@ -71,6 +71,19 @@ class SongController extends Controller
             'artist'          => trim($request->artist ?? ''),
         ]);
 
+        foreach ($request->input('versions', []) as $payload) {
+            $version = $song->versions()->find($payload['id']);
+            if (!$version) continue;
+
+            $version->update([
+                'name'        => $payload['name'],
+                'key'         => $payload['key'] ?? null,
+                'bpm'         => $payload['bpm'] ?? null,
+                'notes'       => $payload['notes'] ?? null,
+                'youtube_url' => $payload['youtube_url'] ?? null,
+            ]);
+        }
+
         return redirect()->route('songs.index');
     }
 

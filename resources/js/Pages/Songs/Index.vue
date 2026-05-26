@@ -47,21 +47,40 @@ function cancelAdd() {
 
 // ── Edit sheet ────────────────────────────────────────────────────────────────
 const editingSong = ref(null);
+const expandedVersions = ref({});
 
 const editForm = useForm({
     name: '',
     artist: '',
+    versions: [],
 });
 
 function openEdit(song) {
     editingSong.value = song;
-    editForm.name   = song.name;
-    editForm.artist = song.artist ?? '';
+    editForm.name    = song.name;
+    editForm.artist  = song.artist ?? '';
+    editForm.versions = (song.versions ?? []).map(v => ({
+        id:          v.id,
+        name:        v.name,
+        key:         v.key ?? '',
+        bpm:         v.bpm ?? '',
+        notes:       v.notes ?? '',
+        youtube_url: v.youtube_url ?? '',
+    }));
+    expandedVersions.value = {};
+    if (editForm.versions.length === 1) {
+        expandedVersions.value[editForm.versions[0].id] = true;
+    }
 }
 
 function closeEdit() {
     editingSong.value = null;
+    expandedVersions.value = {};
     editForm.reset();
+}
+
+function toggleVersion(id) {
+    expandedVersions.value[id] = !expandedVersions.value[id];
 }
 
 function submitEdit() {
@@ -295,39 +314,134 @@ function deleteSong(id) {
             >
                 <div
                     v-if="editingSong"
-                    class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 space-y-4 shadow-xl"
+                    class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
                 >
-                    <!-- Handle -->
-                    <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-2" />
+                    <!-- Header (sticky) -->
+                    <div class="px-4 pt-3 pb-2 border-b border-slate-100">
+                        <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
+                        <h2 class="text-base font-semibold text-slate-900">{{ t('songs.edit_title') }}</h2>
+                    </div>
 
-                    <h2 class="text-sm font-semibold text-slate-900">{{ t('songs.edit_title') }}</h2>
+                    <!-- Scrollable body -->
+                    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                        <!-- Song-level fields -->
+                        <div class="space-y-3">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
+                                <input
+                                    v-model="editForm.name"
+                                    type="text"
+                                    required
+                                    autofocus
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <p v-if="editForm.errors.name" class="text-xs text-red-600">{{ editForm.errors.name }}</p>
+                            </div>
 
-                    <div class="space-y-3">
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
-                            <input
-                                v-model="editForm.name"
-                                type="text"
-                                required
-                                autofocus
-                                class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                            <p v-if="editForm.errors.name" class="text-xs text-red-600">{{ editForm.errors.name }}</p>
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
+                                <input
+                                    v-model="editForm.artist"
+                                    type="text"
+                                    :placeholder="t('songs.form.artist_placeholder')"
+                                    maxlength="50"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
                         </div>
 
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
-                            <input
-                                v-model="editForm.artist"
-                                type="text"
-                                :placeholder="t('songs.form.artist_placeholder')"
-                                maxlength="50"
-                                class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                        <!-- Versions -->
+                        <div v-if="editForm.versions.length" class="space-y-2">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                {{ t('songs.versions') }}
+                            </p>
+
+                            <div
+                                v-for="(v, idx) in editForm.versions"
+                                :key="v.id"
+                                class="border border-slate-200 rounded-xl overflow-hidden"
+                            >
+                                <!-- Version header -->
+                                <button
+                                    type="button"
+                                    @click="toggleVersion(v.id)"
+                                    class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="text-sm font-medium text-slate-800 truncate">{{ v.name || t('songs.form.version') }}</span>
+                                        <span v-if="v.key" class="text-xs text-indigo-600 font-semibold">{{ v.key }}</span>
+                                        <span v-if="v.bpm" class="text-xs text-slate-400">{{ v.bpm }} bpm</span>
+                                    </div>
+                                    <svg
+                                        class="w-4 h-4 text-slate-400 transition-transform shrink-0"
+                                        :class="expandedVersions[v.id] ? 'rotate-180' : ''"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <!-- Version fields -->
+                                <div v-if="expandedVersions[v.id]" class="p-3 space-y-3 bg-white">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.version') }}</label>
+                                        <input
+                                            v-model="v.name"
+                                            type="text"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="space-y-1.5">
+                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.key') }}</label>
+                                            <input
+                                                v-model="v.key"
+                                                type="text"
+                                                placeholder="C, Am, Bb…"
+                                                maxlength="10"
+                                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
+                                            <input
+                                                v-model="v.bpm"
+                                                type="number"
+                                                min="20" max="300"
+                                                placeholder="120"
+                                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
+                                        <input
+                                            v-model="v.youtube_url"
+                                            type="url"
+                                            placeholder="https://youtube.com/…"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
+                                        <textarea
+                                            v-model="v.notes"
+                                            rows="2"
+                                            maxlength="1000"
+                                            :placeholder="t('songs.form.notes_placeholder')"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex gap-2 pt-1">
+                    <!-- Footer (sticky) -->
+                    <div class="px-4 py-3 border-t border-slate-100 flex gap-2">
                         <button
                             type="button"
                             @click="closeEdit"

@@ -12,6 +12,7 @@
     "key": "Tonalidad",
     "bpm": "BPM",
     "notes": "Notas",
+    "notes_placeholder": "Algo que recordar…",
     "youtube_url": "URL de YouTube",
     "more_details": "Agregar detalles (tonalidad, BPM…)",
     "less_details": "Menos detalles",
@@ -22,6 +23,7 @@
   "versions_preset": ["Original", "En Vivo", "Acústica", "Personalizada"],
   "edit": "Editar",
   "edit_title": "Editar Canción",
+  "versions": "Versiones",
   "delete": "Eliminar",
   "delete_confirm": "¿Eliminar esta canción y todas sus versiones?",
   "duplicate_warning": "Esta versión ya existe para esta canción."
