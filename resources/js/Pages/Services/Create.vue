@@ -119,7 +119,7 @@ function submit() {
     <Head :title="isEdit ? t('services.edit') : t('services.create')" />
 
     <AppLayout>
-        <div class="px-4 py-5 max-w-lg mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
             <h1 class="text-lg font-semibold text-slate-900 mb-5">
                 {{ isEdit ? t('services.edit') : t('services.create') }}
             </h1>
@@ -211,10 +211,8 @@ function submit() {
 
         <!-- Type selector bottom sheet -->
         <Teleport to="body">
-            <div v-if="showSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showSheet = false; search = ''" />
-
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[75vh] flex flex-col">
+            <div v-if="showSheet" class="fixed inset-0 z-40 bg-black/40" @click="showSheet = false; search = ''" />
+            <div v-if="showSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[75vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="font-semibold text-slate-900">{{ t('services.form.type') }}</h2>
                         <button @click="showSheet = false; search = ''" class="text-slate-400 text-lg leading-none">✕</button>
@@ -293,7 +291,6 @@ function submit() {
                             {{ t('services.no_type_results') }}
                         </p>
                     </div>
-                </div>
             </div>
         </Teleport>
     </AppLayout>

@@ -98,14 +98,14 @@ function deleteSong(id) {
     <Head :title="t('songs.title')" />
 
     <AppLayout>
-        <div class="px-4 py-5">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-6xl lg:mx-auto">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-base font-semibold text-slate-900">{{ t('songs.library') }}</h1>
+            <div class="flex items-center justify-between mb-4 lg:mb-6">
+                <h1 class="text-base lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('songs.library') }}</h1>
                 <button
                     v-if="can_write"
                     @click="showAddForm = true"
-                    class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg"
+                    class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 text-white text-xs lg:text-sm font-semibold rounded-lg"
                 >
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -123,7 +123,7 @@ function deleteSong(id) {
             </div>
 
             <!-- Songs list -->
-            <div v-else class="space-y-2">
+            <div v-else class="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3">
                 <div
                     v-for="song in songs"
                     :key="song.id"
@@ -201,7 +201,7 @@ function deleteSong(id) {
             >
                 <div
                     v-if="showAddForm && can_write"
-                    class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
                 >
                     <!-- Header (sticky) -->
                     <div class="px-4 pt-3 pb-2 border-b border-slate-100">
@@ -366,7 +366,7 @@ function deleteSong(id) {
             >
                 <div
                     v-if="editingSong"
-                    class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
                 >
                     <!-- Header (sticky) -->
                     <div class="px-4 pt-3 pb-2 border-b border-slate-100">

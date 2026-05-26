@@ -67,7 +67,7 @@ function deleteTemplate(tpl) {
     <Head :title="t('settings.templates.title')" />
 
     <AppLayout>
-        <div class="px-4 py-5 max-w-lg mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-3xl mx-auto">
             <div class="flex items-center justify-between mb-5">
                 <div>
                     <h1 class="text-lg font-semibold text-slate-900">{{ t('settings.templates.title') }}</h1>
@@ -129,9 +129,8 @@ function deleteTemplate(tpl) {
 
         <!-- Add sheet -->
         <Teleport to="body">
-            <div v-if="showAddSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showAddSheet = false; addForm.reset()" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8">
+            <div v-if="showAddSheet" class="fixed inset-0 z-40 bg-black/40" @click="showAddSheet = false; addForm.reset()" />
+            <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('settings.templates.add') }}</h2>
                         <button @click="showAddSheet = false; addForm.reset()" class="text-slate-400 text-lg leading-none">✕</button>
@@ -180,15 +179,13 @@ function deleteTemplate(tpl) {
                     >
                         {{ addForm.processing ? t('settings.templates.saving') : t('settings.templates.save') }}
                     </button>
-                </div>
             </div>
         </Teleport>
 
         <!-- Edit sheet -->
         <Teleport to="body">
-            <div v-if="showEditSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showEditSheet = false" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8">
+            <div v-if="showEditSheet" class="fixed inset-0 z-40 bg-black/40" @click="showEditSheet = false" />
+            <div v-if="showEditSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('settings.templates.edit') }}</h2>
                         <button @click="showEditSheet = false" class="text-slate-400 text-lg leading-none">✕</button>
@@ -236,7 +233,6 @@ function deleteTemplate(tpl) {
                     >
                         {{ editForm.processing ? t('settings.templates.saving') : t('settings.templates.save') }}
                     </button>
-                </div>
             </div>
         </Teleport>
     </AppLayout>

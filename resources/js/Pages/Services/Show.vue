@@ -194,7 +194,7 @@ function scheduleReorder() {
     <Head :title="typeLabel(service.type)" />
 
     <AppLayout>
-        <div class="px-4 py-5 max-w-lg mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
             <!-- Service header card -->
             <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white mb-4 shadow-md shadow-indigo-200">
                 <p class="text-xs font-medium text-indigo-200 uppercase tracking-wide">
@@ -339,9 +339,8 @@ function scheduleReorder() {
 
         <!-- Add Song Sheet -->
         <Teleport to="body">
-            <div v-if="showAddSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="closeAddSheet" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col">
+            <div v-if="showAddSheet" class="fixed inset-0 z-40 bg-black/40" @click="closeAddSheet" />
+            <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.add_song') }}</h2>
                         <button @click="closeAddSheet" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
@@ -467,15 +466,13 @@ function scheduleReorder() {
                     >
                         {{ addForm.processing ? t('services.adding') : t('services.add_song') }}
                     </button>
-                </div>
             </div>
         </Teleport>
 
         <!-- Share sheet -->
         <Teleport to="body">
-            <div v-if="showShareSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showShareSheet = false" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8">
+            <div v-if="showShareSheet" class="fixed inset-0 z-40 bg-black/40" @click="showShareSheet = false" />
+            <div v-if="showShareSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.share_title') }}</h2>
                         <button @click="showShareSheet = false" class="text-slate-400 text-lg leading-none">✕</button>
@@ -511,31 +508,28 @@ function scheduleReorder() {
                         </svg>
                         {{ t('services.share_whatsapp') }}
                     </a>
-                </div>
             </div>
         </Teleport>
 
         <!-- Duplicate sheet -->
         <Teleport to="body">
-            <div v-if="showDuplicateSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showDuplicateSheet = false" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8">
-                    <h2 class="font-semibold text-slate-900 mb-4">{{ t('services.duplicate_title') }}</h2>
-                    <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ t('services.duplicate_date_label') }}</label>
-                    <input
-                        v-model="dupForm.date"
-                        type="date"
-                        required
-                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
-                    />
-                    <button
-                        @click="submitDuplicate"
-                        :disabled="dupForm.processing || !dupForm.date"
-                        class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors"
-                    >
-                        {{ t('services.duplicate') }}
-                    </button>
-                </div>
+            <div v-if="showDuplicateSheet" class="fixed inset-0 z-40 bg-black/40" @click="showDuplicateSheet = false" />
+            <div v-if="showDuplicateSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
+                <h2 class="font-semibold text-slate-900 mb-4">{{ t('services.duplicate_title') }}</h2>
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ t('services.duplicate_date_label') }}</label>
+                <input
+                    v-model="dupForm.date"
+                    type="date"
+                    required
+                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+                />
+                <button
+                    @click="submitDuplicate"
+                    :disabled="dupForm.processing || !dupForm.date"
+                    class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors"
+                >
+                    {{ t('services.duplicate') }}
+                </button>
             </div>
         </Teleport>
 
