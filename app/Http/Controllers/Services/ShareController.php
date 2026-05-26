@@ -50,10 +50,13 @@ class ShareController extends Controller
                 'time'  => $service->time,
                 'notes' => $service->notes,
                 'songs' => $service->serviceSongs->map(fn ($ss) => [
-                    'name'    => $ss->songVersion->song->name,
-                    'artist'  => $ss->songVersion->song->artist ?? '',
-                    'version' => $ss->songVersion->name,
-                    'key'     => $ss->songVersion->key,
+                    'name'        => $ss->songVersion->song->name,
+                    'artist'      => $ss->songVersion->song->artist ?? '',
+                    'version'     => $ss->songVersion->name,
+                    'key'         => $ss->songVersion->key,
+                    'bpm'         => $ss->songVersion->bpm,
+                    'notes'       => $ss->songVersion->notes,
+                    'youtube_url' => $ss->songVersion->youtube_url,
                 ])->values(),
             ],
         ]);

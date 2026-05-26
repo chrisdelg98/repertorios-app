@@ -91,9 +91,12 @@ class ServiceController extends Controller
                     'id' => $ss->id,
                     'position' => $ss->position,
                     'song_version' => [
-                        'id'   => $ss->songVersion->id,
-                        'name' => $ss->songVersion->name,
-                        'key'  => $ss->songVersion->key,
+                        'id'          => $ss->songVersion->id,
+                        'name'        => $ss->songVersion->name,
+                        'key'         => $ss->songVersion->key,
+                        'bpm'         => $ss->songVersion->bpm,
+                        'notes'       => $ss->songVersion->notes,
+                        'youtube_url' => $ss->songVersion->youtube_url,
                         'song' => [
                             'id'     => $ss->songVersion->song->id,
                             'name'   => $ss->songVersion->song->name,

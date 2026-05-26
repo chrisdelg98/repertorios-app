@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 
 const { t } = useI18n();
 
@@ -138,6 +139,21 @@ function formatDate(d) {
 
 function typeLabel(type) {
     return type === 'other' ? t('services.type_other') : type;
+}
+
+// --- Song detail view (read-only) ---
+const detailSong = ref(null);
+
+function openDetail(ss) {
+    detailSong.value = {
+        name:        ss.song_version.song.name,
+        artist:      ss.song_version.song.artist,
+        version:     ss.song_version.name,
+        key:         ss.song_version.key,
+        bpm:         ss.song_version.bpm,
+        notes:       ss.song_version.notes,
+        youtube_url: ss.song_version.youtube_url,
+    };
 }
 
 // --- Song reorder ---
@@ -285,12 +301,16 @@ function scheduleReorder() {
                     </div>
 
                     <span class="w-6 h-6 flex items-center justify-center text-[11px] font-bold text-indigo-600 bg-indigo-50 rounded-full shrink-0">{{ i + 1 }}</span>
-                    <div class="flex-1 min-w-0">
+                    <button
+                        type="button"
+                        @click="openDetail(ss)"
+                        class="flex-1 min-w-0 text-left"
+                    >
                         <p class="text-sm font-semibold text-slate-900 truncate leading-tight">{{ ss.song_version.song.name }}</p>
                         <p class="text-xs text-slate-500 mt-0.5 truncate">
                             <span v-if="ss.song_version.song.artist">{{ ss.song_version.song.artist }} · </span>{{ ss.song_version.name }}<span v-if="ss.song_version.key" class="text-indigo-500 font-medium"> · {{ ss.song_version.key }}</span>
                         </p>
-                    </div>
+                    </button>
                     <button
                         v-if="can_write"
                         @click="removeSong(ss.id)"
@@ -518,5 +538,8 @@ function scheduleReorder() {
                 </div>
             </div>
         </Teleport>
+
+        <!-- Song detail (read-only) -->
+        <SongDetailSheet :song="detailSong" @close="detailSong = null" />
     </AppLayout>
 </template>

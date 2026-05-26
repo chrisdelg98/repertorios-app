@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
+import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 
 const { t } = useI18n();
 
@@ -18,6 +19,12 @@ const serviceTitle = computed(() => {
 function formatDate(dateStr) {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const detailSong = ref(null);
+
+function openDetail(song) {
+    detailSong.value = song;
 }
 </script>
 
@@ -39,7 +46,7 @@ function formatDate(dateStr) {
         <template v-else-if="service">
             <!-- Header -->
             <div class="bg-indigo-600 px-5 pt-10 pb-6 text-white">
-                <h1 class="text-xl font-bold leading-tight">{{ serviceTitle }}</h1>
+                <h1 class="text-xl font-bold leading-tight capitalize">{{ serviceTitle }}</h1>
                 <p class="text-sm text-indigo-200 mt-1">
                     {{ formatDate(service.date) }}
                     <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
@@ -58,19 +65,24 @@ function formatDate(dateStr) {
                 </div>
 
                 <div v-else class="space-y-2">
-                    <div
+                    <button
+                        type="button"
                         v-for="(song, i) in service.songs"
                         :key="i"
-                        class="flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-slate-200"
+                        @click="openDetail(song)"
+                        class="w-full flex items-center gap-3 bg-white rounded-xl px-4 py-3.5 border border-slate-200 text-left hover:border-indigo-200 transition-colors"
                     >
                         <span class="text-xs font-bold text-slate-300 w-5 text-center shrink-0">{{ i + 1 }}</span>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-slate-900 truncate">{{ song.name }}</p>
                             <p class="text-xs text-slate-400 mt-0.5">
-                                <span v-if="song.artist" class="text-slate-500">{{ song.artist }} · </span>{{ song.version }}<span v-if="song.key"> · {{ song.key }}</span>
+                                <span v-if="song.artist" class="text-slate-500">{{ song.artist }} · </span>{{ song.version }}<span v-if="song.key" class="text-indigo-500 font-medium"> · {{ song.key }}</span>
                             </p>
                         </div>
-                    </div>
+                        <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -79,5 +91,8 @@ function formatDate(dateStr) {
                 {{ t('public.powered_by') }}
             </div>
         </template>
+
+        <!-- Song detail (read-only) -->
+        <SongDetailSheet :song="detailSong" @close="detailSong = null" />
     </div>
 </template>

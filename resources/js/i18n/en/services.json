@@ -20,6 +20,8 @@
   "no_type_results": "No types found",
   "songs_count": "{n} song | {n} songs",
   "setlist": "Setlist",
+  "close": "Close",
+  "no_details": "No additional details for this song",
   "no_songs": "No songs yet — add the first one",
   "add_song": "Add Song",
   "adding": "Adding…",
