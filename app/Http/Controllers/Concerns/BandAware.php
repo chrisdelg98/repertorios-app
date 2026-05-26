@@ -22,4 +22,11 @@ trait BandAware
             abort(403, 'Read-only access.');
         }
     }
+
+    protected function requireAdmin(): void
+    {
+        if (!Auth::check()) {
+            abort(403, 'Admins only.');
+        }
+    }
 }

@@ -16,7 +16,7 @@ class StoreServiceRequest extends FormRequest
         return [
             'date' => ['required', 'date'],
             'time' => ['nullable', 'date_format:H:i'],
-            'type' => ['required', 'string', 'in:sunday_am,sunday_pm,wednesday,rehearsal,other'],
+            'type' => ['required', 'string', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

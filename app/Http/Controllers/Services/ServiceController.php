@@ -6,8 +6,8 @@ use App\Actions\Services\DuplicateService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Requests\Services\StoreServiceRequest;
+use App\Models\ScheduleTemplate;
 use App\Models\Service;
-use App\Models\Song;
 use App\Models\SongVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,9 +30,21 @@ class ServiceController extends Controller
         ]);
     }
 
+    private function templates(): array
+    {
+        return ScheduleTemplate::where('band_id', $this->bandId())
+            ->orderBy('sort_order')
+            ->orderBy('day_of_week')
+            ->orderBy('time')
+            ->get(['id', 'name', 'day_of_week', 'time'])
+            ->toArray();
+    }
+
     public function create(): Response
     {
-        return Inertia::render('Services/Create');
+        return Inertia::render('Services/Create', [
+            'templates' => $this->templates(),
+        ]);
     }
 
     public function store(StoreServiceRequest $request): RedirectResponse
@@ -77,7 +89,10 @@ class ServiceController extends Controller
         $this->requireWrite();
         abort_unless($service->band_id === $this->bandId(), 403);
 
-        return Inertia::render('Services/Create', ['service' => $service]);
+        return Inertia::render('Services/Create', [
+            'service' => $service,
+            'templates' => $this->templates(),
+        ]);
     }
 
     public function update(StoreServiceRequest $request, Service $service): RedirectResponse

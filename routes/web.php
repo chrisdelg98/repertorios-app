@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\MemberLoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
+use App\Http\Controllers\Settings\ScheduleTemplateController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -48,4 +49,10 @@ Route::middleware('band.access')->group(function () {
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
+
+    // Settings — admin only
+    Route::get('/settings/schedule-templates', [ScheduleTemplateController::class, 'index'])->name('settings.templates');
+    Route::post('/settings/schedule-templates', [ScheduleTemplateController::class, 'store'])->name('settings.templates.store');
+    Route::put('/settings/schedule-templates/{scheduleTemplate}', [ScheduleTemplateController::class, 'update'])->name('settings.templates.update');
+    Route::delete('/settings/schedule-templates/{scheduleTemplate}', [ScheduleTemplateController::class, 'destroy'])->name('settings.templates.destroy');
 });

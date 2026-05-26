@@ -1,25 +1,111 @@
 <script setup>
+import { ref, computed, watch } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
     service: Object,
+    templates: { type: Array, default: () => [] },
 });
 
 const isEdit = !!props.service;
 
 const form = useForm({
-    date: props.service?.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+    date: props.service?.date?.slice(0, 10) ?? today(),
     time: props.service?.time?.slice(0, 5) ?? '',
-    type: props.service?.type ?? 'sunday_am',
+    type: props.service?.type ?? 'other',
     notes: props.service?.notes ?? '',
 });
 
-const SERVICE_TYPES = ['sunday_am', 'sunday_pm', 'wednesday', 'rehearsal', 'other'];
+function today() {
+    return new Date().toISOString().slice(0, 10);
+}
 
+// ── Type selector ──────────────────────────────────────────────
+const showSheet = ref(false);
+const search = ref('');
+const customName = ref(
+    props.service && props.service.type !== 'other' && !props.templates.find(t => t.name === props.service.type)
+        ? props.service.type
+        : ''
+);
+
+// What's currently selected: { kind: 'other'|'custom'|'template', template? }
+const selection = ref(resolveInitialSelection());
+
+function resolveInitialSelection() {
+    if (!props.service || props.service.type === 'other') return { kind: 'other' };
+    const tpl = props.templates.find(t => t.name === props.service.type);
+    if (tpl) return { kind: 'template', template: tpl };
+    return { kind: 'custom' };
+}
+
+const selectionLabel = computed(() => {
+    if (selection.value.kind === 'other') return t('services.type_other');
+    if (selection.value.kind === 'custom') return customName.value || t('services.type_custom');
+    return selection.value.template.name;
+});
+
+const filteredTemplates = computed(() => {
+    const q = search.value.toLowerCase();
+    if (!q) return props.templates;
+    return props.templates.filter(t => t.name.toLowerCase().includes(q));
+});
+
+function selectOther() {
+    selection.value = { kind: 'other' };
+    form.type = 'other';
+    showSheet.value = false;
+    search.value = '';
+}
+
+function selectCustom() {
+    selection.value = { kind: 'custom' };
+    form.type = customName.value || 'other';
+    showSheet.value = false;
+    search.value = '';
+}
+
+function selectTemplate(tpl) {
+    selection.value = { kind: 'template', template: tpl };
+    form.type = tpl.name;
+    applyTemplate(tpl);
+    showSheet.value = false;
+    search.value = '';
+}
+
+watch(customName, (val) => {
+    if (selection.value.kind === 'custom') {
+        form.type = val.slice(0, 20) || 'other';
+    }
+});
+
+// ── Smart date from template ───────────────────────────────────
+function applyTemplate(tpl) {
+    const [h, m] = tpl.time.split(':').map(Number);
+    const now = new Date();
+    const targetToday = new Date(now);
+    targetToday.setHours(h, m, 0, 0);
+
+    let daysUntil = tpl.day_of_week - now.getDay();
+
+    if (daysUntil < 0) {
+        daysUntil += 7;
+    } else if (daysUntil === 0 && now >= targetToday) {
+        daysUntil = 7; // time already passed today → next week
+    }
+
+    const next = new Date(now);
+    next.setDate(next.getDate() + daysUntil);
+
+    form.date = next.toISOString().slice(0, 10);
+    form.time = tpl.time.slice(0, 5);
+}
+
+// ── Submit ──────────────────────────────────────────────────────
 function submit() {
     if (isEdit) {
         form.put('/services/' + props.service.id);
@@ -39,24 +125,34 @@ function submit() {
             </h1>
 
             <form @submit.prevent="submit" class="space-y-4">
-                <!-- Type -->
+
+                <!-- Type selector trigger -->
                 <div class="space-y-1.5">
                     <label class="block text-xs font-medium text-slate-600">{{ t('services.form.type') }}</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button
-                            v-for="type in SERVICE_TYPES"
-                            :key="type"
-                            type="button"
-                            @click="form.type = type"
-                            :class="[
-                                'py-2 px-3 text-xs font-medium rounded-lg border transition-colors',
-                                form.type === type
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                    : 'bg-white text-slate-700 border-slate-300 hover:border-indigo-300',
-                            ]"
-                        >
-                            {{ t('services.types.' + type) }}
-                        </button>
+                    <button
+                        type="button"
+                        @click="showSheet = true"
+                        class="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white text-left focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <span :class="selection.kind === 'other' ? 'text-slate-400' : 'text-slate-900 font-medium'">
+                            {{ selectionLabel }}
+                        </span>
+                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                    </button>
+
+                    <!-- Custom name input (only when Personalizado) -->
+                    <div v-if="selection.kind === 'custom'" class="mt-1">
+                        <input
+                            v-model="customName"
+                            type="text"
+                            maxlength="20"
+                            autofocus
+                            :placeholder="t('services.custom_name_placeholder')"
+                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <p class="text-xs text-slate-400 text-right mt-0.5">{{ customName.length }}/20</p>
                     </div>
                 </div>
 
@@ -112,5 +208,93 @@ function submit() {
                 </div>
             </form>
         </div>
+
+        <!-- Type selector bottom sheet -->
+        <Teleport to="body">
+            <div v-if="showSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
+                <div class="absolute inset-0 bg-black/40" @click="showSheet = false; search = ''" />
+
+                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[75vh] flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="font-semibold text-slate-900">{{ t('services.form.type') }}</h2>
+                        <button @click="showSheet = false; search = ''" class="text-slate-400 text-lg leading-none">✕</button>
+                    </div>
+
+                    <!-- Search -->
+                    <input
+                        v-model="search"
+                        type="search"
+                        :placeholder="t('services.type_search')"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
+                    />
+
+                    <!-- List -->
+                    <div class="overflow-y-auto flex-1 space-y-1 pb-2">
+
+                        <!-- Otro (always first, pre-selected) -->
+                        <button
+                            v-if="!search"
+                            type="button"
+                            @click="selectOther"
+                            :class="[
+                                'w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors',
+                                selection.kind === 'other'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700',
+                            ]"
+                        >
+                            {{ t('services.type_other') }}
+                        </button>
+
+                        <!-- Personalizado (always second, shows text input inline) -->
+                        <button
+                            v-if="!search"
+                            type="button"
+                            @click="selectCustom"
+                            :class="[
+                                'w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors',
+                                selection.kind === 'custom'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700',
+                            ]"
+                        >
+                            {{ t('services.type_custom') }}
+                            <span class="text-xs opacity-60 ml-1">{{ t('services.custom_name_hint') }}</span>
+                        </button>
+
+                        <!-- Divider -->
+                        <div v-if="!search && templates.length" class="px-1 py-1">
+                            <div class="h-px bg-slate-200" />
+                        </div>
+
+                        <!-- Templates -->
+                        <button
+                            v-for="tpl in filteredTemplates"
+                            :key="tpl.id"
+                            type="button"
+                            @click="selectTemplate(tpl)"
+                            :class="[
+                                'w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors',
+                                selection.kind === 'template' && selection.template.id === tpl.id
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-50 hover:bg-slate-100 text-slate-900',
+                            ]"
+                        >
+                            {{ tpl.name }}
+                            <span
+                                v-if="selection.kind !== 'template' || selection.template.id !== tpl.id"
+                                class="text-xs text-slate-400 ml-2"
+                            >
+                                {{ tpl.time.slice(0, 5) }}
+                            </span>
+                        </button>
+
+                        <p v-if="search && !filteredTemplates.length" class="text-sm text-slate-400 text-center py-4">
+                            {{ t('services.no_type_results') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </AppLayout>
 </template>
