@@ -34,9 +34,10 @@ class SongController extends Controller
         $this->requireWrite();
 
         $normalized = $normalizer->execute($request->name);
+        $artist     = trim($request->artist ?? '');
 
         $song = Song::firstOrCreate(
-            ['band_id' => $this->bandId(), 'normalized_name' => $normalized],
+            ['band_id' => $this->bandId(), 'normalized_name' => $normalized, 'artist' => $artist],
             ['name' => $request->name]
         );
 

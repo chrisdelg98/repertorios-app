@@ -16,8 +16,6 @@ const props = defineProps({
 const showAddSheet = ref(false);
 const search = ref('');
 const selectedVersionId = ref(null);
-const newVersionName = ref('Original');
-
 const filtered = computed(() => {
     if (!search.value.trim()) return props.song_versions.slice(0, 8);
     const q = search.value.toLowerCase();
@@ -31,24 +29,42 @@ const isNewSong = computed(() =>
     !props.song_versions.some(sv => sv.song_name.toLowerCase() === search.value.toLowerCase())
 );
 
-const addForm = useForm({ song_version_id: null, song_name: '', version_name: 'Original', notes: '' });
+const addForm = useForm({
+    song_version_id: null,
+    song_name: '',
+    artist: '',
+    version_name: 'Original',
+    key: '',
+    bpm: '',
+    youtube_url: '',
+    notes: '',
+});
+const showSongDetails = ref(false);
 
 function selectExisting(sv) {
     selectedVersionId.value = sv.id;
     search.value = sv.display;
 }
 
+function closeAddSheet() {
+    showAddSheet.value = false;
+    search.value = '';
+    selectedVersionId.value = null;
+    showSongDetails.value = false;
+    addForm.reset();
+}
+
 function submitAdd() {
     if (selectedVersionId.value) {
         addForm.song_version_id = selectedVersionId.value;
         addForm.song_name = '';
+        addForm.artist = '';
     } else {
         addForm.song_version_id = null;
         addForm.song_name = search.value.trim();
-        addForm.version_name = newVersionName.value;
     }
     addForm.post('/services/' + props.service.id + '/songs', {
-        onSuccess: () => { showAddSheet.value = false; search.value = ''; selectedVersionId.value = null; addForm.reset(); },
+        onSuccess: () => closeAddSheet(),
     });
 }
 
@@ -250,8 +266,7 @@ function scheduleReorder() {
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-slate-900 truncate">{{ ss.song_version.song.name }}</p>
                         <p class="text-xs text-slate-400 mt-0.5">
-                            {{ ss.song_version.name }}
-                            <span v-if="ss.song_version.key"> · {{ ss.song_version.key }}</span>
+                            <span v-if="ss.song_version.song.artist" class="text-slate-500">{{ ss.song_version.song.artist }} · </span>{{ ss.song_version.name }}<span v-if="ss.song_version.key"> · {{ ss.song_version.key }}</span>
                         </p>
                     </div>
                     <button
@@ -280,11 +295,11 @@ function scheduleReorder() {
         <!-- Add Song Sheet -->
         <Teleport to="body">
             <div v-if="showAddSheet" class="fixed inset-0 z-50 flex flex-col justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="showAddSheet = false" />
-                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[80vh] flex flex-col">
+                <div class="absolute inset-0 bg-black/40" @click="closeAddSheet" />
+                <div class="relative bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.add_song') }}</h2>
-                        <button @click="showAddSheet = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                        <button @click="closeAddSheet" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
                     </div>
 
                     <!-- Search input -->
@@ -311,27 +326,91 @@ function scheduleReorder() {
                             ]"
                         >
                             <span class="font-medium">{{ sv.song_name }}</span>
-                            <span class="opacity-60 ml-1">· {{ sv.version_name }}</span>
+                            <span v-if="sv.artist" class="text-xs opacity-60 ml-1">— {{ sv.artist }}</span>
+                            <span class="opacity-50 ml-1">· {{ sv.version_name }}</span>
                             <span v-if="sv.key" class="opacity-50 ml-1 text-xs">{{ sv.key }}</span>
                         </button>
 
-                        <!-- New song option -->
-                        <div v-if="isNewSong" class="border border-dashed border-indigo-200 rounded-lg p-3 mt-2">
-                            <p class="text-xs text-indigo-600 font-medium mb-2">{{ t('services.new_song_hint') }}</p>
-                            <p class="text-sm font-medium text-slate-900 mb-2">"{{ search }}"</p>
-                            <div class="flex gap-2 flex-wrap">
-                                <button
-                                    v-for="v in ['Original', 'Live', 'Acoustic']"
-                                    :key="v"
-                                    type="button"
-                                    @click="newVersionName = v; selectedVersionId = null"
-                                    :class="[
-                                        'px-2.5 py-1 text-xs font-medium rounded-md border',
-                                        newVersionName === v && !selectedVersionId
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'border-slate-300 text-slate-600',
-                                    ]"
-                                >{{ v }}</button>
+                        <!-- New song panel -->
+                        <div v-if="isNewSong" class="border border-dashed border-indigo-200 rounded-xl p-3 mt-2 space-y-3">
+                            <p class="text-xs text-indigo-600 font-semibold">{{ t('services.new_song_hint') }}</p>
+
+                            <!-- Artist -->
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.artist') }}</label>
+                                <input
+                                    v-model="addForm.artist"
+                                    type="text"
+                                    :placeholder="t('songs.form.artist_placeholder')"
+                                    maxlength="50"
+                                    class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            <!-- Version preset -->
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1.5">{{ t('songs.form.version') }}</label>
+                                <div class="flex gap-1.5 flex-wrap">
+                                    <button
+                                        v-for="v in ['Original', 'Live', 'Acoustic']"
+                                        :key="v"
+                                        type="button"
+                                        @click="addForm.version_name = v; selectedVersionId = null"
+                                        :class="[
+                                            'px-2.5 py-1 text-xs font-medium rounded-md border transition-colors',
+                                            addForm.version_name === v && !selectedVersionId
+                                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                                : 'border-slate-300 text-slate-600',
+                                        ]"
+                                    >{{ v }}</button>
+                                </div>
+                            </div>
+
+                            <!-- Toggle more details -->
+                            <button
+                                type="button"
+                                @click="showSongDetails = !showSongDetails"
+                                class="flex items-center gap-1 text-xs font-medium text-indigo-500"
+                            >
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="showSongDetails ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                                {{ showSongDetails ? t('songs.form.less_details') : t('songs.form.more_details') }}
+                            </button>
+
+                            <!-- Expandable metadata -->
+                            <div v-if="showSongDetails" class="space-y-2 pt-1">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.key') }}</label>
+                                        <input
+                                            v-model="addForm.key"
+                                            type="text"
+                                            placeholder="C, Am, Bb…"
+                                            maxlength="10"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.bpm') }}</label>
+                                        <input
+                                            v-model="addForm.bpm"
+                                            type="number"
+                                            min="20" max="300"
+                                            placeholder="120"
+                                            class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.youtube_url') }}</label>
+                                    <input
+                                        v-model="addForm.youtube_url"
+                                        type="url"
+                                        :placeholder="t('songs.form.youtube_url')"
+                                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

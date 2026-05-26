@@ -67,8 +67,7 @@ function formatDate(dateStr) {
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-slate-900 truncate">{{ song.name }}</p>
                             <p class="text-xs text-slate-400 mt-0.5">
-                                {{ song.version }}
-                                <span v-if="song.key"> · {{ song.key }}</span>
+                                <span v-if="song.artist" class="text-slate-500">{{ song.artist }} · </span>{{ song.version }}<span v-if="song.key"> · {{ song.key }}</span>
                             </p>
                         </div>
                     </div>

@@ -51,6 +51,7 @@ class ShareController extends Controller
                 'notes' => $service->notes,
                 'songs' => $service->serviceSongs->map(fn ($ss) => [
                     'name'    => $ss->songVersion->song->name,
+                    'artist'  => $ss->songVersion->song->artist ?? '',
                     'version' => $ss->songVersion->name,
                     'key'     => $ss->songVersion->key,
                 ])->values(),
@@ -67,9 +68,10 @@ class ShareController extends Controller
         $lines = [$type, $date . $time, ''];
 
         foreach ($service->serviceSongs->sortBy('position') as $i => $ss) {
-            $name = $ss->songVersion->song->name;
-            $key  = $ss->songVersion->key ? ' — ' . $ss->songVersion->key : '';
-            $lines[] = ($i + 1) . '. ' . $name . $key;
+            $name   = $ss->songVersion->song->name;
+            $artist = $ss->songVersion->song->artist ? ' (' . $ss->songVersion->song->artist . ')' : '';
+            $key    = $ss->songVersion->key ? ' — ' . $ss->songVersion->key : '';
+            $lines[] = ($i + 1) . '. ' . $name . $artist . $key;
         }
 
         $lines[] = '';

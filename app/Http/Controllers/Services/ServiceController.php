@@ -70,11 +70,14 @@ class ServiceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn (SongVersion $sv) => [
-                'id' => $sv->id,
-                'display' => $sv->song->name . ($sv->name !== 'Original' ? ' · ' . $sv->name : ''),
-                'song_name' => $sv->song->name,
+                'id'           => $sv->id,
+                'display'      => $sv->song->name
+                                  . ($sv->song->artist ? ' — ' . $sv->song->artist : '')
+                                  . ($sv->name !== 'Original' ? ' · ' . $sv->name : ''),
+                'song_name'    => $sv->song->name,
+                'artist'       => $sv->song->artist ?? '',
                 'version_name' => $sv->name,
-                'key' => $sv->key,
+                'key'          => $sv->key,
             ]);
 
         return Inertia::render('Services/Show', [

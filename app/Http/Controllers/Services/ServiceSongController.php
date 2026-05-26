@@ -25,15 +25,28 @@ class ServiceSongController extends Controller
         if ($request->filled('song_version_id')) {
             $versionId = (int) $request->song_version_id;
         } else {
+            $artist     = trim($request->artist ?? '');
             $normalized = app(NormalizeSongName::class)->execute($request->song_name);
+
             $song = Song::firstOrCreate(
-                ['band_id' => $this->bandId(), 'normalized_name' => $normalized],
+                ['band_id' => $this->bandId(), 'normalized_name' => $normalized, 'artist' => $artist],
                 ['name' => $request->song_name]
             );
-            $version = SongVersion::firstOrCreate(
-                ['song_id' => $song->id, 'name' => $request->version_name ?? 'Original'],
-                ['band_id' => $this->bandId()]
-            );
+
+            $versionName = $request->version_name ?? 'Original';
+            $version     = SongVersion::where('song_id', $song->id)->where('name', $versionName)->first();
+
+            if (!$version) {
+                $version = $song->versions()->create([
+                    'band_id'     => $this->bandId(),
+                    'name'        => $versionName,
+                    'key'         => $request->key,
+                    'bpm'         => $request->bpm,
+                    'youtube_url' => $request->youtube_url,
+                    'notes'       => $request->notes,
+                ]);
+            }
+
             $versionId = $version->id;
         }
 

@@ -15,6 +15,7 @@ const showAddForm = ref(false);
 
 const form = useForm({
     name: '',
+    artist: '',
     version_name: 'Original',
     key: '',
     bpm: '',
@@ -70,6 +71,17 @@ function deleteSong(id) {
                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <p v-if="form.errors.name" class="text-xs text-red-600">{{ form.errors.name }}</p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
+                    <input
+                        v-model="form.artist"
+                        type="text"
+                        :placeholder="t('songs.form.artist_placeholder')"
+                        maxlength="50"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
                 </div>
 
                 <div class="space-y-1.5">
@@ -161,6 +173,7 @@ function deleteSong(id) {
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <p class="font-medium text-slate-900 text-sm">{{ song.name }}</p>
+                            <p v-if="song.artist" class="text-xs text-slate-400 mt-0.5">{{ song.artist }}</p>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
                                 <span
                                     v-for="v in song.versions"

@@ -5,12 +5,16 @@
   "empty": "No songs yet. Start building your library!",
   "form": {
     "name": "Song Name",
+    "artist": "Artist",
+    "artist_placeholder": "e.g. Marcos Witt",
     "version": "Version",
     "version_hint": "e.g. Original, Live, Acoustic",
     "key": "Key",
     "bpm": "BPM",
     "notes": "Notes",
     "youtube_url": "YouTube URL",
+    "more_details": "Add details (key, BPM…)",
+    "less_details": "Less details",
     "save": "Save Song",
     "saving": "Saving…",
     "cancel": "Cancel"

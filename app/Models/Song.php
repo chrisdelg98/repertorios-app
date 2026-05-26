@@ -11,7 +11,7 @@ class Song extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['band_id', 'name', 'normalized_name'];
+    protected $fillable = ['band_id', 'name', 'normalized_name', 'artist'];
 
     public function band(): BelongsTo
     {
