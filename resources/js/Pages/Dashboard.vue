@@ -66,7 +66,7 @@ function typeLabel(type) {
     <Head :title="t('nav.home')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-6 lg:py-10 space-y-5 lg:space-y-6 lg:max-w-5xl lg:mx-auto">
+        <div class="px-4 lg:px-8 py-6 lg:py-10 space-y-5 lg:space-y-6 lg:max-w-3xl lg:mx-auto">
 
             <!-- Greeting -->
             <div>

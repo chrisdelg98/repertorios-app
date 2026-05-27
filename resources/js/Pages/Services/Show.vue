@@ -194,7 +194,7 @@ function scheduleReorder() {
     <Head :title="typeLabel(service.type)" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-3xl mx-auto">
             <!-- Service header card -->
             <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white mb-4 shadow-md shadow-indigo-200">
                 <p class="text-xs font-medium text-indigo-200 uppercase tracking-wide">

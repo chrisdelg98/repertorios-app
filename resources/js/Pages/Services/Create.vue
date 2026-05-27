@@ -119,7 +119,7 @@ function submit() {
     <Head :title="isEdit ? t('services.edit') : t('services.create')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-3xl mx-auto">
             <h1 class="text-lg font-semibold text-slate-900 mb-5">
                 {{ isEdit ? t('services.edit') : t('services.create') }}
             </h1>

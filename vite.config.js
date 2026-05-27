@@ -54,7 +54,11 @@ export default defineConfig({
                 ],
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+                clientsClaim: true,
+                skipWaiting: true,
+                cleanupOutdatedCaches: true,
+                navigateFallback: null,
+                globPatterns: ['**/*.{js,css,ico,png,svg}'],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.bunny\.net\/.*/i,

@@ -87,7 +87,7 @@ function submitDuplicate() {
     <Head :title="t('services.title')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-6xl lg:mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 lg:mb-6">
                 <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('services.title') }}</h1>

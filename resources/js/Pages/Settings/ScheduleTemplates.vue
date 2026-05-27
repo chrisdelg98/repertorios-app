@@ -56,10 +56,27 @@ function submitEdit() {
 }
 
 // ── Delete ─────────────────────────────────────────────────────
-function deleteTemplate(tpl) {
-    if (confirm(t('settings.templates.delete_confirm'))) {
-        router.delete('/settings/schedule-templates/' + tpl.id);
-    }
+const confirmDeleteId = ref(null);
+const deleting = ref(false);
+
+function askDelete(tpl) {
+    confirmDeleteId.value = tpl.id;
+}
+
+function cancelDelete() {
+    confirmDeleteId.value = null;
+}
+
+function confirmDelete() {
+    if (!confirmDeleteId.value) return;
+    deleting.value = true;
+    router.delete('/settings/schedule-templates/' + confirmDeleteId.value, {
+        preserveScroll: true,
+        onFinish: () => {
+            deleting.value = false;
+            confirmDeleteId.value = null;
+        },
+    });
 }
 </script>
 
@@ -108,17 +125,17 @@ function deleteTemplate(tpl) {
                     <div class="flex items-center gap-1 shrink-0">
                         <button
                             @click="openEdit(tpl)"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                         >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                             </svg>
                         </button>
                         <button
-                            @click="deleteTemplate(tpl)"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            @click="askDelete(tpl)"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"
                         >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
@@ -126,6 +143,69 @@ function deleteTemplate(tpl) {
                 </div>
             </div>
         </div>
+
+        <!-- Delete confirmation bottom sheet -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="confirmDeleteId"
+                    class="fixed inset-0 z-40 bg-black/40"
+                    @click="cancelDelete"
+                />
+            </Transition>
+
+            <Transition
+                enter-active-class="transition duration-250 ease-out"
+                enter-from-class="translate-y-full"
+                enter-to-class="translate-y-0"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="translate-y-0"
+                leave-to-class="translate-y-full"
+            >
+                <div
+                    v-if="confirmDeleteId"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-3 pb-8 shadow-xl"
+                >
+                    <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
+
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base font-semibold text-slate-900">{{ t('settings.templates.delete_title') }}</h2>
+                    </div>
+
+                    <p class="text-sm text-slate-500 mb-4">{{ t('settings.templates.delete_confirm') }}</p>
+
+                    <div class="flex gap-2">
+                        <button
+                            type="button"
+                            @click="cancelDelete"
+                            class="flex-1 py-2.5 text-sm font-medium text-slate-600 rounded-xl border border-slate-300"
+                        >
+                            {{ t('settings.templates.cancel') }}
+                        </button>
+                        <button
+                            type="button"
+                            @click="confirmDelete"
+                            :disabled="deleting"
+                            class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                        >
+                            {{ deleting ? t('settings.templates.deleting') : t('settings.templates.delete') }}
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
 
         <!-- Add sheet -->
         <Teleport to="body">

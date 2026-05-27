@@ -1,12 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { useI18n } from 'vue-i18n';
-import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
-const { t } = useI18n();
 const tab = ref('admin');
-
 const adminForm = useForm({ email: '', password: '' });
 const memberForm = useForm({ code: '', pin: '' });
 
@@ -20,140 +16,94 @@ function joinBand() {
 </script>
 
 <template>
-    <Head :title="t('auth.login.title')" />
+    <Head title="Sign In" />
 
-    <main class="min-h-screen flex items-start justify-center bg-slate-50 px-4 pt-12 pb-8">
-        <div class="w-full max-w-sm space-y-6">
-            <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🎶</span>
-                    <span class="font-semibold text-slate-900">{{ t('app.name') }}</span>
-                </div>
-                <LanguageSwitcher />
+    <div style="min-height: 100vh; background: #f8fafc; padding: 40px 16px; font-family: sans-serif;">
+        <div style="max-width: 400px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+            <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 4px; color: #0f172a;">Sign In</h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0 0 20px;">Repertorios</p>
+
+            <div style="display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px;">
+                <button
+                    type="button"
+                    @click="tab = 'admin'"
+                    :style="{ flex: 1, padding: '12px 0', fontSize: '14px', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', color: tab === 'admin' ? '#4f46e5' : '#64748b', borderBottom: tab === 'admin' ? '2px solid #4f46e5' : '2px solid transparent' }"
+                >Admin</button>
+                <button
+                    type="button"
+                    @click="tab = 'member'"
+                    :style="{ flex: 1, padding: '12px 0', fontSize: '14px', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', color: tab === 'member' ? '#4f46e5' : '#64748b', borderBottom: tab === 'member' ? '2px solid #4f46e5' : '2px solid transparent' }"
+                >Member</button>
             </div>
 
-            <!-- Card -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- Tabs -->
-                <div class="flex border-b border-slate-200">
-                    <button
-                        @click="tab = 'admin'"
-                        :class="[
-                            'flex-1 py-3.5 text-sm font-semibold transition-colors',
-                            tab === 'admin'
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-slate-500 hover:text-slate-700',
-                        ]"
-                    >
-                        {{ t('auth.tabs.admin') }}
-                    </button>
-                    <button
-                        @click="tab = 'member'"
-                        :class="[
-                            'flex-1 py-3.5 text-sm font-semibold transition-colors',
-                            tab === 'member'
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-slate-500 hover:text-slate-700',
-                        ]"
-                    >
-                        {{ t('auth.tabs.member') }}
-                    </button>
+            <form v-if="tab === 'admin'" @submit.prevent="loginAdmin">
+                <div style="margin-bottom: 12px;">
+                    <label for="email" style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Email</label>
+                    <input
+                        id="email"
+                        v-model="adminForm.email"
+                        type="email"
+                        required
+                        autocomplete="email"
+                        style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box;"
+                    />
+                    <p v-if="adminForm.errors.email" style="color: #dc2626; font-size: 12px; margin: 4px 0 0;">{{ adminForm.errors.email }}</p>
                 </div>
+                <div style="margin-bottom: 16px;">
+                    <label for="password" style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Password</label>
+                    <input
+                        id="password"
+                        v-model="adminForm.password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box;"
+                    />
+                    <p v-if="adminForm.errors.password" style="color: #dc2626; font-size: 12px; margin: 4px 0 0;">{{ adminForm.errors.password }}</p>
+                </div>
+                <button
+                    type="submit"
+                    :disabled="adminForm.processing"
+                    style="width: 100%; padding: 10px; background: #4f46e5; color: white; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;"
+                >
+                    {{ adminForm.processing ? 'Signing in…' : 'Sign In' }}
+                </button>
+            </form>
 
-                <!-- Admin form -->
-                <form v-if="tab === 'admin'" @submit.prevent="loginAdmin" class="p-5 space-y-4">
-                    <div class="space-y-1.5">
-                        <label for="email" class="block text-xs font-medium text-slate-600">
-                            {{ t('auth.fields.email') }}
-                        </label>
-                        <input
-                            id="email"
-                            v-model="adminForm.email"
-                            type="email"
-                            autocomplete="email"
-                            required
-                            :placeholder="t('auth.placeholders.email')"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
-                        <p v-if="adminForm.errors.email" class="text-xs text-red-600">{{ adminForm.errors.email }}</p>
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label for="password" class="block text-xs font-medium text-slate-600">
-                            {{ t('auth.fields.password') }}
-                        </label>
-                        <input
-                            id="password"
-                            v-model="adminForm.password"
-                            type="password"
-                            autocomplete="current-password"
-                            required
-                            :placeholder="t('auth.placeholders.password')"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
-                        <p v-if="adminForm.errors.password" class="text-xs text-red-600">{{ adminForm.errors.password }}</p>
-                    </div>
-
-                    <button
-                        type="submit"
-                        :disabled="adminForm.processing"
-                        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
-                    >
-                        {{ adminForm.processing ? t('auth.actions.logging_in') : t('auth.actions.login') }}
-                    </button>
-                </form>
-
-                <!-- Member form -->
-                <form v-else @submit.prevent="joinBand" class="p-5 space-y-4">
-                    <div class="space-y-1.5">
-                        <label for="code" class="block text-xs font-medium text-slate-600">
-                            {{ t('auth.fields.band_code') }}
-                        </label>
-                        <input
-                            id="code"
-                            v-model="memberForm.code"
-                            type="text"
-                            autocomplete="off"
-                            required
-                            maxlength="6"
-                            :placeholder="t('auth.placeholders.band_code')"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent uppercase tracking-widest font-mono"
-                            @input="memberForm.code = memberForm.code.toUpperCase()"
-                        />
-                        <p v-if="memberForm.errors.code" class="text-xs text-red-600">{{ memberForm.errors.code }}</p>
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label for="pin" class="block text-xs font-medium text-slate-600">
-                            {{ t('auth.fields.pin') }}
-                        </label>
-                        <input
-                            id="pin"
-                            v-model="memberForm.pin"
-                            type="password"
-                            inputmode="numeric"
-                            autocomplete="off"
-                            required
-                            minlength="4"
-                            maxlength="8"
-                            :placeholder="t('auth.placeholders.pin')"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent tracking-widest font-mono"
-                        />
-                        <p v-if="memberForm.errors.pin" class="text-xs text-red-600">{{ memberForm.errors.pin }}</p>
-                    </div>
-
-                    <button
-                        type="submit"
-                        :disabled="memberForm.processing"
-                        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
-                    >
-                        {{ memberForm.processing ? t('auth.actions.joining') : t('auth.actions.join') }}
-                    </button>
-                </form>
-            </div>
-
-            <p class="text-center text-xs text-slate-400">{{ t('app.tagline') }}</p>
+            <form v-else @submit.prevent="joinBand">
+                <div style="margin-bottom: 12px;">
+                    <label for="code" style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Band Code</label>
+                    <input
+                        id="code"
+                        v-model="memberForm.code"
+                        type="text"
+                        required
+                        maxlength="6"
+                        style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; text-transform: uppercase; box-sizing: border-box;"
+                    />
+                    <p v-if="memberForm.errors.code" style="color: #dc2626; font-size: 12px; margin: 4px 0 0;">{{ memberForm.errors.code }}</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label for="pin" style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">PIN</label>
+                    <input
+                        id="pin"
+                        v-model="memberForm.pin"
+                        type="password"
+                        required
+                        minlength="4"
+                        maxlength="8"
+                        style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box;"
+                    />
+                    <p v-if="memberForm.errors.pin" style="color: #dc2626; font-size: 12px; margin: 4px 0 0;">{{ memberForm.errors.pin }}</p>
+                </div>
+                <button
+                    type="submit"
+                    :disabled="memberForm.processing"
+                    style="width: 100%; padding: 10px; background: #4f46e5; color: white; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;"
+                >
+                    {{ memberForm.processing ? 'Joining…' : 'Join Band' }}
+                </button>
+            </form>
         </div>
-    </main>
+    </div>
 </template>

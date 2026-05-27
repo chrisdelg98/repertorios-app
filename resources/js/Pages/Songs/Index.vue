@@ -87,10 +87,27 @@ function submitEdit() {
 }
 
 // ── Delete ────────────────────────────────────────────────────────────────────
-function deleteSong(id) {
-    if (confirm(t('songs.delete_confirm'))) {
-        router.delete('/songs/' + id);
-    }
+const confirmDeleteId = ref(null);
+const deleting = ref(false);
+
+function askDelete(id) {
+    confirmDeleteId.value = id;
+}
+
+function cancelDelete() {
+    confirmDeleteId.value = null;
+}
+
+function confirmDelete() {
+    if (!confirmDeleteId.value) return;
+    deleting.value = true;
+    router.delete('/songs/' + confirmDeleteId.value, {
+        preserveScroll: true,
+        onFinish: () => {
+            deleting.value = false;
+            confirmDeleteId.value = null;
+        },
+    });
 }
 </script>
 
@@ -98,7 +115,7 @@ function deleteSong(id) {
     <Head :title="t('songs.title')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-6xl lg:mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 lg:mb-6">
                 <h1 class="text-base lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('songs.library') }}</h1>
@@ -160,7 +177,7 @@ function deleteSong(id) {
                             </button>
                             <!-- Delete -->
                             <button
-                                @click="deleteSong(song.id)"
+                                @click="askDelete(song.id)"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"
                                 :aria-label="t('songs.delete')"
                             >
@@ -333,6 +350,69 @@ function deleteSong(id) {
                             class="flex-1 py-2.5 bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl"
                         >
                             {{ form.processing ? t('songs.form.saving') : t('songs.form.save') }}
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Delete confirmation bottom sheet -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="confirmDeleteId"
+                    class="fixed inset-0 z-40 bg-black/40"
+                    @click="cancelDelete"
+                />
+            </Transition>
+
+            <Transition
+                enter-active-class="transition duration-250 ease-out"
+                enter-from-class="translate-y-full"
+                enter-to-class="translate-y-0"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="translate-y-0"
+                leave-to-class="translate-y-full"
+            >
+                <div
+                    v-if="confirmDeleteId"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-3 pb-8 shadow-xl"
+                >
+                    <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
+
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base font-semibold text-slate-900">{{ t('songs.delete_title') }}</h2>
+                    </div>
+
+                    <p class="text-sm text-slate-500 mb-4">{{ t('songs.delete_confirm') }}</p>
+
+                    <div class="flex gap-2">
+                        <button
+                            type="button"
+                            @click="cancelDelete"
+                            class="flex-1 py-2.5 text-sm font-medium text-slate-600 rounded-xl border border-slate-300"
+                        >
+                            {{ t('songs.cancel') }}
+                        </button>
+                        <button
+                            type="button"
+                            @click="confirmDelete"
+                            :disabled="deleting"
+                            class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                        >
+                            {{ deleting ? t('songs.deleting') : t('songs.delete') }}
                         </button>
                     </div>
                 </div>
