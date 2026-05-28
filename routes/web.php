@@ -6,6 +6,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
 use App\Http\Controllers\Services\ShareController;
+use App\Http\Controllers\Settings\BandSettingsController;
+use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
+use App\Http\Controllers\Settings\MemberController;
+use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ScheduleTemplateController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
@@ -58,6 +62,21 @@ Route::middleware('band.access')->group(function () {
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
 
     // Settings — admin only
+    Route::get('/settings', SettingsIndexController::class)->name('settings');
+
+    Route::get('/settings/profile', [ProfileController::class, 'show'])->name('settings.profile');
+    Route::put('/settings/profile', [ProfileController::class, 'update'])->name('settings.profile.update');
+    Route::post('/settings/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('settings.profile.avatar');
+    Route::put('/settings/profile/password', [ProfileController::class, 'updatePassword'])->name('settings.profile.password');
+
+    Route::get('/settings/band', [BandSettingsController::class, 'show'])->name('settings.band');
+    Route::put('/settings/band', [BandSettingsController::class, 'update'])->name('settings.band.update');
+    Route::post('/settings/band/logo', [BandSettingsController::class, 'updateLogo'])->name('settings.band.logo');
+    Route::put('/settings/band/pins', [BandSettingsController::class, 'updatePins'])->name('settings.band.pins');
+
+    Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
+    Route::delete('/settings/members/{user}', [MemberController::class, 'destroy'])->name('settings.members.destroy');
+
     Route::get('/settings/schedule-templates', [ScheduleTemplateController::class, 'index'])->name('settings.templates');
     Route::post('/settings/schedule-templates', [ScheduleTemplateController::class, 'store'])->name('settings.templates.store');
     Route::put('/settings/schedule-templates/{scheduleTemplate}', [ScheduleTemplateController::class, 'update'])->name('settings.templates.update');

@@ -45,7 +45,7 @@ const navItems = computed(() => {
         { href: '/songs',     label: t('nav.songs'),    icon: 'music' },
     ];
     if (auth.value.access === 'admin') {
-        base.push({ href: '/settings/schedule-templates', label: t('nav.settings'), icon: 'settings' });
+        base.push({ href: '/settings', label: t('nav.settings'), icon: 'settings' });
     }
     return base;
 });
@@ -111,8 +111,9 @@ const navItems = computed(() => {
             <!-- Profile / Logout (bottom) -->
             <div class="px-3 py-3 border-t border-slate-100">
                 <div class="flex items-center gap-3 px-3 py-2 mb-1">
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
-                        {{ userInitial }}
+                    <div class="w-9 h-9 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
+                        <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="w-full h-full object-cover" />
+                        <span v-else>{{ userInitial }}</span>
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-sm font-medium text-slate-900 truncate">{{ auth.user?.name || auth.band?.name }}</p>
@@ -152,10 +153,11 @@ const navItems = computed(() => {
                 <div class="relative" data-profile-menu>
                     <button
                         @click="toggleMenu"
-                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                        class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors"
                         :aria-label="t('nav.logout')"
                     >
-                        {{ userInitial }}
+                        <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="w-full h-full object-cover" />
+                        <span v-else>{{ userInitial }}</span>
                     </button>
 
                     <Transition
@@ -253,7 +255,7 @@ const navItems = computed(() => {
                 <!-- Settings (admin only) -->
                 <Link
                     v-if="auth.access === 'admin'"
-                    href="/settings/schedule-templates"
+                    href="/settings"
                     class="flex flex-col items-center gap-0.5 py-2.5"
                     :class="isActive('/settings') ? 'text-indigo-600' : 'text-slate-400'"
                 >

@@ -41,10 +41,19 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => fn () => $user ? $user->only(['id', 'name', 'email', 'band_id']) : null,
+                'user' => fn () => $user ? array_merge(
+                    $user->only(['id', 'name', 'email', 'band_id']),
+                    ['avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null]
+                ) : null,
                 'band' => function () use ($user, $request) {
                     $bandId = $user?->band_id ?? $request->session()->get('band_id');
-                    return $bandId ? Band::find($bandId, ['id', 'name', 'code']) : null;
+                    if (!$bandId) return null;
+                    $band = Band::find($bandId, ['id', 'name', 'code', 'logo']);
+                    if (!$band) return null;
+                    return array_merge(
+                        $band->only(['id', 'name', 'code']),
+                        ['logo_url' => $band->logo ? asset('storage/' . $band->logo) : null]
+                    );
                 },
                 'access' => fn () => $user
                     ? 'admin'

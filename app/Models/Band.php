@@ -11,7 +11,7 @@ class Band extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'access_pin', 'edit_pin'];
+    protected $fillable = ['name', 'logo', 'code', 'access_pin', 'edit_pin'];
 
     protected $hidden = ['access_pin', 'edit_pin'];
 
