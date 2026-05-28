@@ -1,8 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import MultiSelect from '@/Components/MultiSelect.vue';
+import Autocomplete from '@/Components/Autocomplete.vue';
 
 const { t } = useI18n();
 
@@ -10,6 +12,78 @@ const props = defineProps({
     songs: Array,
     can_write: Boolean,
 });
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+const search           = ref('');
+const selectedArtists  = ref([]);
+const selectedVersions = ref([]);
+const selectedKeys     = ref([]);
+
+const availableArtists = computed(() => {
+    // Distinct + normalized: trim whitespace and collapse case-insensitive duplicates.
+    // First-seen capitalization wins for display.
+    const map = new Map();
+    props.songs.forEach(s => {
+        const trimmed = (s.artist ?? '').trim();
+        if (!trimmed) return;
+        const key = trimmed.toLowerCase();
+        if (!map.has(key)) map.set(key, trimmed);
+    });
+    return [...map.values()].sort((a, b) => a.localeCompare(b));
+});
+
+const availableVersions = computed(() => {
+    const set = new Set();
+    props.songs.forEach(s => s.versions?.forEach(v => v.name && set.add(v.name)));
+    return [...set].sort();
+});
+
+const availableKeys = computed(() => {
+    const set = new Set();
+    props.songs.forEach(s => s.versions?.forEach(v => v.key && set.add(v.key)));
+    return [...set].sort();
+});
+
+const selectedArtistKeys = computed(() =>
+    new Set(selectedArtists.value.map(a => a.trim().toLowerCase()))
+);
+
+const filteredSongs = computed(() => {
+    const q = search.value.trim().toLowerCase();
+    return props.songs.filter(song => {
+        if (q) {
+            const hay = `${song.name} ${song.artist ?? ''}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+        }
+        if (selectedArtistKeys.value.size) {
+            const artistKey = (song.artist ?? '').trim().toLowerCase();
+            if (!artistKey || !selectedArtistKeys.value.has(artistKey)) return false;
+        }
+        if (selectedVersions.value.length) {
+            const has = song.versions?.some(v => selectedVersions.value.includes(v.name));
+            if (!has) return false;
+        }
+        if (selectedKeys.value.length) {
+            const has = song.versions?.some(v => selectedKeys.value.includes(v.key));
+            if (!has) return false;
+        }
+        return true;
+    });
+});
+
+const hasActiveFilters = computed(() =>
+    !!(search.value
+        || selectedArtists.value.length
+        || selectedVersions.value.length
+        || selectedKeys.value.length)
+);
+
+function clearFilters() {
+    search.value           = '';
+    selectedArtists.value  = [];
+    selectedVersions.value = [];
+    selectedKeys.value     = [];
+}
 
 // ── Add sheet ─────────────────────────────────────────────────────────────────
 const showAddForm = ref(false);
@@ -27,6 +101,8 @@ const form = useForm({
 const PRESET_VERSIONS = ['Original', 'Live', 'Acoustic'];
 
 function submit() {
+    form.name   = form.name.trim();
+    form.artist = form.artist.trim();
     form.post('/songs', {
         onSuccess: () => {
             showAddForm.value = false;
@@ -81,6 +157,8 @@ function toggleVersion(id) {
 }
 
 function submitEdit() {
+    editForm.name   = editForm.name.trim();
+    editForm.artist = editForm.artist.trim();
     editForm.put('/songs/' + editingSong.value.id, {
         onSuccess: closeEdit,
     });
@@ -131,7 +209,71 @@ function confirmDelete() {
                 </button>
             </div>
 
-            <!-- Empty state -->
+            <!-- Filters -->
+            <div v-if="songs.length" class="mb-3 lg:mb-4 space-y-2">
+                <!-- Search -->
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
+                    </svg>
+                    <input
+                        v-model="search"
+                        type="text"
+                        :placeholder="t('songs.search_placeholder')"
+                        class="w-full pl-9 pr-9 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <button
+                        v-if="search"
+                        @click="search = ''"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
+                        :aria-label="t('songs.filter_clear')"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Filter dropdowns -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <MultiSelect
+                        v-if="availableArtists.length"
+                        v-model="selectedArtists"
+                        :label="t('songs.filter_artists')"
+                        :options="availableArtists"
+                        :clear-label="t('songs.filter_clear')"
+                        :search-placeholder="t('songs.filter_search_artist')"
+                        :no-results-label="t('songs.filter_no_results_short')"
+                        searchable
+                    />
+                    <MultiSelect
+                        v-if="availableVersions.length"
+                        v-model="selectedVersions"
+                        :label="t('songs.filter_versions')"
+                        :options="availableVersions"
+                        :clear-label="t('songs.filter_clear')"
+                    />
+                    <MultiSelect
+                        v-if="availableKeys.length"
+                        v-model="selectedKeys"
+                        :label="t('songs.filter_keys')"
+                        :options="availableKeys"
+                        :clear-label="t('songs.filter_clear')"
+                        bold
+                    />
+                </div>
+
+                <!-- Results summary -->
+                <div v-if="hasActiveFilters" class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                    <span>{{ t('songs.filter_results', { shown: filteredSongs.length, total: songs.length }) }}</span>
+                    <button
+                        @click="clearFilters"
+                        class="text-indigo-600 font-semibold hover:text-indigo-700"
+                    >{{ t('songs.filter_clear') }}</button>
+                </div>
+            </div>
+
+            <!-- Empty state: no songs at all -->
             <div v-if="!songs.length" class="text-center py-16 text-slate-400">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
@@ -139,33 +281,34 @@ function confirmDelete() {
                 <p class="text-sm">{{ t('songs.empty') }}</p>
             </div>
 
+            <!-- Empty state: no matches -->
+            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-400">
+                <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
+                </svg>
+                <p class="text-sm">{{ t('songs.filter_no_results') }}</p>
+                <button
+                    @click="clearFilters"
+                    class="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                >{{ t('songs.filter_clear') }}</button>
+            </div>
+
             <!-- Songs list -->
             <div v-else class="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3">
                 <div
-                    v-for="song in songs"
+                    v-for="song in filteredSongs"
                     :key="song.id"
-                    class="bg-white rounded-xl border border-slate-200 px-4 py-3.5"
+                    class="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition flex flex-col"
                 >
-                    <div class="flex items-start gap-3">
-                        <!-- Song info -->
+                    <!-- Header: title + artist (uses full width on lg+) -->
+                    <div class="px-4 pt-3.5 pb-2 lg:pt-4 lg:pb-3 flex items-start gap-3">
                         <div class="flex-1 min-w-0">
-                            <p class="font-semibold text-slate-900 text-sm leading-tight">{{ song.name }}</p>
-                            <p v-if="song.artist" class="text-xs text-slate-500 mt-0.5">{{ song.artist }}</p>
-                            <div class="flex flex-wrap gap-1.5 mt-2">
-                                <span
-                                    v-for="v in song.versions"
-                                    :key="v.id"
-                                    class="inline-flex items-center gap-1 text-xs text-slate-600 bg-slate-100 rounded-md px-2 py-0.5 font-medium"
-                                >
-                                    {{ v.name }}
-                                    <span v-if="v.key" class="text-indigo-500">· {{ v.key }}</span>
-                                </span>
-                            </div>
+                            <p class="font-semibold text-slate-900 text-sm leading-snug line-clamp-2">{{ song.name }}</p>
+                            <p v-if="song.artist" class="text-xs text-slate-500 mt-0.5 truncate">{{ song.artist }}</p>
                         </div>
 
-                        <!-- Actions -->
-                        <div v-if="can_write" class="flex items-center gap-1 shrink-0 mt-0.5">
-                            <!-- Edit -->
+                        <!-- Mobile actions stay inline -->
+                        <div v-if="can_write" class="lg:hidden flex items-center gap-1 shrink-0">
                             <button
                                 @click="openEdit(song)"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
@@ -175,7 +318,6 @@ function confirmDelete() {
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                                 </svg>
                             </button>
-                            <!-- Delete -->
                             <button
                                 @click="askDelete(song.id)"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"
@@ -186,6 +328,40 @@ function confirmDelete() {
                                 </svg>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Versions row -->
+                    <div v-if="song.versions?.length" class="px-4 pb-3 lg:pb-3 flex flex-wrap gap-1.5">
+                        <span
+                            v-for="v in song.versions"
+                            :key="v.id"
+                            class="inline-flex items-center gap-1 text-[11px] text-slate-600 bg-slate-100 rounded-md px-2 py-0.5 font-medium"
+                        >
+                            {{ v.name }}
+                            <span v-if="v.key" class="text-indigo-700 font-bold">· {{ v.key }}</span>
+                        </span>
+                    </div>
+
+                    <!-- Desktop footer: divider + actions aligned right -->
+                    <div v-if="can_write" class="hidden lg:flex items-center justify-end gap-1 mt-auto px-4 py-2.5 border-t border-slate-100">
+                        <button
+                            @click="openEdit(song)"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                            :aria-label="t('songs.edit')"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                            </svg>
+                        </button>
+                        <button
+                            @click="askDelete(song.id)"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"
+                            :aria-label="t('songs.delete')"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -245,12 +421,11 @@ function confirmDelete() {
 
                             <div class="space-y-1.5">
                                 <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
-                                <input
+                                <Autocomplete
                                     v-model="form.artist"
-                                    type="text"
+                                    :suggestions="availableArtists"
                                     :placeholder="t('songs.form.artist_placeholder')"
-                                    maxlength="50"
-                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    :max-length="50"
                                 />
                             </div>
                         </div>
@@ -472,12 +647,11 @@ function confirmDelete() {
 
                             <div class="space-y-1.5">
                                 <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.artist') }}</label>
-                                <input
+                                <Autocomplete
                                     v-model="editForm.artist"
-                                    type="text"
+                                    :suggestions="availableArtists"
                                     :placeholder="t('songs.form.artist_placeholder')"
-                                    maxlength="50"
-                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    :max-length="50"
                                 />
                             </div>
                         </div>

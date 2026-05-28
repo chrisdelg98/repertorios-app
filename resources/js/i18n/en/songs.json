@@ -29,5 +29,14 @@
   "delete_confirm": "This song and all its versions will be deleted. This action cannot be undone.",
   "deleting": "Deleting…",
   "cancel": "Cancel",
-  "duplicate_warning": "This version already exists for this song."
+  "duplicate_warning": "This version already exists for this song.",
+  "search_placeholder": "Search by name or artist…",
+  "filter_artists": "Artists",
+  "filter_versions": "Versions",
+  "filter_keys": "Keys",
+  "filter_clear": "Clear filters",
+  "filter_results": "Showing {shown} of {total}",
+  "filter_no_results": "No songs match your filters.",
+  "filter_no_results_short": "No matches",
+  "filter_search_artist": "Search artist…"
 }
