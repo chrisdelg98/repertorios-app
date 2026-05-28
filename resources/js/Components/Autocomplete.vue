@@ -22,7 +22,7 @@ const localValue = computed({
 
 const filteredSuggestions = computed(() => {
     const q = (localValue.value ?? '').trim().toLowerCase();
-    if (!q) return props.suggestions.slice(0, props.maxResults);
+    if (q.length < 1) return [];
     return props.suggestions
         .filter(s => {
             const lower = s.toLowerCase();
