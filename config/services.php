@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'paypal' => [
+        'donate_url' => env('PAYPAL_DONATE_URL'),
+    ],
+
 ];

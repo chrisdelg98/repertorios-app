@@ -94,6 +94,10 @@
     "expired_title": "Enlace expirado",
     "expired_body": "Este enlace ya no es válido."
   },
+  "donate": {
+    "tile_title": "Apoya el proyecto",
+    "tile_subtitle": "Ayuda a mantener Repertorios gratis y creciendo"
+  },
   "install": {
     "banner_title": "Agregar a la pantalla de inicio",
     "banner_subtitle": "Disfruta la experiencia completa de la app",

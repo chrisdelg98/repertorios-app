@@ -94,6 +94,10 @@
     "expired_title": "Link expired",
     "expired_body": "This link is no longer valid."
   },
+  "donate": {
+    "tile_title": "Support the project",
+    "tile_subtitle": "Help keep Repertorios free and growing"
+  },
   "install": {
     "banner_title": "Add to Home Screen",
     "banner_subtitle": "Get the full app experience",

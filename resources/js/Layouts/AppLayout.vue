@@ -4,6 +4,13 @@ import { usePage, router, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
+const donateUrl = computed(() => page.props.donate?.url || null);
+
+function openDonate() {
+    if (!donateUrl.value) return;
+    window.open(donateUrl.value, '_blank', 'noopener,noreferrer');
+}
+
 const { t } = useI18n();
 const page = usePage();
 const auth = computed(() => page.props.auth);
@@ -108,27 +115,43 @@ const navItems = computed(() => {
                 </Link>
             </nav>
 
+            <!-- Support project (donate) -->
+            <div v-if="donateUrl" class="px-3 pb-2">
+                <button
+                    @click="openDonate"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    {{ t('donate.tile_title') }}
+                </button>
+            </div>
+
             <!-- Profile / Logout (bottom) -->
             <div class="px-3 py-3 border-t border-slate-100">
-                <div class="flex items-center gap-3 px-3 py-2 mb-1">
-                    <div class="w-9 h-9 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
+                <div class="flex items-center gap-3 px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm">
                         <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="w-full h-full object-cover" />
                         <span v-else>{{ userInitial }}</span>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium text-slate-900 truncate">{{ auth.user?.name || auth.band?.name }}</p>
-                        <p class="text-xs text-slate-500 truncate capitalize">{{ auth.access ? t('auth.access.' + auth.access) : '' }}</p>
+                        <p class="text-sm font-semibold text-slate-900 truncate leading-tight">{{ auth.user?.name || auth.band?.name }}</p>
+                        <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                            {{ auth.user?.email || (auth.access ? t('auth.access.' + auth.access) : '') }}
+                        </p>
                     </div>
+                    <button
+                        @click="logout"
+                        class="w-9 h-9 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 hover:text-red-600 hover:border-red-200 active:scale-95 transition shrink-0"
+                        :title="t('nav.logout')"
+                        :aria-label="t('nav.logout')"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </div>
-                <button
-                    @click="logout"
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    {{ t('nav.logout') }}
-                </button>
             </div>
         </aside>
 

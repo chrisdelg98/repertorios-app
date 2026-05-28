@@ -1,9 +1,18 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
 const { t } = useI18n();
+const page = usePage();
+
+const donateUrl = computed(() => page.props.donate?.url || null);
+
+function openDonate() {
+    if (!donateUrl.value) return;
+    window.open(donateUrl.value, '_blank', 'noopener,noreferrer');
+}
 
 defineProps({
     laravelVersion: String,
@@ -101,6 +110,7 @@ const steps = [
                     </Link>
 
                     <a
+                        v-if="donateUrl"
                         href="#donate"
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:border-indigo-300 hover:text-indigo-600 transition"
                     >
@@ -205,7 +215,7 @@ const steps = [
         </section>
 
         <!-- ── Donate ────────────────────────────────────────────────── -->
-        <section id="donate" class="py-16 sm:py-24 bg-slate-50">
+        <section v-if="donateUrl" id="donate" class="py-16 sm:py-24 bg-slate-50">
             <div class="max-w-3xl mx-auto px-4 sm:px-6">
                 <div class="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-8 sm:p-12 text-white text-center shadow-xl shadow-indigo-200">
                     <div class="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-2xl"></div>
@@ -223,15 +233,15 @@ const steps = [
                             {{ t('landing.donate.body') }}
                         </p>
 
-                        <a
-                            href="#"
+                        <button
+                            @click="openDonate"
                             class="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 text-sm font-bold rounded-xl hover:bg-indigo-50 active:scale-[0.98] transition shadow-lg"
                         >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-7.453 6.082h-2.19l-1.12 7.106c-.082.518-.526.9-1.05.9H4.155L3.39 24h4.606c.524 0 .968-.382 1.05-.9l.022-.116 1.12-7.106.072-.394c.082-.518.526-.9 1.05-.9h.66c4.286 0 7.64-1.747 8.624-6.797.39-2.073.197-3.805-1.372-5.07z"/>
                             </svg>
                             {{ t('landing.donate.cta') }}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
