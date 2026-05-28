@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useInstall } from '@/composables/useInstall';
 
@@ -8,23 +8,28 @@ const { isInstallable, isInstalled, promptInstall } = useInstall();
 
 const STORAGE_KEY = 'pwa_banner_dismissed';
 const show = ref(false);
+let timer = null;
+
+function onBeforeInstallPrompt() {
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    if (isInstalled.value) return;
+    timer = setTimeout(() => { show.value = true; }, 1800);
+}
 
 onMounted(() => {
     if (isInstalled.value) return;
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    const reveal = () => {
-        if (isInstallable.value && !isInstalled.value) {
-            setTimeout(() => { show.value = true; }, 1800);
-            window.removeEventListener('beforeinstallprompt', reveal);
-        }
-    };
-
     if (isInstallable.value) {
-        setTimeout(() => { show.value = true; }, 1800);
+        timer = setTimeout(() => { show.value = true; }, 1800);
     } else {
-        window.addEventListener('beforeinstallprompt', reveal);
+        window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     }
+});
+
+onUnmounted(() => {
+    clearTimeout(timer);
+    window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
 });
 
 function dismiss() {
@@ -33,11 +38,8 @@ function dismiss() {
 }
 
 async function install() {
-    const accepted = await promptInstall();
-    if (accepted) {
-        localStorage.setItem(STORAGE_KEY, '1');
-        show.value = false;
-    }
+    await promptInstall();
+    dismiss();
 }
 </script>
 
