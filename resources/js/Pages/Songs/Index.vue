@@ -32,6 +32,17 @@ const availableArtists = computed(() => {
     return [...map.values()].sort((a, b) => a.localeCompare(b));
 });
 
+const availableSongNames = computed(() => {
+    const map = new Map();
+    props.songs.forEach(s => {
+        const trimmed = (s.name ?? '').trim();
+        if (!trimmed) return;
+        const key = trimmed.toLowerCase();
+        if (!map.has(key)) map.set(key, trimmed);
+    });
+    return [...map.values()].sort((a, b) => a.localeCompare(b));
+});
+
 const availableVersions = computed(() => {
     const set = new Set();
     props.songs.forEach(s => s.versions?.forEach(v => v.name && set.add(v.name)));
@@ -408,13 +419,10 @@ function confirmDelete() {
                         <div class="space-y-3">
                             <div class="space-y-1.5">
                                 <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
-                                <input
+                                <Autocomplete
                                     v-model="form.name"
-                                    type="text"
-                                    required
-                                    autofocus
+                                    :suggestions="availableSongNames"
                                     :placeholder="t('songs.form.name')"
-                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                                 <p v-if="form.errors.name" class="text-xs text-red-600">{{ form.errors.name }}</p>
                             </div>
@@ -635,12 +643,10 @@ function confirmDelete() {
                         <div class="space-y-3">
                             <div class="space-y-1.5">
                                 <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.name') }}</label>
-                                <input
+                                <Autocomplete
                                     v-model="editForm.name"
-                                    type="text"
-                                    required
-                                    autofocus
-                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    :suggestions="availableSongNames"
+                                    :placeholder="t('songs.form.name')"
                                 />
                                 <p v-if="editForm.errors.name" class="text-xs text-red-600">{{ editForm.errors.name }}</p>
                             </div>
