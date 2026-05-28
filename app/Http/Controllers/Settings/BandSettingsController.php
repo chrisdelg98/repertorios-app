@@ -7,7 +7,6 @@ use App\Http\Controllers\Concerns\BandAware;
 use App\Models\Band;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +27,11 @@ class BandSettingsController extends Controller
                 'name'         => $band->name,
                 'logo_url'     => $band->logo ? asset('storage/' . $band->logo) : null,
                 'code'         => $band->code,
+                'access_pin'   => $band->access_pin,
                 'has_edit_pin' => (bool) $band->edit_pin,
+                'invite_url'   => $band->invite_token
+                    ? route('band.join', ['token' => $band->invite_token])
+                    : null,
             ],
         ]);
     }
@@ -68,24 +71,32 @@ class BandSettingsController extends Controller
         return back()->with('success', true);
     }
 
-    public function updatePins(Request $request): RedirectResponse
+    public function regenerateCode(): RedirectResponse
     {
         $this->requireAdmin();
 
-        $request->validate([
-            'access_pin' => 'required|string|min:4|max:20',
-            'edit_pin'   => 'nullable|string|min:4|max:20',
-        ]);
+        $band = Band::findOrFail($this->bandId());
+        $band->update(['code' => Band::generateCode()]);
+
+        return back()->with('success', true);
+    }
+
+    public function regeneratePin(): RedirectResponse
+    {
+        $this->requireAdmin();
 
         $band = Band::findOrFail($this->bandId());
+        $band->update(['access_pin' => Band::generatePin()]);
 
-        $data = ['access_pin' => Hash::make($request->access_pin)];
+        return back()->with('success', true);
+    }
 
-        if ($request->filled('edit_pin')) {
-            $data['edit_pin'] = Hash::make($request->edit_pin);
-        }
+    public function regenerateToken(): RedirectResponse
+    {
+        $this->requireAdmin();
 
-        $band->update($data);
+        $band = Band::findOrFail($this->bandId());
+        $band->update(['invite_token' => Band::generateToken()]);
 
         return back()->with('success', true);
     }

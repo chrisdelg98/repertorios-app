@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
+import AppInstallBanner from '@/Components/AppInstallBanner.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -209,6 +210,9 @@ const navItems = computed(() => {
         <main class="lg:ml-64 pb-24 lg:pb-12">
             <slot />
         </main>
+
+        <!-- PWA install banner (fires once after login) -->
+        <AppInstallBanner />
 
         <!-- ─────────────────────────────────────────────────────────── -->
         <!-- Mobile bottom nav (hidden on lg+)                           -->

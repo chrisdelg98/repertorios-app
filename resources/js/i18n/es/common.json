@@ -93,5 +93,18 @@
     "no_songs": "Sin canciones en este servicio",
     "expired_title": "Enlace expirado",
     "expired_body": "Este enlace ya no es válido."
+  },
+  "install": {
+    "banner_title": "Agregar a la pantalla de inicio",
+    "banner_subtitle": "Disfruta la experiencia completa de la app",
+    "benefit_1": "Abre al instante desde tu pantalla de inicio",
+    "benefit_2": "Carga más rápido — recursos guardados localmente",
+    "benefit_3": "Pantalla completa, sin barra del navegador",
+    "install": "Instalar",
+    "later": "Ahora no",
+    "tile_title": "Instalar App",
+    "tile_subtitle": "Agrega a tu pantalla de inicio para acceso rápido",
+    "installed_title": "App instalada",
+    "installed_subtitle": "Ya estás usando la versión instalada"
   }
 }

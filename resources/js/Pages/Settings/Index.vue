@@ -2,8 +2,10 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { useInstall } from '@/composables/useInstall';
 
 const { t } = useI18n();
+const { isInstallable, isInstalled, promptInstall } = useInstall();
 
 const sections = [
     {
@@ -72,6 +74,44 @@ const sections = [
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                 </Link>
+
+                <!-- Install app tile (shown only when installable and not already installed) -->
+                <button
+                    v-if="isInstallable && !isInstalled"
+                    @click="promptInstall"
+                    class="w-full flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl px-4 py-3.5 border border-indigo-100 hover:from-indigo-100 hover:to-violet-100 active:scale-[0.99] transition"
+                >
+                    <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </div>
+
+                    <div class="flex-1 min-w-0 text-left">
+                        <p class="font-medium text-indigo-700 text-sm">{{ t('install.tile_title') }}</p>
+                        <p class="text-xs text-indigo-400 mt-0.5 truncate">{{ t('install.tile_subtitle') }}</p>
+                    </div>
+
+                    <svg class="w-4 h-4 text-indigo-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+                <!-- Already installed badge -->
+                <div
+                    v-if="isInstalled"
+                    class="flex items-center gap-4 bg-green-50 rounded-xl px-4 py-3.5 border border-green-100"
+                >
+                    <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-green-700 text-sm">{{ t('install.installed_title') }}</p>
+                        <p class="text-xs text-green-500 mt-0.5">{{ t('install.installed_subtitle') }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </AppLayout>

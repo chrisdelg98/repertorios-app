@@ -93,5 +93,18 @@
     "no_songs": "No songs in this service",
     "expired_title": "Link expired",
     "expired_body": "This link is no longer valid."
+  },
+  "install": {
+    "banner_title": "Add to Home Screen",
+    "banner_subtitle": "Get the full app experience",
+    "benefit_1": "Open instantly from your home screen",
+    "benefit_2": "Faster load — assets cached locally",
+    "benefit_3": "Full screen, no browser bar",
+    "install": "Install",
+    "later": "Maybe later",
+    "tile_title": "Install App",
+    "tile_subtitle": "Add to your home screen for faster access",
+    "installed_title": "App installed",
+    "installed_subtitle": "You're already using the installed version"
   }
 }

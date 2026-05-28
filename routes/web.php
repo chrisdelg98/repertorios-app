@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\MemberLoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Public\JoinController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
 use App\Http\Controllers\Services\ShareController;
@@ -18,6 +19,9 @@ use Inertia\Inertia;
 
 // Public shared repertoire (no auth)
 Route::get('/r/{token}', [ShareController::class, 'show'])->name('share.show');
+
+// Public join via invite link (no auth required)
+Route::get('/join/{token}', JoinController::class)->name('band.join');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -72,7 +76,9 @@ Route::middleware('band.access')->group(function () {
     Route::get('/settings/band', [BandSettingsController::class, 'show'])->name('settings.band');
     Route::put('/settings/band', [BandSettingsController::class, 'update'])->name('settings.band.update');
     Route::post('/settings/band/logo', [BandSettingsController::class, 'updateLogo'])->name('settings.band.logo');
-    Route::put('/settings/band/pins', [BandSettingsController::class, 'updatePins'])->name('settings.band.pins');
+    Route::post('/settings/band/regenerate-code', [BandSettingsController::class, 'regenerateCode'])->name('settings.band.regenerate-code');
+    Route::post('/settings/band/regenerate-pin', [BandSettingsController::class, 'regeneratePin'])->name('settings.band.regenerate-pin');
+    Route::post('/settings/band/regenerate-token', [BandSettingsController::class, 'regenerateToken'])->name('settings.band.regenerate-token');
 
     Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
     Route::delete('/settings/members/{user}', [MemberController::class, 'destroy'])->name('settings.members.destroy');

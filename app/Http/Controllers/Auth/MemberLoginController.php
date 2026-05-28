@@ -12,10 +12,10 @@ class MemberLoginController extends Controller
 {
     public function store(JoinRequest $request): RedirectResponse
     {
-        $band = Band::where('code', $request->code)->firstOrFail();
+        $band = Band::where('code', strtoupper($request->code))->firstOrFail();
 
-        $matchesEdit = $band->edit_pin && Hash::check($request->pin, $band->edit_pin);
-        $matchesAccess = Hash::check($request->pin, $band->access_pin);
+        $matchesEdit   = $band->edit_pin   && $this->checkPin($request->pin, $band->edit_pin);
+        $matchesAccess = $this->checkPin($request->pin, $band->access_pin);
 
         if (!$matchesAccess && !$matchesEdit) {
             return back()->withErrors(['pin' => 'Incorrect PIN.']);
@@ -26,5 +26,16 @@ class MemberLoginController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('dashboard');
+    }
+
+    private function checkPin(string $input, string $stored): bool
+    {
+        if ($input === $stored) return true;
+
+        if (str_starts_with($stored, '$2y$') || str_starts_with($stored, '$2a$')) {
+            return Hash::check($input, $stored);
+        }
+
+        return false;
     }
 }
