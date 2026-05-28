@@ -2,32 +2,35 @@ import { ref } from 'vue';
 
 const deferredPrompt = ref(null);
 const isInstallable  = ref(false);
-const isInstalled    = ref(false);
+const isInstalled    = ref(
+    typeof window !== 'undefined'
+        && (window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true)
+);
 
-let bootstrapped = false;
-
-export function useInstall() {
-    if (!bootstrapped && typeof window !== 'undefined') {
-        bootstrapped = true;
-
-        isInstalled.value = window.matchMedia('(display-mode: standalone)').matches
-            || window.navigator.standalone === true;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt.value = e;
-            isInstallable.value  = true;
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt.value = null;
-            isInstallable.value  = false;
-            isInstalled.value    = true;
-        });
+if (typeof window !== 'undefined') {
+    // Pick up the event captured by the inline script in app.blade.php
+    if (window.__pwaPrompt) {
+        deferredPrompt.value = window.__pwaPrompt;
+        isInstallable.value  = true;
     }
 
+    // Also listen for future firings (e.g. after app update)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt.value = e;
+        isInstallable.value  = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt.value = null;
+        isInstallable.value  = false;
+        isInstalled.value    = true;
+    });
+}
+
+export function useInstall() {
     async function promptInstall() {
-        // Try native <install> element first (progressive enhancement)
         const installEl = document.getElementById('pwa-install-el');
         if (installEl && !(installEl instanceof HTMLUnknownElement) && typeof installEl.install === 'function') {
             installEl.install();

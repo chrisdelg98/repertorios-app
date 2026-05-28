@@ -21,7 +21,7 @@ onMounted(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
     if (isInstallable.value) {
-        timer = setTimeout(() => { show.value = true; }, 1800);
+        timer = setTimeout(() => { show.value = true; }, 2500);
     } else {
         window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     }
