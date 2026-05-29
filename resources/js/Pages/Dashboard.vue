@@ -13,6 +13,7 @@ const props = defineProps({
 });
 
 const auth = computed(() => page.props.auth);
+const canWrite = computed(() => !!auth.value?.can_write);
 
 const greeting = computed(() => {
     const h = new Date().getHours();
@@ -106,11 +107,11 @@ function typeLabel(type) {
                 </div>
             </Link>
 
-            <!-- No services state -->
+            <!-- No services state (clickable only if user can create) -->
             <Link
-                v-else
+                v-else-if="canWrite"
                 href="/services/create"
-                class="block bg-white rounded-2xl p-5 border border-dashed border-slate-300 text-center"
+                class="block bg-white rounded-2xl p-5 border border-dashed border-slate-300 text-center hover:border-indigo-300 transition-colors"
             >
                 <div class="w-10 h-10 mx-auto bg-indigo-50 rounded-full flex items-center justify-center mb-2">
                     <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -120,6 +121,18 @@ function typeLabel(type) {
                 <p class="text-sm font-medium text-slate-700">{{ t('dashboard.no_upcoming_title') }}</p>
                 <p class="text-xs text-slate-400 mt-0.5">{{ t('dashboard.no_upcoming_body') }}</p>
             </Link>
+            <div
+                v-else
+                class="block bg-white rounded-2xl p-5 border border-dashed border-slate-300 text-center"
+            >
+                <div class="w-10 h-10 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <p class="text-sm font-medium text-slate-500">{{ t('dashboard.no_upcoming_title') }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ t('dashboard.no_upcoming_readonly') }}</p>
+            </div>
 
             <!-- More upcoming -->
             <div v-if="otherUpcoming.length">
@@ -183,7 +196,9 @@ function typeLabel(type) {
                     {{ t('dashboard.quick_actions') }}
                 </p>
                 <div class="grid grid-cols-2 gap-3">
+                    <!-- New service: clickable for admins, locked for read-only -->
                     <Link
+                        v-if="canWrite"
                         href="/services/create"
                         class="bg-white rounded-xl p-4 border border-slate-200 hover:border-indigo-300 transition-colors"
                     >
@@ -195,6 +210,19 @@ function typeLabel(type) {
                         <p class="text-sm font-semibold text-slate-900">{{ t('dashboard.new_service') }}</p>
                         <p class="text-[11px] text-slate-500 mt-0.5">{{ t('dashboard.new_service_hint') }}</p>
                     </Link>
+                    <div
+                        v-else
+                        class="relative bg-white rounded-xl p-4 border border-slate-200 opacity-60 cursor-not-allowed"
+                        :title="t('dashboard.locked_admin_only')"
+                    >
+                        <div class="w-8 h-8 bg-slate-300 rounded-lg flex items-center justify-center mb-2">
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-500">{{ t('dashboard.new_service') }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">{{ t('dashboard.locked_admin_only') }}</p>
+                    </div>
 
                     <Link
                         href="/songs"

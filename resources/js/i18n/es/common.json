@@ -86,7 +86,9 @@
     "new_service": "Nuevo servicio",
     "new_service_hint": "Crear un repertorio",
     "browse_library": "Biblioteca",
-    "browse_library_hint": "Ver canciones"
+    "browse_library_hint": "Ver canciones",
+    "no_upcoming_readonly": "Tu admin aún no ha planeado uno",
+    "locked_admin_only": "Solo administradores"
   },
   "public": {
     "powered_by": "Hecho con Repertorios",

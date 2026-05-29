@@ -42,6 +42,8 @@ class ServiceController extends Controller
 
     public function create(): Response
     {
+        $this->requireWrite();
+
         return Inertia::render('Services/Create', [
             'templates' => $this->templates(),
         ]);

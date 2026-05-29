@@ -82,11 +82,13 @@
     "songs_count": "{count} songs | {count} song | {count} songs",
     "no_upcoming_title": "No upcoming services",
     "no_upcoming_body": "Tap to plan your next one",
+    "no_upcoming_readonly": "Your admin hasn't planned one yet",
     "quick_actions": "Quick actions",
     "new_service": "New service",
     "new_service_hint": "Plan a setlist",
     "browse_library": "Song library",
-    "browse_library_hint": "View all songs"
+    "browse_library_hint": "View all songs",
+    "locked_admin_only": "Admins only"
   },
   "public": {
     "powered_by": "Made with Repertorios",
