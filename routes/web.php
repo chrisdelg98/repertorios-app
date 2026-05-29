@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\MemberLoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Public\JoinController;
 use App\Http\Controllers\Services\ServiceController;
@@ -37,6 +41,27 @@ Route::post('/login', [AdminLoginController::class, 'store'])->name('auth.admin.
 Route::post('/join', [MemberLoginController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('auth.join');
+
+// Registration
+Route::get('/register', [RegisterController::class, 'show'])->name('register');
+Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
+
+// Password reset
+Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])->middleware('throttle:5,1')->name('password.email');
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'show'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
+
+// Email verification
+Route::middleware('auth')->group(function () {
+    Route::get('/verify-email', [VerifyEmailController::class, 'notice'])->name('verification.notice');
+    Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
 
 // Protected
 Route::middleware('band.access')->group(function () {

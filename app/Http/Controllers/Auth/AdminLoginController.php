@@ -18,7 +18,9 @@ class AdminLoginController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'status' => session('status'),
+        ]);
     }
 
     public function store(AdminLoginRequest $request): RedirectResponse
