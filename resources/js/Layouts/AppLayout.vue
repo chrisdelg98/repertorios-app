@@ -263,9 +263,9 @@ const navItems = computed(() => {
         <!-- Mobile bottom nav (hidden on lg+)                           -->
         <!-- ─────────────────────────────────────────────────────────── -->
         <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-10">
-            <div class="grid grid-cols-5 items-end h-16 max-w-md mx-auto">
+            <div class="flex items-end justify-around h-16 max-w-md mx-auto px-2">
                 <!-- Home -->
-                <Link href="/dashboard" class="flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/dashboard') ? 'text-indigo-600' : 'text-slate-400'">
+                <Link href="/dashboard" class="flex-1 flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/dashboard') ? 'text-indigo-600' : 'text-slate-400'">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
@@ -273,7 +273,7 @@ const navItems = computed(() => {
                 </Link>
 
                 <!-- Services -->
-                <Link href="/services" class="flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/services') ? 'text-indigo-600' : 'text-slate-400'">
+                <Link href="/services" class="flex-1 flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/services') ? 'text-indigo-600' : 'text-slate-400'">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -281,9 +281,8 @@ const navItems = computed(() => {
                 </Link>
 
                 <!-- Add (center FAB) — write access only -->
-                <div class="flex justify-center">
+                <div v-if="auth.can_write" class="flex-1 flex justify-center">
                     <Link
-                        v-if="auth.can_write"
                         href="/services/create"
                         class="w-14 h-14 -mt-6 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-300/50 active:scale-95 transition-transform"
                         :aria-label="t('nav.add')"
@@ -295,7 +294,7 @@ const navItems = computed(() => {
                 </div>
 
                 <!-- Songs -->
-                <Link href="/songs" class="flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/songs') ? 'text-indigo-600' : 'text-slate-400'">
+                <Link href="/songs" class="flex-1 flex flex-col items-center gap-0.5 py-2.5" :class="isActive('/songs') ? 'text-indigo-600' : 'text-slate-400'">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                     </svg>
@@ -306,7 +305,7 @@ const navItems = computed(() => {
                 <Link
                     v-if="auth.access === 'admin'"
                     href="/settings"
-                    class="flex flex-col items-center gap-0.5 py-2.5"
+                    class="flex-1 flex flex-col items-center gap-0.5 py-2.5"
                     :class="isActive('/settings') ? 'text-indigo-600' : 'text-slate-400'"
                 >
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -315,7 +314,6 @@ const navItems = computed(() => {
                     </svg>
                     <span class="text-[10px] font-medium">{{ t('nav.settings') }}</span>
                 </Link>
-                <div v-else />
             </div>
         </nav>
     </div>
