@@ -23,9 +23,15 @@ class User extends Authenticatable implements MustVerifyEmail
         'band_id',
         'name',
         'email',
+        'role',
         'password',
         'avatar',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
     public function getAvatarUrlAttribute(): ?string
     {

@@ -73,7 +73,9 @@ const notes = [
                     </svg>
                 </div>
                 <h1 v-if="heading" class="text-2xl font-bold text-slate-900 mt-3 tracking-tight">{{ heading }}</h1>
-                <p v-if="subheading" class="text-sm text-slate-500 mt-1">{{ subheading }}</p>
+                <p v-if="$slots.subheading || subheading" class="text-sm text-slate-500 mt-1">
+                    <slot name="subheading">{{ subheading }}</slot>
+                </p>
             </div>
 
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-indigo-200/40 border border-slate-100 p-6">

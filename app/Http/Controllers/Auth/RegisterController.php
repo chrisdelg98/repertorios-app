@@ -40,6 +40,7 @@ class RegisterController extends Controller
                 'band_id'  => $band->id,
                 'name'     => $request->name,
                 'email'    => $request->email,
+                'role'     => 'admin',
                 'password' => Hash::make($request->password),
             ]);
         });

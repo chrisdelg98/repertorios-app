@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\MemberLoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\UpgradeAccountController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Public\JoinController;
@@ -45,6 +46,10 @@ Route::post('/join', [MemberLoginController::class, 'store'])
 // Registration
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
+
+// Upgrade session-member to registered User (linked to their current band)
+Route::get('/upgrade', [UpgradeAccountController::class, 'show'])->name('upgrade');
+Route::post('/upgrade', [UpgradeAccountController::class, 'store'])->middleware('throttle:5,1')->name('upgrade.store');
 
 // Password reset
 Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.request');

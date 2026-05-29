@@ -13,7 +13,8 @@ trait BandAware
 
     protected function canWrite(): bool
     {
-        return Auth::check() || session('access_level') === 'editor';
+        return (Auth::check() && Auth::user()->role === 'admin')
+            || session('access_level') === 'editor';
     }
 
     protected function requireWrite(): void
@@ -25,7 +26,7 @@ trait BandAware
 
     protected function requireAdmin(): void
     {
-        if (!Auth::check()) {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
             abort(403, 'Admins only.');
         }
     }

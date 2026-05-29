@@ -56,9 +56,9 @@ class HandleInertiaRequests extends Middleware
                     );
                 },
                 'access' => fn () => $user
-                    ? 'admin'
+                    ? $user->role
                     : $request->session()->get('access_level'),
-                'can_write' => fn () => $user !== null
+                'can_write' => fn () => ($user && $user->role === 'admin')
                     || $request->session()->get('access_level') === 'editor',
             ],
             'flash' => [
