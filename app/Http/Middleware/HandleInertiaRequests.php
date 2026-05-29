@@ -58,6 +58,8 @@ class HandleInertiaRequests extends Middleware
                 'access' => fn () => $user
                     ? 'admin'
                     : $request->session()->get('access_level'),
+                'can_write' => fn () => $user !== null
+                    || $request->session()->get('access_level') === 'editor',
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

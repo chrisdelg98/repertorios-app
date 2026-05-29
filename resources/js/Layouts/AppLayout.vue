@@ -76,8 +76,8 @@ const navItems = computed(() => {
                 </Link>
             </div>
 
-            <!-- New Service CTA -->
-            <div class="px-3 pb-3">
+            <!-- New Service CTA (write access only) -->
+            <div v-if="auth.can_write" class="px-3 pb-3">
                 <Link
                     href="/services/create"
                     class="flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg active:scale-[0.98] transition"
@@ -254,9 +254,10 @@ const navItems = computed(() => {
                     <span class="text-[10px] font-medium">{{ t('nav.services') }}</span>
                 </Link>
 
-                <!-- Add (center FAB) -->
+                <!-- Add (center FAB) — write access only -->
                 <div class="flex justify-center">
                     <Link
+                        v-if="auth.can_write"
                         href="/services/create"
                         class="w-14 h-14 -mt-6 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-300/50 active:scale-95 transition-transform"
                         :aria-label="t('nav.add')"
