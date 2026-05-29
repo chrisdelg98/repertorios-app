@@ -103,6 +103,14 @@ function joinBand() {
 
         <!-- Member form -->
         <form v-else @submit.prevent="joinBand" class="space-y-3">
+            <!-- Invite link hint -->
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2.5 flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                </svg>
+                <p class="text-[11px] text-indigo-700 leading-relaxed">{{ t('auth.member_invite_hint') }}</p>
+            </div>
+
             <div>
                 <label for="code" class="block text-xs font-medium text-slate-600 mb-1">{{ t('auth.fields.band_code') }}</label>
                 <input
