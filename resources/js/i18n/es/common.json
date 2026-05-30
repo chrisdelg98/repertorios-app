@@ -100,6 +100,16 @@
     "tile_title": "Apoya el proyecto",
     "tile_subtitle": "Ayuda a mantener Repertorios gratis y creciendo"
   },
+  "playlist": {
+    "title": "Reproductor del repertorio",
+    "play_all": "Reproducir todo",
+    "public_cta": "Ver y escuchar el repertorio completo",
+    "empty_title": "Sin video",
+    "no_videos": "Ninguna canción del repertorio tiene enlace de YouTube.",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "close": "Cerrar"
+  },
   "welcome": {
     "eyebrow": "Bienvenido a Repertorios",
     "greeting": "¡Bendiciones, {name}!",

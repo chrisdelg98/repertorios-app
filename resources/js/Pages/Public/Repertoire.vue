@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
+import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
 
 const { t } = useI18n();
 
@@ -26,6 +27,9 @@ const detailSong = ref(null);
 function openDetail(song) {
     detailSong.value = song;
 }
+
+const playlistOpen = ref(false);
+const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.youtube_url));
 </script>
 
 <template>
@@ -64,7 +68,20 @@ function openDetail(song) {
                     {{ t('public.no_songs') }}
                 </div>
 
-                <div v-else class="space-y-2">
+                <template v-else>
+                    <button
+                        v-if="hasAnyVideo"
+                        @click="playlistOpen = true"
+                        class="w-full mb-4 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-indigo-200 active:scale-[0.99] transition"
+                    >
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                        {{ t('playlist.public_cta') }}
+                    </button>
+                </template>
+
+                <div v-if="service.songs.length" class="space-y-2">
                     <button
                         type="button"
                         v-for="(song, i) in service.songs"
@@ -94,5 +111,8 @@ function openDetail(song) {
 
         <!-- Song detail (read-only) -->
         <SongDetailSheet :song="detailSong" @close="detailSong = null" />
+
+        <!-- Playlist overlay -->
+        <PlaylistOverlay :open="playlistOpen" :songs="service?.songs ?? []" @close="playlistOpen = false" />
     </div>
 </template>

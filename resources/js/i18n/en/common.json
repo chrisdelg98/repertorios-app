@@ -100,6 +100,16 @@
     "tile_title": "Support the project",
     "tile_subtitle": "Help keep Repertorios free and growing"
   },
+  "playlist": {
+    "title": "Setlist player",
+    "play_all": "Play all",
+    "public_cta": "Watch & play the full setlist",
+    "empty_title": "No video",
+    "no_videos": "No songs in this setlist have a YouTube link.",
+    "prev": "Previous",
+    "next": "Next",
+    "close": "Close"
+  },
   "welcome": {
     "eyebrow": "Welcome to Repertorios",
     "greeting": "Bless you, {name}!",

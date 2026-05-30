@@ -1,6 +1,7 @@
 {
   "title": "Servicios",
   "create": "Nuevo Servicio",
+  "preview_as_guest": "Ver como invitado",
   "edit": "Editar Servicio",
   "empty": "Aún no hay servicios. ¡Crea el primero!",
   "form": {

@@ -4,6 +4,7 @@ import { Head, useForm, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
+import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
 
 const { t } = useI18n();
 
@@ -96,23 +97,30 @@ const sharing = ref(false);
 const shareData = ref(null);
 const copied = ref(false);
 
-async function openShare() {
-    if (shareData.value) {
-        showShareSheet.value = true;
-        return;
-    }
+async function fetchShareData() {
+    if (shareData.value) return shareData.value;
     sharing.value = true;
     try {
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
-        const res = await fetch('/services/' + props.service.id + '/share', {
-            method: 'POST',
+        const res  = await fetch('/services/' + props.service.id + '/share', {
+            method:  'POST',
             headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
         });
         shareData.value = await res.json();
-        showShareSheet.value = true;
     } finally {
         sharing.value = false;
     }
+    return shareData.value;
+}
+
+async function openShare() {
+    await fetchShareData();
+    showShareSheet.value = true;
+}
+
+async function previewAsGuest() {
+    const data = await fetchShareData();
+    if (data?.url) window.open(data.url, '_blank', 'noopener,noreferrer');
 }
 
 async function copyLink() {
@@ -158,6 +166,17 @@ function openDetail(ss) {
 
 // --- Song reorder ---
 const localSongs = ref([...props.service.service_songs]);
+
+// --- Playlist overlay ---
+const playlistOpen = ref(false);
+const playlistSongs = computed(() => localSongs.value.map(ss => ({
+    name:        ss.song_version.song.name,
+    artist:      ss.song_version.song.artist,
+    version:     ss.song_version.name,
+    key:         ss.song_version.key,
+    youtube_url: ss.song_version.youtube_url,
+})));
+const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url));
 watch(() => props.service.service_songs, (songs) => { localSongs.value = [...songs]; });
 
 let reorderTimer = null;
@@ -221,6 +240,31 @@ function scheduleReorder() {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     {{ sharing ? t('services.share_generating') : t('services.share') }}
+                </button>
+
+                <button
+                    v-if="hasAnyVideo"
+                    @click="playlistOpen = true"
+                    class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-indigo-200 text-indigo-600 text-sm font-semibold rounded-xl hover:bg-indigo-50 transition-colors"
+                    :title="t('playlist.play_all')"
+                >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span class="hidden sm:inline">{{ t('playlist.play_all') }}</span>
+                </button>
+
+                <button
+                    @click="previewAsGuest"
+                    :disabled="sharing"
+                    class="w-11 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                    :aria-label="t('services.preview_as_guest')"
+                    :title="t('services.preview_as_guest')"
+                >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                 </button>
 
                 <template v-if="can_write">
@@ -535,5 +579,8 @@ function scheduleReorder() {
 
         <!-- Song detail (read-only) -->
         <SongDetailSheet :song="detailSong" @close="detailSong = null" />
+
+        <!-- Playlist overlay -->
+        <PlaylistOverlay :open="playlistOpen" :songs="playlistSongs" @close="playlistOpen = false" />
     </AppLayout>
 </template>
