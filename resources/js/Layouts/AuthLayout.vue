@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
+import Logo from '@/Components/Logo.vue';
 
 defineProps({
     heading:    { type: String, default: '' },
@@ -67,11 +68,7 @@ const notes = [
         <div class="relative w-full max-w-md">
             <!-- Brand mark -->
             <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-300/50">
-                    <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                    </svg>
-                </div>
+                <Logo :size="64" class="mx-auto" />
                 <h1 v-if="heading" class="text-2xl font-bold text-slate-900 mt-3 tracking-tight">{{ heading }}</h1>
                 <p v-if="$slots.subheading || subheading" class="text-sm text-slate-500 mt-1">
                     <slot name="subheading">{{ subheading }}</slot>

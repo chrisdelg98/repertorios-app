@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
+import Logo from '@/Components/Logo.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -53,11 +54,7 @@ const steps = [
         <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                        </svg>
-                    </div>
+                    <Logo :size="32" />
                     <span class="font-semibold text-sm">{{ appName }}</span>
                 </div>
 
@@ -268,7 +265,7 @@ const steps = [
         <footer class="border-t border-slate-100 py-8">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
                 <div class="flex items-center gap-2">
-                    <div class="w-5 h-5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-md"></div>
+                    <Logo :size="20" />
                     <span>{{ appName }} · &copy; {{ new Date().getFullYear() }}</span>
                 </div>
                 <p>{{ t('app.tagline') }}</p>

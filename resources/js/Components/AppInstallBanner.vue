@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useInstall } from '@/composables/useInstall';
+import Logo from '@/Components/Logo.vue';
 
 const { t } = useI18n();
 const { isInstallable, isInstalled, promptInstall } = useInstall();
@@ -80,11 +81,7 @@ async function install() {
 
                     <!-- Icon + heading -->
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200">
-                            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                            </svg>
-                        </div>
+                        <Logo :size="56" />
                         <div>
                             <p class="text-base font-bold text-slate-900 leading-tight">{{ t('install.banner_title') }}</p>
                             <p class="text-xs text-slate-400 mt-0.5">{{ t('install.banner_subtitle') }}</p>

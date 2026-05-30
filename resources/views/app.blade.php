@@ -13,7 +13,8 @@
     <title inertia>{{ config('app.name', 'Repertorios') }}</title>
 
     <link rel="manifest" href="/build/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/logorepertorios.svg">
+    <link rel="apple-touch-icon" href="/icons/logorepertorios.svg">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
