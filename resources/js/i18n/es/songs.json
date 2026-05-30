@@ -21,6 +21,7 @@
     "cancel": "Cancelar"
   },
   "versions_preset": ["Original", "En Vivo", "Acústica", "Personalizada"],
+  "view": "Ver",
   "edit": "Editar",
   "edit_title": "Editar Canción",
   "versions": "Versiones",

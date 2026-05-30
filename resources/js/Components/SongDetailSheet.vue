@@ -1,25 +1,55 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
 const props = defineProps({
+    // Flat song object (single-version use case — e.g. service setlist)
+    // { name, artist, version, key, bpm, notes, youtube_url }
+    //
+    // OR
+    //
+    // Song with versions array (library viewer use case):
+    // { name, artist, versions: [{ id, name, key, bpm, notes, youtube_url }] }
     song: Object,
 });
 
 const emit = defineEmits(['close']);
 
+const selectedVersionIdx = ref(0);
+
+// Reset version selector each time a new song is opened
+watch(() => props.song?.name, () => { selectedVersionIdx.value = 0; });
+
+const versions = computed(() => props.song?.versions ?? null);
+const hasVersionList = computed(() => !!(versions.value && versions.value.length));
+
+// The "current" version data: from the versions array if provided, else the flat song fields.
+const current = computed(() => {
+    if (hasVersionList.value) {
+        return versions.value[selectedVersionIdx.value] ?? versions.value[0];
+    }
+    return {
+        name:        props.song?.version,
+        key:         props.song?.key,
+        bpm:         props.song?.bpm,
+        notes:       props.song?.notes,
+        youtube_url: props.song?.youtube_url,
+    };
+});
+
 const youtubeEmbed = computed(() => {
-    const url = props.song?.youtube_url;
+    const url = current.value?.youtube_url;
     if (!url) return null;
     const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
     return m ? `https://www.youtube.com/embed/${m[1]}` : null;
 });
 
-const hasAnyDetail = computed(() =>
-    props.song && (props.song.key || props.song.bpm || props.song.youtube_url || props.song.notes)
-);
+const hasAnyDetail = computed(() => {
+    const c = current.value;
+    return !!(c && (c.key || c.bpm || c.youtube_url || c.notes));
+});
 </script>
 
 <template>
@@ -59,9 +89,31 @@ const hasAnyDetail = computed(() =>
                             <h2 class="text-base font-bold text-slate-900 truncate">{{ song.name }}</h2>
                             <p v-if="song.artist" class="text-xs text-slate-500 mt-0.5 truncate">{{ song.artist }}</p>
                         </div>
-                        <span class="shrink-0 inline-flex items-center text-[11px] font-semibold text-slate-600 bg-slate-100 rounded-md px-2 py-1">
-                            {{ song.version }}
+                        <span
+                            v-if="!hasVersionList && current?.name"
+                            class="shrink-0 inline-flex items-center text-[11px] font-semibold text-slate-600 bg-slate-100 rounded-md px-2 py-1"
+                        >
+                            {{ current.name }}
                         </span>
+                    </div>
+
+                    <!-- Version switcher (only when multiple versions exist) -->
+                    <div v-if="hasVersionList && versions.length > 1" class="flex gap-1.5 mt-3 overflow-x-auto -mx-1 px-1">
+                        <button
+                            v-for="(v, i) in versions"
+                            :key="v.id"
+                            type="button"
+                            @click="selectedVersionIdx = i"
+                            :class="[
+                                'shrink-0 px-2.5 py-1 text-[11px] font-semibold rounded-md border transition-colors',
+                                selectedVersionIdx === i
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300',
+                            ]"
+                        >
+                            {{ v.name }}
+                            <span v-if="v.key" class="opacity-70 ml-0.5">· {{ v.key }}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -73,19 +125,19 @@ const hasAnyDetail = computed(() =>
                     </p>
 
                     <!-- Key + BPM -->
-                    <div v-if="song.key || song.bpm" class="grid grid-cols-2 gap-3">
-                        <div v-if="song.key" class="bg-indigo-50 rounded-xl px-3 py-2.5">
+                    <div v-if="current?.key || current?.bpm" class="grid grid-cols-2 gap-3">
+                        <div v-if="current.key" class="bg-indigo-50 rounded-xl px-3 py-2.5">
                             <p class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">{{ t('songs.form.key') }}</p>
-                            <p class="text-lg font-bold text-indigo-700 mt-0.5">{{ song.key }}</p>
+                            <p class="text-lg font-bold text-indigo-700 mt-0.5">{{ current.key }}</p>
                         </div>
-                        <div v-if="song.bpm" class="bg-violet-50 rounded-xl px-3 py-2.5">
+                        <div v-if="current.bpm" class="bg-violet-50 rounded-xl px-3 py-2.5">
                             <p class="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">{{ t('songs.form.bpm') }}</p>
-                            <p class="text-lg font-bold text-violet-700 mt-0.5">{{ song.bpm }}</p>
+                            <p class="text-lg font-bold text-violet-700 mt-0.5">{{ current.bpm }}</p>
                         </div>
                     </div>
 
                     <!-- YouTube -->
-                    <div v-if="song.youtube_url" class="space-y-2">
+                    <div v-if="current?.youtube_url" class="space-y-2">
                         <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">YouTube</p>
                         <div v-if="youtubeEmbed" class="aspect-video rounded-xl overflow-hidden bg-slate-100">
                             <iframe
@@ -97,7 +149,7 @@ const hasAnyDetail = computed(() =>
                             />
                         </div>
                         <a
-                            :href="song.youtube_url"
+                            :href="current.youtube_url"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="flex items-center gap-2 text-xs text-indigo-600 font-medium break-all"
@@ -105,14 +157,14 @@ const hasAnyDetail = computed(() =>
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
-                            {{ song.youtube_url }}
+                            {{ current.youtube_url }}
                         </a>
                     </div>
 
                     <!-- Notes -->
-                    <div v-if="song.notes" class="space-y-1.5">
+                    <div v-if="current?.notes" class="space-y-1.5">
                         <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{{ t('songs.form.notes') }}</p>
-                        <p class="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap">{{ song.notes }}</p>
+                        <p class="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap">{{ current.notes }}</p>
                     </div>
                 </div>
 
