@@ -128,7 +128,7 @@ function shareLink() {
         <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
 
             <!-- Back -->
-            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 transition-colors">
+            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-600 mb-4 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -149,7 +149,7 @@ function shareLink() {
                 </div>
                 <div>
                     <p class="text-sm font-medium text-slate-900">{{ t('settings.band.logo_label') }}</p>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.band.logo_hint', { max: MAX_INPUT_MB }) }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ t('settings.band.logo_hint', { max: MAX_INPUT_MB }) }}</p>
                     <button
                         @click="pickLogo"
                         :disabled="logoForm.processing"
@@ -188,12 +188,12 @@ function shareLink() {
                 <div class="flex items-start justify-between gap-2">
                     <div>
                         <p class="text-sm font-semibold text-slate-900">{{ t('settings.band.access_section') }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.band.access_hint') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ t('settings.band.access_hint') }}</p>
                     </div>
                     <button
                         @click="showInfo = !showInfo"
                         class="w-7 h-7 flex items-center justify-center rounded-full transition-colors shrink-0 mt-0.5"
-                        :class="showInfo ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'"
+                        :class="showInfo ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -214,11 +214,11 @@ function shareLink() {
                 <!-- Band code -->
                 <div class="bg-slate-50 rounded-xl px-4 py-3">
                     <div class="flex items-center justify-between mb-2">
-                        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('settings.band.band_code') }}</p>
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{{ t('settings.band.band_code') }}</p>
                         <button
                             @click="confirmCode = true"
                             :disabled="regeneratingCode"
-                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-amber-600 disabled:opacity-40 transition-colors"
+                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-amber-600 disabled:opacity-40 transition-colors"
                         >
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -247,11 +247,11 @@ function shareLink() {
                 <!-- Access PIN -->
                 <div class="bg-slate-50 rounded-xl px-4 py-3">
                     <div class="flex items-center justify-between mb-2">
-                        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('settings.band.access_pin') }}</p>
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{{ t('settings.band.access_pin') }}</p>
                         <button
                             @click="doRegeneratePin"
                             :disabled="regeneratingPin"
-                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-amber-600 disabled:opacity-40 transition-colors"
+                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-amber-600 disabled:opacity-40 transition-colors"
                         >
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -267,7 +267,7 @@ function shareLink() {
                             <button
                                 v-if="band.access_pin"
                                 @click="showPin = !showPin"
-                                class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"
+                                class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-colors"
                             >
                                 <svg v-if="!showPin" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -298,11 +298,11 @@ function shareLink() {
                 <!-- Invite link -->
                 <div class="bg-slate-50 rounded-xl px-4 py-3">
                     <div class="flex items-center justify-between mb-2">
-                        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('settings.band.invite_link') }}</p>
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{{ t('settings.band.invite_link') }}</p>
                         <button
                             @click="confirmToken = true"
                             :disabled="regeneratingToken"
-                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-amber-600 disabled:opacity-40 transition-colors"
+                            class="flex items-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-amber-600 disabled:opacity-40 transition-colors"
                         >
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />

@@ -101,7 +101,7 @@ function submit() {
                     :placeholder="t('auth.placeholders.password')"
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
-                <p class="text-[11px] text-slate-400 mt-1">{{ t('auth.register.password_hint') }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ t('auth.register.password_hint') }}</p>
                 <p v-if="form.errors.password" class="text-xs text-red-600 mt-1">{{ form.errors.password }}</p>
             </div>
 
@@ -128,7 +128,7 @@ function submit() {
         </form>
 
         <p class="text-center text-xs text-slate-500 mt-5">
-            <Link href="/dashboard" class="text-slate-400 hover:text-slate-600">{{ t('auth.upgrade.cancel') }}</Link>
+            <Link href="/dashboard" class="text-slate-500 hover:text-slate-600">{{ t('auth.upgrade.cancel') }}</Link>
         </p>
     </AuthLayout>
 </template>

@@ -84,7 +84,7 @@ async function install() {
                         <Logo :size="56" />
                         <div>
                             <p class="text-base font-bold text-slate-900 leading-tight">{{ t('install.banner_title') }}</p>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ t('install.banner_subtitle') }}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ t('install.banner_subtitle') }}</p>
                         </div>
                     </div>
 

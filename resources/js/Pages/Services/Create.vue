@@ -134,10 +134,10 @@ function submit() {
                         @click="showSheet = true"
                         class="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white text-left focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        <span :class="selection.kind === 'other' ? 'text-slate-400' : 'text-slate-900 font-medium'">
+                        <span :class="selection.kind === 'other' ? 'text-slate-500' : 'text-slate-900 font-medium'">
                             {{ selectionLabel }}
                         </span>
-                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                         </svg>
                     </button>
@@ -152,7 +152,7 @@ function submit() {
                             :placeholder="t('services.custom_name_placeholder')"
                             class="w-full px-3 py-2.5 text-sm rounded-lg border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
-                        <p class="text-xs text-slate-400 text-right mt-0.5">{{ customName.length }}/20</p>
+                        <p class="text-xs text-slate-500 text-right mt-0.5">{{ customName.length }}/20</p>
                     </div>
                 </div>
 
@@ -215,7 +215,7 @@ function submit() {
             <div v-if="showSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[75vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="font-semibold text-slate-900">{{ t('services.form.type') }}</h2>
-                        <button @click="showSheet = false; search = ''" class="text-slate-400 text-lg leading-none">✕</button>
+                        <button @click="showSheet = false; search = ''" class="text-slate-500 text-lg leading-none">✕</button>
                     </div>
 
                     <!-- Search -->
@@ -281,13 +281,13 @@ function submit() {
                             {{ tpl.name }}
                             <span
                                 v-if="selection.kind !== 'template' || selection.template.id !== tpl.id"
-                                class="text-xs text-slate-400 ml-2"
+                                class="text-xs text-slate-500 ml-2"
                             >
                                 {{ tpl.time.slice(0, 5) }}
                             </span>
                         </button>
 
-                        <p v-if="search && !filteredTemplates.length" class="text-sm text-slate-400 text-center py-4">
+                        <p v-if="search && !filteredTemplates.length" class="text-sm text-slate-500 text-center py-4">
                             {{ t('services.no_type_results') }}
                         </p>
                     </div>

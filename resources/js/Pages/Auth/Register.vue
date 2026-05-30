@@ -51,16 +51,16 @@ function submit() {
         <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-2">
                 <span class="w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold transition-colors"
-                    :class="step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'">1</span>
+                    :class="step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'">1</span>
                 <span class="text-xs font-medium transition-colors"
-                    :class="step === 1 ? 'text-slate-900' : 'text-slate-400'">{{ t('auth.register.step_account') }}</span>
+                    :class="step === 1 ? 'text-slate-900' : 'text-slate-500'">{{ t('auth.register.step_account') }}</span>
             </div>
             <div class="flex-1 h-px bg-slate-200 mx-3" />
             <div class="flex items-center gap-2">
                 <span class="w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold transition-colors"
-                    :class="step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'">2</span>
+                    :class="step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'">2</span>
                 <span class="text-xs font-medium transition-colors"
-                    :class="step === 2 ? 'text-slate-900' : 'text-slate-400'">{{ t('auth.register.step_band') }}</span>
+                    :class="step === 2 ? 'text-slate-900' : 'text-slate-500'">{{ t('auth.register.step_band') }}</span>
             </div>
         </div>
 
@@ -109,7 +109,7 @@ function submit() {
                     :placeholder="t('auth.placeholders.password')"
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
-                <p class="text-[11px] text-slate-400 mt-1">{{ t('auth.register.password_hint') }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ t('auth.register.password_hint') }}</p>
                 <p v-if="form.errors.password" class="text-xs text-red-600 mt-1">{{ form.errors.password }}</p>
             </div>
 
@@ -149,7 +149,7 @@ function submit() {
                     :placeholder="t('auth.placeholders.band_name')"
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
-                <p class="text-[11px] text-slate-400 mt-1">{{ t('auth.register.band_name_hint') }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ t('auth.register.band_name_hint') }}</p>
                 <p v-if="form.errors.band_name" class="text-xs text-red-600 mt-1">{{ form.errors.band_name }}</p>
             </div>
 

@@ -68,7 +68,7 @@ const hasAnyDetail = computed(() =>
                 <!-- Body -->
                 <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                     <!-- Empty state -->
-                    <p v-if="!hasAnyDetail" class="text-center text-sm text-slate-400 py-8">
+                    <p v-if="!hasAnyDetail" class="text-center text-sm text-slate-500 py-8">
                         {{ t('services.no_details') }}
                     </p>
 

@@ -88,7 +88,7 @@ function confirmDelete() {
             <div class="flex items-center justify-between mb-5">
                 <div>
                     <h1 class="text-lg font-semibold text-slate-900">{{ t('settings.templates.title') }}</h1>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.templates.subtitle') }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ t('settings.templates.subtitle') }}</p>
                 </div>
                 <button
                     @click="showAddSheet = true"
@@ -102,7 +102,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state -->
-            <div v-if="!templates.length" class="text-center py-16 text-slate-400">
+            <div v-if="!templates.length" class="text-center py-16 text-slate-500">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -118,7 +118,7 @@ function confirmDelete() {
                 >
                     <div>
                         <p class="font-medium text-slate-900 text-sm">{{ tpl.name }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">
+                        <p class="text-xs text-slate-500 mt-0.5">
                             {{ days[tpl.day_of_week] }} · {{ tpl.time.slice(0, 5) }}
                         </p>
                     </div>
@@ -213,7 +213,7 @@ function confirmDelete() {
             <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('settings.templates.add') }}</h2>
-                        <button @click="showAddSheet = false; addForm.reset()" class="text-slate-400 text-lg leading-none">✕</button>
+                        <button @click="showAddSheet = false; addForm.reset()" class="text-slate-500 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="space-y-3">
@@ -227,7 +227,7 @@ function confirmDelete() {
                                 :placeholder="t('settings.templates.name_placeholder')"
                                 class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
-                            <p class="text-xs text-slate-400 text-right mt-0.5">{{ addForm.name.length }}/20</p>
+                            <p class="text-xs text-slate-500 text-right mt-0.5">{{ addForm.name.length }}/20</p>
                             <p v-if="addForm.errors.name" class="text-xs text-red-600 mt-0.5">{{ addForm.errors.name }}</p>
                         </div>
 
@@ -268,7 +268,7 @@ function confirmDelete() {
             <div v-if="showEditSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('settings.templates.edit') }}</h2>
-                        <button @click="showEditSheet = false" class="text-slate-400 text-lg leading-none">✕</button>
+                        <button @click="showEditSheet = false" class="text-slate-500 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="space-y-3">
@@ -281,7 +281,7 @@ function confirmDelete() {
                                 :placeholder="t('settings.templates.name_placeholder')"
                                 class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
-                            <p class="text-xs text-slate-400 text-right mt-0.5">{{ editForm.name.length }}/20</p>
+                            <p class="text-xs text-slate-500 text-right mt-0.5">{{ editForm.name.length }}/20</p>
                             <p v-if="editForm.errors.name" class="text-xs text-red-600 mt-0.5">{{ editForm.errors.name }}</p>
                         </div>
 

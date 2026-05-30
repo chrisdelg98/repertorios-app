@@ -50,7 +50,7 @@ function formatDate(dateStr) {
         <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
 
             <!-- Back -->
-            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 transition-colors">
+            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-600 mb-4 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -77,7 +77,7 @@ function formatDate(dateStr) {
                                 class="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md shrink-0"
                             >{{ t('settings.members.you') }}</span>
                         </div>
-                        <p class="text-xs text-slate-400 truncate">{{ member.email }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ member.email }}</p>
                     </div>
                     <button
                         v-if="member.id !== auth.user?.id"
@@ -90,7 +90,7 @@ function formatDate(dateStr) {
                     </button>
                 </div>
 
-                <p v-if="!members.length" class="text-sm text-slate-400 text-center py-8">{{ t('settings.members.empty') }}</p>
+                <p v-if="!members.length" class="text-sm text-slate-500 text-center py-8">{{ t('settings.members.empty') }}</p>
             </div>
 
             <!-- Session members info -->

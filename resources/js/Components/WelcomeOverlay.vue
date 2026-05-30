@@ -130,7 +130,7 @@ function dismissForever() {
                         <button
                             type="button"
                             @click="dismissForever"
-                            class="w-full py-2 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
+                            class="w-full py-2 text-xs font-medium text-slate-500 hover:text-slate-600 transition-colors"
                         >
                             {{ t('welcome.dont_show_again') }}
                         </button>

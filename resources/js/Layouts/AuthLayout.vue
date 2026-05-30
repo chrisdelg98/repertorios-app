@@ -79,7 +79,7 @@ const notes = [
                 <slot />
             </div>
 
-            <p class="text-center text-[11px] text-slate-400 mt-5">
+            <p class="text-center text-[11px] text-slate-500 mt-5">
                 {{ t('app.tagline') }}
             </p>
         </div>

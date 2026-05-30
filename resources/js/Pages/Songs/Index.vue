@@ -224,7 +224,7 @@ function confirmDelete() {
             <div v-if="songs.length" class="mb-3 lg:mb-4 space-y-2">
                 <!-- Search -->
                 <div class="relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                     </svg>
                     <input
@@ -236,7 +236,7 @@ function confirmDelete() {
                     <button
                         v-if="search"
                         @click="search = ''"
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
                         :aria-label="t('songs.filter_clear')"
                     >
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -285,7 +285,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state: no songs at all -->
-            <div v-if="!songs.length" class="text-center py-16 text-slate-400">
+            <div v-if="!songs.length" class="text-center py-16 text-slate-500">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
@@ -293,7 +293,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state: no matches -->
-            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-400">
+            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-500">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                 </svg>
@@ -682,10 +682,10 @@ function confirmDelete() {
                                     <div class="flex items-center gap-2 min-w-0">
                                         <span class="text-sm font-medium text-slate-800 truncate">{{ v.name || t('songs.form.version') }}</span>
                                         <span v-if="v.key" class="text-xs text-indigo-600 font-semibold">{{ v.key }}</span>
-                                        <span v-if="v.bpm" class="text-xs text-slate-400">{{ v.bpm }} bpm</span>
+                                        <span v-if="v.bpm" class="text-xs text-slate-500">{{ v.bpm }} bpm</span>
                                     </div>
                                     <svg
-                                        class="w-4 h-4 text-slate-400 transition-transform shrink-0"
+                                        class="w-4 h-4 text-slate-500 transition-transform shrink-0"
                                         :class="expandedVersions[v.id] ? 'rotate-180' : ''"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                                     >

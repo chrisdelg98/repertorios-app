@@ -153,7 +153,7 @@ function submitDuplicate() {
             </div>
 
             <!-- Empty state -->
-            <div v-if="!services.data.length" class="text-center py-16 text-slate-400">
+            <div v-if="!services.data.length" class="text-center py-16 text-slate-500">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -203,7 +203,7 @@ function submitDuplicate() {
                         <button
                             type="button"
                             @click="toggleMenu(service.id, $event)"
-                            class="w-11 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-r-xl transition-colors"
+                            class="w-11 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-r-xl transition-colors"
                             :aria-label="t('services.actions')"
                             :aria-expanded="openMenuId === service.id"
                         >
@@ -376,7 +376,7 @@ function submitDuplicate() {
                 >
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.share_title') }}</h2>
-                        <button @click="closeShare" class="text-slate-400 text-lg leading-none">✕</button>
+                        <button @click="closeShare" class="text-slate-500 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="flex gap-2 mb-3">

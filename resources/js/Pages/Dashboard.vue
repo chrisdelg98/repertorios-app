@@ -71,7 +71,7 @@ function typeLabel(type) {
 
             <!-- Greeting -->
             <div>
-                <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">{{ greeting }}</p>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ greeting }}</p>
                 <h1 class="text-xl font-bold text-slate-900 mt-1">{{ displayName }}</h1>
             </div>
 
@@ -119,19 +119,19 @@ function typeLabel(type) {
                     </svg>
                 </div>
                 <p class="text-sm font-medium text-slate-700">{{ t('dashboard.no_upcoming_title') }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ t('dashboard.no_upcoming_body') }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ t('dashboard.no_upcoming_body') }}</p>
             </Link>
             <div
                 v-else
                 class="block bg-white rounded-2xl p-5 border border-dashed border-slate-300 text-center"
             >
                 <div class="w-10 h-10 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-2">
-                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
                 <p class="text-sm font-medium text-slate-500">{{ t('dashboard.no_upcoming_title') }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ t('dashboard.no_upcoming_readonly') }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ t('dashboard.no_upcoming_readonly') }}</p>
             </div>
 
             <!-- More upcoming -->
@@ -221,7 +221,7 @@ function typeLabel(type) {
                             </svg>
                         </div>
                         <p class="text-sm font-semibold text-slate-500">{{ t('dashboard.new_service') }}</p>
-                        <p class="text-[11px] text-slate-400 mt-0.5">{{ t('dashboard.locked_admin_only') }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ t('dashboard.locked_admin_only') }}</p>
                     </div>
 
                     <Link

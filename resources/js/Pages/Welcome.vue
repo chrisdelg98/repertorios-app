@@ -263,7 +263,7 @@ const steps = [
 
         <!-- ── Footer ────────────────────────────────────────────────── -->
         <footer class="border-t border-slate-100 py-8">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
                 <div class="flex items-center gap-2">
                     <Logo :size="20" />
                     <span>{{ appName }} · &copy; {{ new Date().getFullYear() }}</span>

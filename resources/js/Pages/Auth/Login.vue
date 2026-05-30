@@ -40,7 +40,7 @@ function joinBand() {
                 type="button"
                 @click="tab = 'admin'"
                 class="py-2.5 text-sm font-semibold transition-colors"
-                :class="tab === 'admin' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'"
+                :class="tab === 'admin' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-600'"
             >
                 {{ t('auth.tabs.admin') }}
             </button>
@@ -48,7 +48,7 @@ function joinBand() {
                 type="button"
                 @click="tab = 'member'"
                 class="py-2.5 text-sm font-semibold transition-colors"
-                :class="tab === 'member' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'"
+                :class="tab === 'member' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-600'"
             >
                 {{ t('auth.tabs.member') }}
             </button>
@@ -149,7 +149,7 @@ function joinBand() {
         </form>
 
         <!-- Discrete register link (admin tab only) -->
-        <p v-if="tab === 'admin'" class="text-center text-xs text-slate-400 mt-5">
+        <p v-if="tab === 'admin'" class="text-center text-xs text-slate-500 mt-5">
             {{ t('auth.no_account') }}
             <Link href="/register" class="font-semibold text-indigo-600 hover:text-indigo-700 ml-1">{{ t('auth.create_band') }}</Link>
         </p>

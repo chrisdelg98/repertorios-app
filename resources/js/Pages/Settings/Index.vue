@@ -76,7 +76,7 @@ const sections = [
 
                     <div class="flex-1 min-w-0">
                         <p class="font-medium text-slate-900 text-sm">{{ s.title() }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5 truncate">{{ s.subtitle() }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5 truncate">{{ s.subtitle() }}</p>
                     </div>
 
                     <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

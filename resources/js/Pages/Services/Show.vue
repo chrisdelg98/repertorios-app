@@ -259,14 +259,14 @@ function scheduleReorder() {
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                     {{ t('services.setlist') }}
                 </p>
-                <span v-if="localSongs.length" class="text-xs text-slate-400">{{ localSongs.length }}</span>
+                <span v-if="localSongs.length" class="text-xs text-slate-500">{{ localSongs.length }}</span>
             </div>
 
             <!-- Songs list -->
             <div class="space-y-2 mb-4">
                 <div
                     v-if="!localSongs.length"
-                    class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-400 text-sm"
+                    class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-500 text-sm"
                 >
                     {{ t('services.no_songs') }}
                 </div>
@@ -343,7 +343,7 @@ function scheduleReorder() {
             <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.add_song') }}</h2>
-                        <button @click="closeAddSheet" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
+                        <button @click="closeAddSheet" class="text-slate-500 hover:text-slate-600 text-lg leading-none">✕</button>
                     </div>
 
                     <!-- Search input -->
@@ -475,7 +475,7 @@ function scheduleReorder() {
             <div v-if="showShareSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.share_title') }}</h2>
-                        <button @click="showShareSheet = false" class="text-slate-400 text-lg leading-none">✕</button>
+                        <button @click="showShareSheet = false" class="text-slate-500 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="flex gap-2 mb-3">

@@ -101,7 +101,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
             >
                 <!-- Search input -->
                 <div v-if="searchable" class="relative border-b border-slate-100">
-                    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                     </svg>
                     <input
@@ -109,7 +109,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
                         v-model="query"
                         type="text"
                         :placeholder="searchPlaceholder"
-                        class="w-full pl-8 pr-2 py-2 text-xs bg-transparent focus:outline-none placeholder:text-slate-400"
+                        class="w-full pl-8 pr-2 py-2 text-xs bg-transparent focus:outline-none placeholder:text-slate-500"
                     />
                 </div>
 
@@ -128,8 +128,8 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
                 <!-- Options list -->
                 <div class="overflow-y-auto flex-1">
-                    <p v-if="!options.length" class="px-3 py-2 text-xs text-slate-400 italic">{{ emptyLabel }}</p>
-                    <p v-else-if="!filteredOptions.length" class="px-3 py-2 text-xs text-slate-400 italic">{{ noResultsLabel }}</p>
+                    <p v-if="!options.length" class="px-3 py-2 text-xs text-slate-500 italic">{{ emptyLabel }}</p>
+                    <p v-else-if="!filteredOptions.length" class="px-3 py-2 text-xs text-slate-500 italic">{{ noResultsLabel }}</p>
 
                     <button
                         v-for="opt in filteredOptions"
