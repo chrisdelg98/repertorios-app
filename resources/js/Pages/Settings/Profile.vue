@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { compressImage, ImageTooLargeError, MAX_INPUT_MB } from '@/composables/useImageCompressor';
 
 const { t } = useI18n();
 const page = usePage();
@@ -27,20 +28,42 @@ function submitInfo() {
 }
 
 // ── Avatar form ─────────────────────────────────────────────────
-const avatarInput = ref(null);
+const avatarInput   = ref(null);
 const avatarPreview = ref(auth.value.user?.avatar_url ?? null);
-const avatarForm = useForm({ avatar: null });
+const avatarError   = ref('');
+const avatarForm    = useForm({ avatar: null });
 
 function pickAvatar() {
     avatarInput.value?.click();
 }
 
-function onAvatarChange(e) {
+async function onAvatarChange(e) {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
-    avatarForm.avatar = file;
-    avatarPreview.value = URL.createObjectURL(file);
-    avatarForm.post('/settings/profile/avatar');
+
+    avatarError.value = '';
+
+    let toUpload = file;
+    try {
+        toUpload = await compressImage(file, { minSide: 512 });
+    } catch (err) {
+        if (err instanceof ImageTooLargeError) {
+            avatarError.value = t('settings.profile.error_too_large', { max: MAX_INPUT_MB });
+            return;
+        }
+        // Other compression errors (memory, unsupported format): fall back to original.
+        toUpload = file;
+    }
+
+    avatarForm.avatar   = toUpload;
+    avatarPreview.value = URL.createObjectURL(toUpload);
+    avatarForm.post('/settings/profile/avatar', {
+        preserveScroll: true,
+        onError: (errors) => {
+            avatarError.value = errors.avatar || '';
+        },
+    });
 }
 
 // ── Password form ───────────────────────────────────────────────
@@ -98,14 +121,15 @@ function submitPassword() {
                 </div>
                 <div>
                     <p class="text-sm font-medium text-slate-900">{{ t('settings.profile.avatar_label') }}</p>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.profile.avatar_hint') }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.profile.avatar_hint', { max: MAX_INPUT_MB }) }}</p>
                     <button
                         @click="pickAvatar"
                         :disabled="avatarForm.processing"
                         class="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-40"
                     >
-                        {{ t('settings.profile.change_photo') }}
+                        {{ avatarForm.processing ? t('settings.profile.uploading') : t('settings.profile.change_photo') }}
                     </button>
+                    <p v-if="avatarError" class="text-xs text-red-600 mt-1">{{ avatarError }}</p>
                     <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarChange" />
                 </div>
             </div>

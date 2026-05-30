@@ -56,7 +56,7 @@ class BandSettingsController extends Controller
         $this->requireAdmin();
 
         $request->validate([
-            'logo' => 'required|image|max:2048',
+            'logo' => ['required', 'image', 'mimes:webp,jpg,jpeg,png,gif', 'max:10240'],
         ]);
 
         $band = Band::findOrFail($this->bandId());

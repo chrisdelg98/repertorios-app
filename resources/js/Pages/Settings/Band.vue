@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { compressImage, ImageTooLargeError, MAX_INPUT_MB } from '@/composables/useImageCompressor';
 
 const { t } = useI18n();
 
@@ -37,16 +38,37 @@ function submitName() {
 // ── Logo form ────────────────────────────────────────────────────
 const logoInput   = ref(null);
 const logoPreview = ref(props.band.logo_url);
+const logoError   = ref('');
 const logoForm    = useForm({ logo: null });
 
 function pickLogo() { logoInput.value?.click(); }
 
-function onLogoChange(e) {
+async function onLogoChange(e) {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
-    logoForm.logo     = file;
-    logoPreview.value = URL.createObjectURL(file);
-    logoForm.post('/settings/band/logo');
+
+    logoError.value = '';
+
+    let toUpload = file;
+    try {
+        toUpload = await compressImage(file, { minSide: 640 });
+    } catch (err) {
+        if (err instanceof ImageTooLargeError) {
+            logoError.value = t('settings.band.error_too_large', { max: MAX_INPUT_MB });
+            return;
+        }
+        toUpload = file;
+    }
+
+    logoForm.logo     = toUpload;
+    logoPreview.value = URL.createObjectURL(toUpload);
+    logoForm.post('/settings/band/logo', {
+        preserveScroll: true,
+        onError: (errors) => {
+            logoError.value = errors.logo || '';
+        },
+    });
 }
 
 // ── Regenerate actions ───────────────────────────────────────────
@@ -127,7 +149,7 @@ function shareLink() {
                 </div>
                 <div>
                     <p class="text-sm font-medium text-slate-900">{{ t('settings.band.logo_label') }}</p>
-                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.band.logo_hint') }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ t('settings.band.logo_hint', { max: MAX_INPUT_MB }) }}</p>
                     <button
                         @click="pickLogo"
                         :disabled="logoForm.processing"
@@ -135,6 +157,7 @@ function shareLink() {
                     >
                         {{ logoForm.processing ? t('settings.band.saving') : t('settings.band.change_logo') }}
                     </button>
+                    <p v-if="logoError" class="text-xs text-red-600 mt-1">{{ logoError }}</p>
                     <input ref="logoInput" type="file" accept="image/*" class="hidden" @change="onLogoChange" />
                 </div>
             </div>
