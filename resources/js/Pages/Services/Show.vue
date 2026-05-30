@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -177,6 +177,15 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     youtube_url: ss.song_version.youtube_url,
 })));
 const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url));
+
+// --- Actions kebab menu (duplicate / edit / delete) ---
+const actionsMenuOpen = ref(false);
+function toggleActionsMenu(e) { e?.stopPropagation(); actionsMenuOpen.value = !actionsMenuOpen.value; }
+function closeActionsMenu(e) {
+    if (!e.target.closest('[data-actions-menu]')) actionsMenuOpen.value = false;
+}
+onMounted(() => document.addEventListener('click', closeActionsMenu));
+onBeforeUnmount(() => document.removeEventListener('click', closeActionsMenu));
 watch(() => props.service.service_songs, (songs) => { localSongs.value = [...songs]; });
 
 let reorderTimer = null;
@@ -234,7 +243,7 @@ function scheduleReorder() {
                 <button
                     @click="openShare"
                     :disabled="sharing"
-                    class="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-indigo-200 text-indigo-600 text-sm font-semibold rounded-xl hover:bg-indigo-50 disabled:opacity-50 transition-colors"
+                    class="flex-1 sm:flex-[3] flex items-center justify-center gap-1.5 py-2.5 bg-white border border-indigo-200 text-indigo-600 text-sm font-semibold rounded-xl hover:bg-indigo-50 disabled:opacity-50 transition-colors"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -245,57 +254,84 @@ function scheduleReorder() {
                 <button
                     v-if="hasAnyVideo"
                     @click="playlistOpen = true"
-                    class="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white border border-indigo-200 text-indigo-600 text-sm font-semibold rounded-xl hover:bg-indigo-50 transition-colors"
+                    class="flex-1 sm:flex-[2] flex items-center justify-center gap-1.5 py-2.5 bg-white border border-indigo-200 text-indigo-600 text-sm font-semibold rounded-xl hover:bg-indigo-50 transition-colors"
                     :title="t('playlist.play_all')"
                 >
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                     </svg>
-                    <span class="hidden sm:inline">{{ t('playlist.play_all') }}</span>
+                    {{ t('playlist.play_all') }}
                 </button>
 
-                <button
-                    @click="previewAsGuest"
-                    :disabled="sharing"
-                    class="w-11 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-colors"
-                    :aria-label="t('services.preview_as_guest')"
-                    :title="t('services.preview_as_guest')"
-                >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </button>
+                <!-- Kebab menu: preview as guest / duplicate / edit / delete -->
+                <div v-if="can_write" class="relative" data-actions-menu>
+                    <button
+                        @click="toggleActionsMenu"
+                        class="w-11 h-full flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 transition-colors"
+                        :aria-label="t('services.actions')"
+                        :aria-expanded="actionsMenuOpen"
+                    >
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                    </button>
 
-                <template v-if="can_write">
-                    <button
-                        @click="showDuplicateSheet = true"
-                        class="w-11 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 transition-colors"
-                        :aria-label="t('services.duplicate')"
+                    <Transition
+                        enter-active-class="transition duration-150 ease-out"
+                        enter-from-class="opacity-0 scale-95"
+                        enter-to-class="opacity-100 scale-100"
+                        leave-active-class="transition duration-100 ease-in"
+                        leave-from-class="opacity-100 scale-100"
+                        leave-to-class="opacity-0 scale-95"
                     >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                    </button>
-                    <a
-                        :href="'/services/' + service.id + '/edit'"
-                        class="w-11 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 transition-colors"
-                        :aria-label="t('services.edit_service')"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-                        </svg>
-                    </a>
-                    <button
-                        @click="deleteService"
-                        class="w-11 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
-                        :aria-label="t('services.delete_service')"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </template>
+                        <div
+                            v-if="actionsMenuOpen"
+                            class="absolute right-0 mt-1.5 w-48 z-20 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
+                        >
+                            <button
+                                type="button"
+                                @click.stop="actionsMenuOpen = false; previewAsGuest()"
+                                :disabled="sharing"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                            >
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                {{ t('services.preview_as_guest') }}
+                            </button>
+                            <button
+                                type="button"
+                                @click.stop="actionsMenuOpen = false; showDuplicateSheet = true"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                            >
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                {{ t('services.duplicate') }}
+                            </button>
+                            <a
+                                :href="'/services/' + service.id + '/edit'"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                            >
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                                </svg>
+                                {{ t('services.edit_service') }}
+                            </a>
+                            <button
+                                type="button"
+                                @click.stop="actionsMenuOpen = false; deleteService()"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"
+                            >
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                {{ t('services.delete_service') }}
+                            </button>
+                        </div>
+                    </Transition>
+                </div>
             </div>
 
             <!-- Songs section heading -->
