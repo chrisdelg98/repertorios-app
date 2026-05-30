@@ -8,7 +8,17 @@ import { createPinia } from 'pinia';
 import { registerSW } from 'virtual:pwa-register';
 import i18n from '@/i18n/index.js';
 
-registerSW({ immediate: true });
+// Skip service worker on localhost to avoid stale chunk issues during development.
+// Production builds (served from real domain) get full PWA functionality.
+const isLocalhost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+
+if (isLocalhost) {
+    navigator.serviceWorker?.getRegistrations()
+        .then(regs => regs.forEach(r => r.unregister()))
+        .catch(() => {});
+} else {
+    registerSW({ immediate: true });
+}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Repertorios';
 
