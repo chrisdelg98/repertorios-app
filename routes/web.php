@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\UpgradeAccountController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Public\JoinController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
 use App\Http\Controllers\Services\ShareController;
@@ -72,6 +73,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware('band.access')->group(function () {
     Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Welcome overlay — admin dismisses it permanently
+    Route::post('/welcome/dismiss', [WelcomeController::class, 'dismiss'])->name('welcome.dismiss');
 
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

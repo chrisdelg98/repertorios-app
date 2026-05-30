@@ -100,6 +100,22 @@
     "tile_title": "Apoya el proyecto",
     "tile_subtitle": "Ayuda a mantener Repertorios gratis y creciendo"
   },
+  "welcome": {
+    "eyebrow": "Bienvenido a Repertorios",
+    "greeting": "¡Bendiciones, {name}!",
+    "blessing": "Que este sea un lugar que haga cada domingo más liviano y la alabanza de tu equipo más dulce. Toma un minuto para configurar lo básico — te guiamos.",
+    "checklist_title": "Empieza en 4 pasos",
+    "step_templates_title": "Configura las plantillas de horario",
+    "step_templates_body": "Domingo 10 AM, miércoles 7 PM… así crear servicios es un solo toque.",
+    "step_songs_title": "Agrega tus canciones",
+    "step_songs_body": "Arma tu biblioteca: nombre, tonalidad, versión. Puedes pegar también el enlace de YouTube.",
+    "step_service_title": "Planea tu primer servicio",
+    "step_service_body": "Elige fecha, agrega las canciones y listo.",
+    "step_share_title": "Comparte acceso con tu equipo",
+    "step_share_body": "Envía el enlace de invitación desde Ajustes de Banda — un toque y entran, sin necesidad de cuenta.",
+    "cta_explore": "Listo, vamos",
+    "dont_show_again": "No volver a mostrar"
+  },
   "install": {
     "banner_title": "Agregar a la pantalla de inicio",
     "banner_subtitle": "Disfruta la experiencia completa de la app",

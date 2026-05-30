@@ -100,6 +100,22 @@
     "tile_title": "Support the project",
     "tile_subtitle": "Help keep Repertorios free and growing"
   },
+  "welcome": {
+    "eyebrow": "Welcome to Repertorios",
+    "greeting": "Bless you, {name}!",
+    "blessing": "May this be a place that makes every Sunday lighter and your team's worship sweeter. Take a minute to set up the basics — we'll guide you.",
+    "checklist_title": "Get started in 4 steps",
+    "step_templates_title": "Set up your schedule templates",
+    "step_templates_body": "Sunday 10 AM, Wednesday 7 PM… so creating services takes one tap.",
+    "step_songs_title": "Add your songs",
+    "step_songs_body": "Build your library — name, key, version. You can paste a YouTube link too.",
+    "step_service_title": "Plan your first service",
+    "step_service_body": "Pick a date, drop in the songs, and you're ready.",
+    "step_share_title": "Share access with your team",
+    "step_share_body": "Send the invite link from Band settings — one tap to join, no account needed.",
+    "cta_explore": "Got it, let's go",
+    "dont_show_again": "Don't show this again"
+  },
   "install": {
     "banner_title": "Add to Home Screen",
     "banner_subtitle": "Get the full app experience",

@@ -60,6 +60,12 @@ class HandleInertiaRequests extends Middleware
                     : $request->session()->get('access_level'),
                 'can_write' => fn () => ($user && $user->role === 'admin')
                     || $request->session()->get('access_level') === 'editor',
+                'show_welcome' => function () use ($request, $user) {
+                    if (!$user || $user->role !== 'admin' || $user->welcome_dismissed_at) {
+                        return false;
+                    }
+                    return (bool) $request->session()->pull('welcome_pending', false);
+                },
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

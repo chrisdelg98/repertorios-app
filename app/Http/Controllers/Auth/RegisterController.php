@@ -48,6 +48,7 @@ class RegisterController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $request->session()->put('welcome_pending', true);
 
         return redirect()->route('verification.notice');
     }

@@ -27,6 +27,7 @@ class AdminLoginController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->session()->put('welcome_pending', true);
 
         return redirect()->intended(route('dashboard'));
     }

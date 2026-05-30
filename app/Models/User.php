@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'password',
         'avatar',
+        'welcome_dismissed_at',
     ];
 
     public function isAdmin(): bool
@@ -61,8 +62,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'    => 'datetime',
+            'welcome_dismissed_at' => 'datetime',
+            'password'             => 'hashed',
         ];
     }
 }

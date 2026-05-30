@@ -4,6 +4,7 @@ import { usePage, router, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 import Logo from '@/Components/Logo.vue';
+import WelcomeOverlay from '@/Components/WelcomeOverlay.vue';
 
 const donateUrl = computed(() => page.props.donate?.url || null);
 
@@ -251,6 +252,9 @@ const navItems = computed(() => {
         <main class="lg:ml-64 pb-24 lg:pb-12">
             <slot />
         </main>
+
+        <!-- Welcome overlay (admin first login) -->
+        <WelcomeOverlay v-if="auth.show_welcome" />
 
         <!-- ─────────────────────────────────────────────────────────── -->
         <!-- Mobile bottom nav (hidden on lg+)                           -->
