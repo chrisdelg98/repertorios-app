@@ -137,6 +137,7 @@
     "tile_title": "Instalar App",
     "tile_subtitle": "Agrega a tu pantalla de inicio para acceso rápido",
     "installed_title": "App instalada",
-    "installed_subtitle": "Ya estás usando la versión instalada"
+    "installed_subtitle": "Ya estás usando la versión instalada",
+    "tile_not_available": "No disponible en este navegador/modo privado"
   }
 }

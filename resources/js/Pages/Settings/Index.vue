@@ -91,11 +91,13 @@ const sections = computed(() => {
                     </svg>
                 </Link>
 
-                <!-- Install app tile (shown only when installable and not already installed) -->
+                <!-- Install app tile (hidden only when already installed) -->
                 <button
-                    v-if="isInstallable && !isInstalled"
+                    v-if="!isInstalled"
                     @click="promptInstall"
-                    class="w-full flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl px-4 py-3.5 border border-indigo-100 hover:from-indigo-100 hover:to-violet-100 active:scale-[0.99] transition"
+                    :disabled="!isInstallable"
+                    class="w-full flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl px-4 py-3.5 border border-indigo-100 hover:from-indigo-100 hover:to-violet-100 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 transition"
+                    :title="isInstallable ? '' : t('install.tile_not_available')"
                 >
                     <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

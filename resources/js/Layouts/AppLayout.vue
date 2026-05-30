@@ -298,9 +298,9 @@ const navItems = computed(() => {
                     <span class="text-[10px] font-medium">{{ t('nav.songs') }}</span>
                 </Link>
 
-                <!-- Settings (admin only) -->
+                <!-- Settings (any registered user — content is gated per-tile) -->
                 <Link
-                    v-if="auth.access === 'admin'"
+                    v-if="auth.user"
                     href="/settings"
                     class="flex-1 flex flex-col items-center gap-0.5 py-2.5"
                     :class="isActive('/settings') ? 'text-indigo-600' : 'text-slate-500'"

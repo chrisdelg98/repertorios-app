@@ -137,6 +137,7 @@
     "tile_title": "Install App",
     "tile_subtitle": "Add to your home screen for faster access",
     "installed_title": "App installed",
-    "installed_subtitle": "You're already using the installed version"
+    "installed_subtitle": "You're already using the installed version",
+    "tile_not_available": "Not available in this browser/private mode"
   }
 }
