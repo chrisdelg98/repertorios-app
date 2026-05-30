@@ -17,7 +17,7 @@ class BandSettingsController extends Controller
 
     public function show(): Response
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $band = Band::findOrFail($this->bandId());
 
@@ -38,7 +38,7 @@ class BandSettingsController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $band = Band::findOrFail($this->bandId());
 
@@ -53,7 +53,7 @@ class BandSettingsController extends Controller
 
     public function updateLogo(Request $request): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $request->validate([
             'logo' => ['required', 'image', 'mimes:webp,jpg,jpeg,png,gif', 'max:10240'],
@@ -73,7 +73,7 @@ class BandSettingsController extends Controller
 
     public function regenerateCode(): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $band = Band::findOrFail($this->bandId());
         $band->update(['code' => Band::generateCode()]);
@@ -83,7 +83,7 @@ class BandSettingsController extends Controller
 
     public function regeneratePin(): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $band = Band::findOrFail($this->bandId());
         $band->update(['access_pin' => Band::generatePin()]);
@@ -93,7 +93,7 @@ class BandSettingsController extends Controller
 
     public function regenerateToken(): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
 
         $band = Band::findOrFail($this->bandId());
         $band->update(['invite_token' => Band::generateToken()]);

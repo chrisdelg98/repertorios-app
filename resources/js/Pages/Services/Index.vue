@@ -7,7 +7,8 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 const { t } = useI18n();
 const page = usePage();
 
-const canWrite = computed(() => !!page.props.auth?.can_write);
+const canWrite  = computed(() => !!page.props.auth?.can_write);
+const isCreator = computed(() => !!page.props.auth?.is_creator);
 
 const props = defineProps({
     services: Object,
@@ -248,7 +249,7 @@ function submitDuplicate() {
                                     {{ t('services.duplicate') }}
                                 </button>
                                 <button
-                                    v-if="canWrite"
+                                    v-if="isCreator"
                                     type="button"
                                     @click.stop="askDelete(service.id)"
                                     class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"

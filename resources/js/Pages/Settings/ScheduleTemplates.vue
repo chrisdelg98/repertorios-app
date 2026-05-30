@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const { t } = useI18n();
+const __page    = usePage();
+const isCreator = computed(() => !!__page.props.auth?.is_creator);
 
 const props = defineProps({
     templates: Array,
@@ -132,6 +134,7 @@ function confirmDelete() {
                             </svg>
                         </button>
                         <button
+                            v-if="isCreator"
                             @click="askDelete(tpl)"
                             class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors"
                         >

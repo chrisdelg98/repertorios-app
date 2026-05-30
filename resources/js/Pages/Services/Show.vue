@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
@@ -178,6 +178,9 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
 })));
 const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url));
 
+const __page = usePage();
+const isCreator = computed(() => !!__page.props.auth?.is_creator);
+
 // --- Actions kebab menu (duplicate / edit / delete) ---
 const actionsMenuOpen = ref(false);
 function toggleActionsMenu(e) { e?.stopPropagation(); actionsMenuOpen.value = !actionsMenuOpen.value; }
@@ -320,6 +323,7 @@ function scheduleReorder() {
                                 {{ t('services.edit_service') }}
                             </a>
                             <button
+                                v-if="isCreator"
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; deleteService()"
                                 class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"

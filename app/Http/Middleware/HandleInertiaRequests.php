@@ -60,6 +60,11 @@ class HandleInertiaRequests extends Middleware
                     : $request->session()->get('access_level'),
                 'can_write' => fn () => ($user && $user->role === 'admin')
                     || $request->session()->get('access_level') === 'editor',
+                'is_creator' => function () use ($user) {
+                    if (!$user) return false;
+                    $band = Band::find($user->band_id, ['id', 'creator_id']);
+                    return $band && (int) $band->creator_id === (int) $user->id;
+                },
                 'show_welcome' => function () use ($request, $user) {
                     if (!$user || $user->role !== 'admin' || $user->welcome_dismissed_at) {
                         return false;

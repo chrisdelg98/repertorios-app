@@ -68,7 +68,7 @@ class ScheduleTemplateController extends Controller
 
     public function destroy(ScheduleTemplate $scheduleTemplate): RedirectResponse
     {
-        $this->requireAdmin();
+        $this->requireCreator();
         abort_unless($scheduleTemplate->band_id === $this->bandId(), 403);
 
         $scheduleTemplate->delete();

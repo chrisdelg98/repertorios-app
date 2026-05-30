@@ -11,13 +11,23 @@ class Band extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'logo', 'code', 'access_pin', 'edit_pin', 'invite_token'];
+    protected $fillable = ['creator_id', 'name', 'logo', 'code', 'access_pin', 'edit_pin', 'invite_token'];
 
     protected $hidden = ['access_pin', 'edit_pin'];
 
     public function admins(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(BandVisit::class);
     }
 
     public static function generateCode(): string

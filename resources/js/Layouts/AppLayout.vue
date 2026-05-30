@@ -53,7 +53,7 @@ const navItems = computed(() => {
         { href: '/services',  label: t('nav.services'), icon: 'calendar' },
         { href: '/songs',     label: t('nav.songs'),    icon: 'music' },
     ];
-    if (auth.value.access === 'admin') {
+    if (auth.value.user) {
         base.push({ href: '/settings', label: t('nav.settings'), icon: 'settings' });
     }
     return base;

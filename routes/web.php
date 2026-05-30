@@ -115,7 +115,10 @@ Route::middleware('band.access')->group(function () {
     Route::post('/settings/band/regenerate-token', [BandSettingsController::class, 'regenerateToken'])->name('settings.band.regenerate-token');
 
     Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
+    Route::post('/settings/members/{user}/promote', [MemberController::class, 'promote'])->name('settings.members.promote');
+    Route::post('/settings/members/{user}/demote', [MemberController::class, 'demote'])->name('settings.members.demote');
     Route::delete('/settings/members/{user}', [MemberController::class, 'destroy'])->name('settings.members.destroy');
+    Route::delete('/settings/visitors', [MemberController::class, 'resetVisitors'])->name('settings.visitors.reset');
 
     Route::get('/settings/schedule-templates', [ScheduleTemplateController::class, 'index'])->name('settings.templates');
     Route::post('/settings/schedule-templates', [ScheduleTemplateController::class, 'store'])->name('settings.templates.store');

@@ -89,7 +89,7 @@ class SongController extends Controller
 
     public function destroy(Song $song): RedirectResponse
     {
-        $this->requireWrite();
+        $this->requireCreator();
         abort_unless($song->band_id === $this->bandId(), 403);
 
         $song->delete();

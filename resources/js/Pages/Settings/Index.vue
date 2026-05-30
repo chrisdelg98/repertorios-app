@@ -10,38 +10,45 @@ const page = usePage();
 const { isInstallable, isInstalled, promptInstall } = useInstall();
 
 const donateUrl = computed(() => page.props.donate?.url || null);
+const isAdmin   = computed(() => page.props.auth?.access === 'admin');
+const isCreator = computed(() => !!page.props.auth?.is_creator);
 
 function openDonate() {
     if (!donateUrl.value) return;
     window.open(donateUrl.value, '_blank', 'noopener,noreferrer');
 }
 
-const sections = [
-    {
+const sections = computed(() => {
+    const list = [];
+    // Templates: admin (creator + delegated)
+    if (isAdmin.value) list.push({
         href: '/settings/schedule-templates',
         icon: 'calendar',
         title: () => t('settings.templates.title'),
         subtitle: () => t('settings.templates.subtitle'),
-    },
-    {
+    });
+    // Profile: any registered user
+    list.push({
         href: '/settings/profile',
         icon: 'user',
         title: () => t('settings.profile.title'),
         subtitle: () => t('settings.profile.subtitle'),
-    },
-    {
+    });
+    // Band + Administrators: creator only
+    if (isCreator.value) list.push({
         href: '/settings/band',
         icon: 'band',
         title: () => t('settings.band.title'),
         subtitle: () => t('settings.band.subtitle'),
-    },
-    {
+    });
+    if (isCreator.value) list.push({
         href: '/settings/members',
         icon: 'members',
         title: () => t('settings.members.title'),
         subtitle: () => t('settings.members.subtitle'),
-    },
-];
+    });
+    return list;
+});
 </script>
 
 <template>

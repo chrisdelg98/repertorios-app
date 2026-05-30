@@ -135,7 +135,7 @@ class ServiceController extends Controller
 
     public function destroy(Service $service): RedirectResponse
     {
-        $this->requireWrite();
+        $this->requireCreator();
         abort_unless($service->band_id === $this->bandId(), 403);
 
         $service->delete();
