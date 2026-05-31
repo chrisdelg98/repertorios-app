@@ -3,15 +3,16 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import MultiSelect from '@/Components/MultiSelect.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const page = usePage();
 
 const canWrite  = computed(() => !!page.props.auth?.can_write);
 const isCreator = computed(() => !!page.props.auth?.is_creator);
 
 const props = defineProps({
-    services: Object,
+    services: Array,
 });
 
 function typeLabel(type) {
@@ -23,6 +24,64 @@ function formatDate(dateStr) {
     const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
     const date = new Date(datePart + 'T00:00:00');
     return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+const showAll         = ref(false);       // false → only upcoming
+const search          = ref('');
+const selectedTypes   = ref([]);
+const selectedMonths  = ref([]);
+
+const todayKey = computed(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().slice(0, 10); // YYYY-MM-DD
+});
+
+function monthKey(dateStr) {
+    return dateStr.slice(0, 7); // YYYY-MM
+}
+
+function monthLabel(key) {
+    const [y, m] = key.split('-');
+    const d = new Date(parseInt(y), parseInt(m) - 1, 1);
+    const label = d.toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { month: 'long', year: 'numeric' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+const availableTypes = computed(() => {
+    const set = new Set();
+    props.services.forEach(s => set.add(s.type || 'other'));
+    return [...set].sort();
+});
+
+const availableMonths = computed(() => {
+    const set = new Set();
+    props.services.forEach(s => set.add(monthKey(s.date)));
+    return [...set].sort().reverse(); // most recent first
+});
+
+const availableMonthLabels = computed(() => availableMonths.value.map(monthLabel));
+
+const filteredServices = computed(() => {
+    const q = search.value.trim().toLowerCase();
+    return props.services.filter(s => {
+        if (!showAll.value && s.date < todayKey.value) return false;
+        if (q && !typeLabel(s.type).toLowerCase().includes(q)) return false;
+        if (selectedTypes.value.length && !selectedTypes.value.includes(s.type || 'other')) return false;
+        if (selectedMonths.value.length && !selectedMonths.value.includes(monthLabel(monthKey(s.date)))) return false;
+        return true;
+    });
+});
+
+const hasActiveFilters = computed(() =>
+    !!(search.value || selectedTypes.value.length || selectedMonths.value.length)
+);
+
+function clearFilters() {
+    search.value         = '';
+    selectedTypes.value  = [];
+    selectedMonths.value = [];
 }
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
@@ -153,18 +212,107 @@ function submitDuplicate() {
                 </Link>
             </div>
 
-            <!-- Empty state -->
-            <div v-if="!services.data.length" class="text-center py-16 text-slate-500">
+            <!-- Filters -->
+            <div v-if="services.length" class="mb-3 lg:mb-4 space-y-2">
+                <!-- Toggle: Upcoming vs All -->
+                <div class="inline-flex bg-slate-100 rounded-xl p-1">
+                    <button
+                        type="button"
+                        @click="showAll = false"
+                        :class="[
+                            'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+                            !showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                        ]"
+                    >
+                        {{ t('services.filter_upcoming') }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="showAll = true"
+                        :class="[
+                            'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+                            showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                        ]"
+                    >
+                        {{ t('services.filter_all') }}
+                    </button>
+                </div>
+
+                <!-- Detail filters: only when showing all -->
+                <template v-if="showAll">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
+                        </svg>
+                        <input
+                            v-model="search"
+                            type="text"
+                            :placeholder="t('services.filter_search')"
+                            class="w-full pl-9 pr-9 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <button
+                            v-if="search"
+                            @click="search = ''"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <MultiSelect
+                            v-if="availableTypes.length"
+                            v-model="selectedTypes"
+                            :label="t('services.filter_types')"
+                            :options="availableTypes"
+                            :clear-label="t('services.filter_clear')"
+                        />
+                        <MultiSelect
+                            v-if="availableMonthLabels.length"
+                            v-model="selectedMonths"
+                            :label="t('services.filter_months')"
+                            :options="availableMonthLabels"
+                            :clear-label="t('services.filter_clear')"
+                        />
+                    </div>
+
+                    <div v-if="hasActiveFilters" class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                        <span>{{ t('services.filter_results', { shown: filteredServices.length, total: services.length }) }}</span>
+                        <button
+                            @click="clearFilters"
+                            class="text-indigo-600 font-semibold hover:text-indigo-700"
+                        >{{ t('services.filter_clear') }}</button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Empty state: no services at all -->
+            <div v-if="!services.length" class="text-center py-16 text-slate-500">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <p class="text-sm">{{ t('services.empty') }}</p>
             </div>
 
+            <!-- Empty state: no matches -->
+            <div v-else-if="!filteredServices.length" class="text-center py-16 text-slate-500">
+                <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
+                </svg>
+                <p class="text-sm">{{ showAll ? t('services.filter_no_results') : t('services.filter_no_upcoming') }}</p>
+                <button
+                    v-if="!showAll"
+                    @click="showAll = true"
+                    class="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                >{{ t('services.filter_show_all') }}</button>
+            </div>
+
             <!-- Services list -->
             <div v-else class="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-3">
                 <div
-                    v-for="service in services.data"
+                    v-for="service in filteredServices"
                     :key="service.id"
                     class="group flex items-stretch rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition"
                 >
@@ -265,22 +413,6 @@ function submitDuplicate() {
                 </div>
             </div>
 
-            <!-- Pagination -->
-            <div v-if="services.last_page > 1" class="flex justify-center gap-2 mt-6">
-                <Link
-                    v-for="link in services.links"
-                    :key="link.label"
-                    :href="link.url ?? '#'"
-                    v-html="link.label"
-                    :class="[
-                        'px-3 py-1.5 text-xs rounded-lg border',
-                        link.active
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'border-slate-200 text-slate-600',
-                        !link.url && 'opacity-40 pointer-events-none',
-                    ]"
-                />
-            </div>
         </div>
 
         <!-- ── Delete confirmation bottom sheet ─────────────────────── -->

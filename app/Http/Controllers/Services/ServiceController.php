@@ -22,8 +22,9 @@ class ServiceController extends Controller
     {
         $services = Service::where('band_id', $this->bandId())
             ->orderByDesc('date')
+            ->orderByDesc('time')
             ->withCount('serviceSongs')
-            ->paginate(20);
+            ->get(['id', 'band_id', 'date', 'time', 'type', 'created_at']);
 
         return Inertia::render('Services/Index', [
             'services' => $services,
