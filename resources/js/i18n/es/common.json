@@ -88,6 +88,13 @@
     "browse_library": "Biblioteca",
     "browse_library_hint": "Ver canciones",
     "no_upcoming_readonly": "Tu admin aún no ha planeado uno",
+    "upgrade_title": "Estás usando un acceso temporal",
+    "upgrade_subtitle": "Crea tu cuenta gratis para hacerlo permanente.",
+    "upgrade_benefit_1": "Guarda tu acceso — sin depender del enlace de invitación",
+    "upgrade_benefit_2": "Recibe un rol en la banda (Teclado, Bajo, Coros…)",
+    "upgrade_benefit_3": "Inicia sesión desde cualquier dispositivo con correo y contraseña",
+    "upgrade_cta": "Crear mi cuenta",
+    "upgrade_optional": "Opcional, pero recomendado.",
     "locked_admin_only": "Solo administradores"
   },
   "public": {
