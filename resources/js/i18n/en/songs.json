@@ -14,8 +14,8 @@
     "notes": "Notes",
     "notes_placeholder": "Anything to remember…",
     "youtube_url": "YouTube URL",
-    "more_details": "Add details (key, BPM…)",
-    "less_details": "Less details",
+    "more_details": "Add details",
+    "less_details": "Hide details",
     "save": "Save Song",
     "saving": "Saving…",
     "cancel": "Cancel"
