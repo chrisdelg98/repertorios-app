@@ -10,3 +10,14 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Prevent iOS Safari auto-zoom on input focus.
+   Safari zooms when font-size < 16px. We force 16px on mobile only,
+   so desktop keeps its compact 14px (text-sm) design. */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+}
