@@ -30,6 +30,7 @@ function formatDate(dateStr) {
 const showAll         = ref(false);       // false → only upcoming
 const search          = ref('');
 const selectedTypes   = ref([]);
+const selectedYears   = ref([]);
 const selectedMonths  = ref([]);
 
 const todayKey = computed(() => {
@@ -38,14 +39,12 @@ const todayKey = computed(() => {
     return d.toISOString().slice(0, 10); // YYYY-MM-DD
 });
 
-function monthKey(dateStr) {
-    return dateStr.slice(0, 7); // YYYY-MM
-}
+function yearOf(dateStr) { return dateStr.slice(0, 4); }      // YYYY
+function monthOf(dateStr) { return dateStr.slice(5, 7); }     // MM
 
-function monthLabel(key) {
-    const [y, m] = key.split('-');
-    const d = new Date(parseInt(y), parseInt(m) - 1, 1);
-    const label = d.toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { month: 'long', year: 'numeric' });
+function monthName(mm) {
+    const d = new Date(2000, parseInt(mm) - 1, 1);
+    const label = d.toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { month: 'long' });
     return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -55,13 +54,19 @@ const availableTypes = computed(() => {
     return [...set].sort();
 });
 
-const availableMonths = computed(() => {
+const availableYears = computed(() => {
     const set = new Set();
-    props.services.forEach(s => set.add(monthKey(s.date)));
+    props.services.forEach(s => set.add(yearOf(s.date)));
     return [...set].sort().reverse(); // most recent first
 });
 
-const availableMonthLabels = computed(() => availableMonths.value.map(monthLabel));
+const availableMonthCodes = computed(() => {
+    const set = new Set();
+    props.services.forEach(s => set.add(monthOf(s.date)));
+    return [...set].sort();
+});
+
+const availableMonthLabels = computed(() => availableMonthCodes.value.map(monthName));
 
 const filteredServices = computed(() => {
     const q = search.value.trim().toLowerCase();
@@ -69,18 +74,20 @@ const filteredServices = computed(() => {
         if (!showAll.value && s.date < todayKey.value) return false;
         if (q && !typeLabel(s.type).toLowerCase().includes(q)) return false;
         if (selectedTypes.value.length && !selectedTypes.value.includes(s.type || 'other')) return false;
-        if (selectedMonths.value.length && !selectedMonths.value.includes(monthLabel(monthKey(s.date)))) return false;
+        if (selectedYears.value.length && !selectedYears.value.includes(yearOf(s.date))) return false;
+        if (selectedMonths.value.length && !selectedMonths.value.includes(monthName(monthOf(s.date)))) return false;
         return true;
     });
 });
 
 const hasActiveFilters = computed(() =>
-    !!(search.value || selectedTypes.value.length || selectedMonths.value.length)
+    !!(search.value || selectedTypes.value.length || selectedYears.value.length || selectedMonths.value.length)
 );
 
 function clearFilters() {
     search.value         = '';
     selectedTypes.value  = [];
+    selectedYears.value  = [];
     selectedMonths.value = [];
 }
 
@@ -261,12 +268,19 @@ function submitDuplicate() {
                         </button>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-1.5">
+                    <div class="flex flex-wrap items-center gap-2">
                         <MultiSelect
                             v-if="availableTypes.length"
                             v-model="selectedTypes"
                             :label="t('services.filter_types')"
                             :options="availableTypes"
+                            :clear-label="t('services.filter_clear')"
+                        />
+                        <MultiSelect
+                            v-if="availableYears.length"
+                            v-model="selectedYears"
+                            :label="t('services.filter_year')"
+                            :options="availableYears"
                             :clear-label="t('services.filter_clear')"
                         />
                         <MultiSelect

@@ -257,7 +257,7 @@ function confirmDelete() {
                 </div>
 
                 <!-- Filter dropdowns -->
-                <div class="flex flex-wrap items-center gap-1.5">
+                <div class="flex flex-wrap items-center gap-2">
                     <MultiSelect
                         v-if="availableArtists.length"
                         v-model="selectedArtists"

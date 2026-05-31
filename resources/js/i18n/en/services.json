@@ -6,6 +6,7 @@
   "filter_all": "All",
   "filter_search": "Search by type…",
   "filter_types": "Type",
+  "filter_year": "Year",
   "filter_months": "Month",
   "filter_clear": "Clear filters",
   "filter_results": "Showing {shown} of {total}",
