@@ -4,12 +4,14 @@ import { Head } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
+import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
 const { t } = useI18n();
 
 const props = defineProps({
     service: Object,
     expired: Boolean,
+    join:    Object,
 });
 
 const serviceTitle = computed(() => {
@@ -35,7 +37,7 @@ const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.y
 <template>
     <Head :title="serviceTitle || t('public.expired_title')" />
 
-    <div class="min-h-screen bg-slate-50 flex flex-col">
+    <div class="relative min-h-screen bg-slate-50 flex flex-col">
 
         <!-- Expired state -->
         <div v-if="expired" class="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -48,6 +50,11 @@ const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.y
 
         <!-- Service view -->
         <template v-else-if="service">
+            <!-- Language switcher (subtle, top-right) -->
+            <div class="absolute top-3 right-3 z-10">
+                <LanguageSwitcher />
+            </div>
+
             <!-- Header -->
             <div class="bg-indigo-600 px-5 pt-10 pb-6 text-white">
                 <h1 class="text-xl font-bold leading-tight capitalize">{{ serviceTitle }}</h1>
@@ -101,6 +108,16 @@ const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.y
                         </svg>
                     </button>
                 </div>
+            </div>
+
+            <!-- Join the team CTA (only when admin enabled it) -->
+            <div v-if="join" class="px-4 pb-4">
+                <a
+                    :href="join.url"
+                    class="block text-center py-2.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-colors"
+                >
+                    {{ t('public.join_cta', { band: join.band_name }) }}
+                </a>
             </div>
 
             <!-- Footer -->

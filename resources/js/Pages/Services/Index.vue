@@ -162,6 +162,25 @@ function closeShare() {
     copied.value         = false;
 }
 
+async function toggleAllowJoin() {
+    if (!shareData.value?.token) return;
+    const next = !shareData.value.allow_join;
+    try {
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        const res  = await fetch('/shared-links/' + shareData.value.token, {
+            method:  'PUT',
+            headers: {
+                'X-CSRF-TOKEN':  csrf,
+                'Content-Type':  'application/json',
+                'Accept':        'application/json',
+            },
+            body: JSON.stringify({ allow_join: next }),
+        });
+        const data = await res.json();
+        shareData.value = { ...shareData.value, allow_join: !!data.allow_join };
+    } catch {}
+}
+
 async function copyLink() {
     try {
         await navigator.clipboard.writeText(shareData.value.url);
@@ -544,6 +563,34 @@ function submitDuplicate() {
                             {{ copied ? t('services.share_copied') : t('services.share_copy') }}
                         </button>
                     </div>
+
+                    <!-- Allow join toggle -->
+                    <button
+                        type="button"
+                        @click="toggleAllowJoin"
+                        class="w-full flex items-center gap-3 px-3.5 py-3 mb-3 rounded-xl border transition-colors text-left"
+                        :class="shareData?.allow_join
+                            ? 'bg-indigo-50 border-indigo-200'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300'"
+                    >
+                        <span
+                            class="relative w-9 h-5 rounded-full shrink-0 transition-colors"
+                            :class="shareData?.allow_join ? 'bg-indigo-600' : 'bg-slate-300'"
+                        >
+                            <span
+                                class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                :class="shareData?.allow_join ? 'translate-x-4' : 'translate-x-0'"
+                            />
+                        </span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold" :class="shareData?.allow_join ? 'text-indigo-700' : 'text-slate-700'">
+                                {{ t('services.share_allow_join_title') }}
+                            </span>
+                            <span class="block text-[11px] mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-500'">
+                                {{ t('services.share_allow_join_hint') }}
+                            </span>
+                        </span>
+                    </button>
 
                     <a
                         :href="shareData?.whatsapp_url"

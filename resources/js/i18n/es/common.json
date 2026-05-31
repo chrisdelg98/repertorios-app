@@ -94,7 +94,8 @@
     "powered_by": "Hecho con Repertorios",
     "no_songs": "Sin canciones en este servicio",
     "expired_title": "Enlace expirado",
-    "expired_body": "Este enlace ya no es válido."
+    "expired_body": "Este enlace ya no es válido.",
+    "join_cta": "Unirse a {band} →"
   },
   "donate": {
     "tile_title": "Apoya el proyecto",

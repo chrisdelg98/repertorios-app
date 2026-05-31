@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SharedLink extends Model
 {
-    protected $fillable = ['service_id', 'token', 'expires_at'];
+    protected $fillable = ['service_id', 'token', 'expires_at', 'allow_join'];
 
-    protected $casts = ['expires_at' => 'datetime'];
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'allow_join' => 'boolean',
+    ];
 
     public function service(): BelongsTo
     {
@@ -19,5 +22,10 @@ class SharedLink extends Model
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'token';
     }
 }

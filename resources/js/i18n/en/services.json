@@ -2,6 +2,8 @@
   "title": "Services",
   "create": "New Service",
   "preview_as_guest": "Preview as guest",
+  "share_allow_join_title": "Allow joining the team",
+  "share_allow_join_hint": "Anyone with this link can also join the band.",
   "suggestions_matching": "Matching songs",
   "suggestions_recent": "Recent songs",
   "new_song_section": "Or create a new song",

@@ -87,6 +87,7 @@ Route::middleware('band.access')->group(function () {
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     Route::post('/services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
     Route::post('/services/{service}/share', [ShareController::class, 'store'])->name('services.share');
+    Route::put('/shared-links/{sharedLink}', [ShareController::class, 'update'])->name('shared-links.update');
 
     // Service songs
     Route::post('/services/{service}/songs/reorder', [ServiceSongController::class, 'reorder'])->name('service-songs.reorder');

@@ -2,6 +2,8 @@
   "title": "Servicios",
   "create": "Nuevo Servicio",
   "preview_as_guest": "Ver como invitado",
+  "share_allow_join_title": "Permitir unirse al equipo",
+  "share_allow_join_hint": "Quien tenga este enlace también podrá unirse a la banda.",
   "suggestions_matching": "Coincidencias",
   "suggestions_recent": "Canciones recientes",
   "new_song_section": "O crea una nueva canción",

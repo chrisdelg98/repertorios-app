@@ -26,9 +26,25 @@ class ShareController extends Controller
         $shareUrl = route('share.show', $link->token);
 
         return response()->json([
+            'token'         => $link->token,
             'url'           => $shareUrl,
             'whatsapp_url'  => 'https://wa.me/?text=' . rawurlencode($this->buildText($service, $shareUrl)),
+            'allow_join'    => (bool) $link->allow_join,
         ]);
+    }
+
+    public function update(SharedLink $sharedLink, \Illuminate\Http\Request $request): JsonResponse
+    {
+        $this->requireWrite();
+        abort_unless($sharedLink->service && $sharedLink->service->band_id === $this->bandId(), 403);
+
+        $data = $request->validate([
+            'allow_join' => ['required', 'boolean'],
+        ]);
+
+        $sharedLink->update($data);
+
+        return response()->json(['allow_join' => (bool) $sharedLink->allow_join]);
     }
 
     public function show(string $token): Response
@@ -39,8 +55,9 @@ class ShareController extends Controller
             return Inertia::render('Public/Repertoire', ['expired' => true, 'service' => null]);
         }
 
-        $link->load('service.serviceSongs.songVersion.song');
+        $link->load('service.serviceSongs.songVersion.song', 'service.band');
         $service = $link->service;
+        $band    = $service->band;
 
         return Inertia::render('Public/Repertoire', [
             'expired' => false,
@@ -59,6 +76,10 @@ class ShareController extends Controller
                     'youtube_url' => $ss->songVersion->youtube_url,
                 ])->values(),
             ],
+            'join' => $link->allow_join && $band ? [
+                'band_name' => $band->name,
+                'url'       => route('band.join', ['token' => $band->invite_token]),
+            ] : null,
         ]);
     }
 
