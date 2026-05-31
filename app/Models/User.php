@@ -44,6 +44,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Band::class);
     }
 
+    public function bandRoles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(BandRoleType::class, 'user_band_roles');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

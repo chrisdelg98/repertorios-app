@@ -117,6 +117,7 @@ Route::middleware('band.access')->group(function () {
     Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
     Route::post('/settings/members/{user}/promote', [MemberController::class, 'promote'])->name('settings.members.promote');
     Route::post('/settings/members/{user}/demote', [MemberController::class, 'demote'])->name('settings.members.demote');
+    Route::put('/settings/members/{user}/roles', [MemberController::class, 'assignRoles'])->name('settings.members.roles');
     Route::delete('/settings/members/{user}', [MemberController::class, 'destroy'])->name('settings.members.destroy');
     Route::delete('/settings/visitors', [MemberController::class, 'resetVisitors'])->name('settings.visitors.reset');
 

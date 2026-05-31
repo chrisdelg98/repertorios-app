@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Models\Band;
+use App\Models\BandRoleType;
 use App\Models\BandVisit;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,21 +25,26 @@ class MemberController extends Controller
         $bandId  = $this->bandId();
         $band    = Band::findOrFail($bandId);
         $members = User::where('band_id', $bandId)
+            ->with('bandRoles:id')
             ->orderBy('created_at')
             ->get(['id', 'name', 'email', 'role', 'created_at'])
             ->map(fn ($u) => [
-                'id'         => $u->id,
-                'name'       => $u->name,
-                'email'      => $u->email,
-                'role'       => $u->role,
-                'is_creator' => $u->id === (int) $band->creator_id,
-                'is_you'     => $u->id === Auth::id(),
+                'id'          => $u->id,
+                'name'        => $u->name,
+                'email'       => $u->email,
+                'role'        => $u->role,
+                'is_creator'  => $u->id === (int) $band->creator_id,
+                'is_you'      => $u->id === Auth::id(),
+                'role_ids'    => $u->bandRoles->pluck('id')->all(),
             ]);
 
-        $visits = BandVisit::where('band_id', $bandId);
+        $visits     = BandVisit::where('band_id', $bandId);
+        $roleTypes  = BandRoleType::orderBy('sort_order')->orderBy('name_es')
+            ->get(['id', 'name_es', 'name_en']);
 
         return Inertia::render('Settings/Members', [
             'members'      => $members,
+            'role_types'   => $roleTypes,
             'visit_stats'  => [
                 'total'        => (clone $visits)->count(),
                 'last_30_days' => (clone $visits)->where('last_seen', '>=', now()->subDays(30))->count(),
@@ -86,6 +93,22 @@ class MemberController extends Controller
         $this->requireCreator();
 
         BandVisit::where('band_id', $this->bandId())->delete();
+
+        return back()->with('success', true);
+    }
+
+    public function assignRoles(Request $request, User $user): RedirectResponse
+    {
+        // Creator OR delegated admin can assign roles.
+        $this->requireAdmin();
+        abort_if($user->band_id !== $this->bandId(), 403);
+
+        $data = $request->validate([
+            'role_ids'   => ['array'],
+            'role_ids.*' => ['integer', 'exists:band_role_types,id'],
+        ]);
+
+        $user->bandRoles()->sync($data['role_ids'] ?? []);
 
         return back()->with('success', true);
     }

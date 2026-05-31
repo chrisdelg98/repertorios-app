@@ -72,7 +72,20 @@
     "visitors_30d": "Últimos 30 días",
     "visitors_reset": "Resetear",
     "visitors_reset_title": "¿Resetear el conteo?",
-    "visitors_reset_confirm": "Se borrarán todos los registros de visitantes anónimos. El contador vuelve a 0."
+    "visitors_reset_confirm": "Se borrarán todos los registros de visitantes anónimos. El contador vuelve a 0.",
+    "no_band_roles": "Sin roles asignados",
+    "edit_roles": "Editar roles",
+    "add_roles": "+ Agregar rol",
+    "roles_title": "Roles en la banda",
+    "roles_hint": "Elige los instrumentos o roles que esta persona desempeña en la banda.",
+    "pick_role": "Elegir rol",
+    "search_role": "Buscar rol…",
+    "clear_roles": "Limpiar todo",
+    "save_roles": "Guardar",
+    "roles_available": "Roles disponibles",
+    "search_results": "Resultados",
+    "no_role_matches": "No hay roles que coincidan",
+    "selected": "seleccionados"
   },
   "templates": {
     "title": "Plantillas de Horario",

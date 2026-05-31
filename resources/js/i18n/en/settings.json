@@ -72,7 +72,20 @@
     "visitors_30d": "Last 30 days",
     "visitors_reset": "Reset",
     "visitors_reset_title": "Reset visitor count?",
-    "visitors_reset_confirm": "All anonymous visit records will be deleted. The counter restarts at 0."
+    "visitors_reset_confirm": "All anonymous visit records will be deleted. The counter restarts at 0.",
+    "no_band_roles": "No assigned roles",
+    "edit_roles": "Edit roles",
+    "add_roles": "+ Add role",
+    "roles_title": "Band roles",
+    "roles_hint": "Pick the instruments or roles this person performs in the band.",
+    "pick_role": "Pick role",
+    "search_role": "Search role…",
+    "clear_roles": "Clear all",
+    "save_roles": "Save",
+    "roles_available": "Available roles",
+    "search_results": "Results",
+    "no_role_matches": "No matching roles",
+    "selected": "selected"
   },
   "templates": {
     "title": "Schedule Templates",
