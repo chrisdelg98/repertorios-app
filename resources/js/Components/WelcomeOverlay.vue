@@ -21,17 +21,19 @@ const checklist = [
     { icon: 'share',    titleKey: 'welcome.step_share_title',     bodyKey: 'welcome.step_share_body',     href: '/settings/band' },
 ];
 
-function closeForNow() {
+// Any close interaction (CTA, checklist click, backdrop, or "don't show again")
+// permanently dismisses the welcome. It only ever appears ONCE per user.
+let dismissed = false;
+function dismissOnce() {
     visible.value = false;
-}
-
-function dismissForever() {
+    if (dismissed) return;
+    dismissed = true;
     router.post('/welcome/dismiss', {}, {
         preserveScroll: true,
         preserveState: true,
-        onFinish: () => { visible.value = false; },
     });
 }
+
 </script>
 
 <template>
@@ -48,7 +50,7 @@ function dismissForever() {
             <div
                 v-if="visible"
                 class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm"
-                @click="closeForNow"
+                @click="dismissOnce"
             />
         </Transition>
 
@@ -98,7 +100,7 @@ function dismissForever() {
                                 v-for="(item, i) in checklist"
                                 :key="i"
                                 :href="item.href"
-                                @click="closeForNow"
+                                @click="dismissOnce"
                                 class="group flex items-start gap-3 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-xl px-3.5 py-3 transition-colors"
                             >
                                 <!-- Step number -->
@@ -122,14 +124,14 @@ function dismissForever() {
                     <div class="px-5 pt-2 pb-6 border-t border-slate-100 space-y-2">
                         <button
                             type="button"
-                            @click="closeForNow"
+                            @click="dismissOnce"
                             class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 active:scale-[0.98] transition"
                         >
                             {{ t('welcome.cta_explore') }}
                         </button>
                         <button
                             type="button"
-                            @click="dismissForever"
+                            @click="dismissOnce"
                             class="w-full py-2 text-xs font-medium text-slate-500 hover:text-slate-600 transition-colors"
                         >
                             {{ t('welcome.dont_show_again') }}
