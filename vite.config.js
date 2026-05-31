@@ -25,9 +25,10 @@ export default defineConfig({
             injectRegister: null,
             includeAssets: ['favicon.ico', 'icons/*.png'],
             manifest: {
-                name: 'Repertorios',
-                short_name: 'Repertorios',
+                name: 'Repertorios App',
+                short_name: 'Repertorios App',
                 description: 'Worship band repertoire platform',
+                lang: 'es',
                 theme_color: '#4F46E5',
                 background_color: '#ffffff',
                 display: 'standalone',
@@ -36,18 +37,24 @@ export default defineConfig({
                 start_url: '/',
                 icons: [
                     {
-                        src: '/icons/icon-192x192.png',
+                        src: '/icons/icon-192x192.png?v=2',
                         sizes: '192x192',
                         type: 'image/png',
                     },
                     {
-                        src: '/icons/icon-512x512.png',
+                        src: '/icons/icon-512x512.png?v=2',
                         sizes: '512x512',
                         type: 'image/png',
                     },
                     {
-                        src: '/icons/maskable-192x192.png',
+                        src: '/icons/maskable-192x192.png?v=2',
                         sizes: '192x192',
+                        type: 'image/png',
+                        purpose: 'maskable',
+                    },
+                    {
+                        src: '/icons/maskable-512x512.png?v=2',
+                        sizes: '512x512',
                         type: 'image/png',
                         purpose: 'maskable',
                     },

@@ -7,14 +7,15 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Repertorios') }}">
+    <meta name="application-name" content="Repertorios App">
+    <meta name="apple-mobile-web-app-title" content="Repertorios App">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title inertia>{{ config('app.name', 'Repertorios') }}</title>
+    <title inertia>{{ config('app.name', 'Repertorios App') }}</title>
 
-    <link rel="manifest" href="/build/manifest.webmanifest">
+    <link rel="manifest" href="/build/manifest.webmanifest?v=2">
     <link rel="icon" type="image/svg+xml" href="/icons/logorepertorios.svg">
-    <link rel="apple-touch-icon" href="/icons/logorepertorios.svg">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
