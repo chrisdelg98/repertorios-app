@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
-import EditAssignmentSheet from '@/Components/EditAssignmentSheet.vue';
 
 const { t, locale } = useI18n();
 
@@ -19,12 +18,13 @@ const props = defineProps({
 });
 
 const localAssignments = ref([...(props.service.assignments ?? [])]);
-const showEditAssignmentSheet = ref(false);
 const showTeamSheet = ref(false);
-const selectedAssignment = ref(null);
 const assignmentsProcessing = ref(false);
 const assignmentError = ref('');
 const includeTeamInShare = ref(false);
+const editingAssignmentId = ref(null);
+const editAssignmentName = ref('');
+const editAssignmentRoleId = ref(null);
 
 const TEAM_MAX_MEMBER_SUGGESTIONS = 4;
 const teamComposerOpen = ref(false);
@@ -43,6 +43,11 @@ const showAssignmentsSection = computed(() =>
 const teamSelectedMember = computed(() =>
     props.team_members.find((member) => member.id === teamSelectedMemberId.value) ?? null
 );
+
+const editingAssignment = computed(() =>
+    localAssignments.value.find((assignment) => assignment.id === editingAssignmentId.value) ?? null
+);
+const isEditingManual = computed(() => !!editingAssignment.value?.is_manual);
 
 const teamFilteredMembers = computed(() => {
     const q = teamQuery.value.trim().toLowerCase();
@@ -106,13 +111,12 @@ async function updateAssignment(payload) {
         const data = await res.json();
         if (!res.ok) {
             assignmentError.value = data?.code === 'dupe' ? t('assignments.errors.dupe') : (data?.message || 'Error');
-            return;
+            return false;
         }
         localAssignments.value = localAssignments.value.map((assignment) =>
             assignment.id === data.assignment.id ? data.assignment : assignment
         );
-        showEditAssignmentSheet.value = false;
-        selectedAssignment.value = null;
+        return true;
     } finally {
         assignmentsProcessing.value = false;
     }
@@ -131,17 +135,58 @@ async function removeAssignment(assignment) {
                 'Accept': 'application/json',
             },
         });
-        if (!res.ok) return;
+        if (!res.ok) return false;
         localAssignments.value = localAssignments.value.filter((row) => row.id !== assignment.id);
-        showEditAssignmentSheet.value = false;
-        selectedAssignment.value = null;
+        if (editingAssignmentId.value === assignment.id) {
+            cancelInlineEdit();
+        }
+        return true;
     } finally {
         assignmentsProcessing.value = false;
     }
 }
 
+function openInlineEdit(assignment) {
+    editingAssignmentId.value = assignment.id;
+    editAssignmentName.value = assignment.manual_name ?? assignment.display_name ?? '';
+    editAssignmentRoleId.value = assignment.band_role_type_id ?? null;
+    teamComposerOpen.value = false;
+    assignmentError.value = '';
+}
+
+function cancelInlineEdit() {
+    editingAssignmentId.value = null;
+    editAssignmentName.value = '';
+    editAssignmentRoleId.value = null;
+}
+
+async function submitInlineEdit() {
+    if (!editingAssignment.value) return;
+    if (!editAssignmentRoleId.value) {
+        assignmentError.value = t('assignments.errors.missing_role');
+        return;
+    }
+    if (isEditingManual.value && !editAssignmentName.value.trim()) {
+        assignmentError.value = t('assignments.errors.missing_name');
+        return;
+    }
+
+    const success = await updateAssignment({
+        id: editingAssignment.value.id,
+        band_role_type_id: Number(editAssignmentRoleId.value),
+        manual_name: isEditingManual.value ? editAssignmentName.value.trim() : null,
+    });
+    if (success) cancelInlineEdit();
+}
+
+async function removeEditingAssignment() {
+    if (!editingAssignment.value) return;
+    await removeAssignment(editingAssignment.value);
+}
+
 function openTeamComposer() {
     teamComposerOpen.value = true;
+    cancelInlineEdit();
     assignmentError.value = '';
 }
 
@@ -415,6 +460,7 @@ watch(showTeamSheet, (isOpen) => {
     if (!isOpen) {
         teamComposerOpen.value = false;
         resetTeamComposer();
+        cancelInlineEdit();
         assignmentError.value = '';
     }
 });
@@ -981,30 +1027,97 @@ function scheduleReorder() {
                         <div
                             v-for="assignment in localAssignments"
                             :key="assignment.id"
-                            class="flex items-center gap-2.5 px-2 py-2 rounded-lg border border-slate-100"
+                            class="space-y-1.5"
                         >
-                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-xs font-semibold">
-                                {{ assignment.is_manual ? '?' : 'U' }}
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-slate-900 truncate">{{ assignment.display_name }}</p>
-                                <p class="text-xs text-slate-500 truncate">
-                                    {{ roleLabel(assignment) }}
-                                    <span v-if="assignment.is_manual" class="ml-1 text-[10px] text-slate-400">({{ t('assignments.manual_badge') }})</span>
-                                </p>
+                            <div class="flex items-center gap-2.5 px-2 py-2 rounded-lg border border-slate-100">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-xs font-semibold">
+                                    {{ assignment.is_manual ? '?' : 'U' }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-medium text-slate-900 truncate">{{ assignment.display_name }}</p>
+                                    <p class="text-xs text-slate-500 truncate">
+                                        {{ roleLabel(assignment) }}
+                                        <span v-if="assignment.is_manual" class="ml-1 text-[10px] text-slate-400">({{ t('assignments.manual_badge') }})</span>
+                                    </p>
+                                </div>
+
+                                <button
+                                    v-if="canManageAssignments"
+                                    type="button"
+                                    @click="openInlineEdit(assignment)"
+                                    class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                                    aria-label="Edit assignment"
+                                >
+                                    <svg class="w-3.5 h-3.5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                                    </svg>
+                                </button>
                             </div>
 
-                            <button
-                                v-if="canManageAssignments"
-                                type="button"
-                                @click="selectedAssignment = assignment; showTeamSheet = false; showEditAssignmentSheet = true"
-                                class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
-                                aria-label="Edit assignment"
+                            <div
+                                v-if="canManageAssignments && editingAssignmentId === assignment.id"
+                                class="ml-10 border border-slate-200 rounded-xl p-3 space-y-2.5 bg-slate-50"
                             >
-                                <svg class="w-3.5 h-3.5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                                </svg>
-                            </button>
+                                <div v-if="assignment.is_manual">
+                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.manual_name_label') }}</label>
+                                    <input
+                                        v-model="editAssignmentName"
+                                        type="text"
+                                        maxlength="50"
+                                        class="w-full px-3 py-2.5 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.role_label') }}</label>
+                                    <select
+                                        v-model="editAssignmentRoleId"
+                                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    >
+                                        <option :value="null">{{ t('assignments.role_placeholder') }}</option>
+                                        <option v-for="role in role_types" :key="role.id" :value="role.id">{{ roleLabel(role) }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        @click="submitInlineEdit"
+                                        :disabled="assignmentsProcessing || !editAssignmentRoleId || (assignment.is_manual && !editAssignmentName.trim())"
+                                        :title="t('assignments.save_button')"
+                                        :aria-label="t('assignments.save_button')"
+                                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="cancelInlineEdit"
+                                        :disabled="assignmentsProcessing"
+                                        :title="t('playlist.close')"
+                                        :aria-label="t('playlist.close')"
+                                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-700 disabled:opacity-50"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="removeEditingAssignment"
+                                        :disabled="assignmentsProcessing"
+                                        :title="t('services.delete')"
+                                        :aria-label="t('services.delete')"
+                                        class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 disabled:opacity-40"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1141,16 +1254,6 @@ function scheduleReorder() {
                 </button>
             </div>
         </Teleport>
-
-        <EditAssignmentSheet
-            :open="showEditAssignmentSheet"
-            :assignment="selectedAssignment"
-            :roles="role_types"
-            :processing="assignmentsProcessing"
-            @close="showEditAssignmentSheet = false; selectedAssignment = null"
-            @save="updateAssignment"
-            @delete="removeAssignment"
-        />
 
         <!-- Song detail (read-only) -->
         <SongDetailSheet :song="detailSong" @close="detailSong = null" />
