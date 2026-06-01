@@ -99,6 +99,17 @@ class ShareController extends Controller
 
         $lines = [$type, $date . $time, ''];
 
+        $lines[] = app()->getLocale() === 'en' ? '*Repertoire:*' : '*Repertorio:*';
+
+        foreach ($service->serviceSongs->sortBy('position') as $i => $ss) {
+            $name = $ss->songVersion->song->name;
+            $artist = $ss->songVersion->song->artist ? ' (' . $ss->songVersion->song->artist . ')' : '';
+            $key = $ss->songVersion->key ? ' - ' . $ss->songVersion->key : '';
+            $lines[] = ($i + 1) . '. ' . $name . $artist . $key;
+        }
+
+        $lines[] = '';
+
         if ($includeTeam && $service->relationLoaded('assignments') && $service->assignments->isNotEmpty()) {
             $header = app()->getLocale() === 'en' ? '*Service team:*' : '*Equipo del servicio:*';
             $lines[] = $header;
@@ -111,16 +122,6 @@ class ShareController extends Controller
             $lines[] = '';
         }
 
-        $lines[] = app()->getLocale() === 'en' ? '*Repertoire:*' : '*Repertorio:*';
-
-        foreach ($service->serviceSongs->sortBy('position') as $i => $ss) {
-            $name = $ss->songVersion->song->name;
-            $artist = $ss->songVersion->song->artist ? ' (' . $ss->songVersion->song->artist . ')' : '';
-            $key = $ss->songVersion->key ? ' - ' . $ss->songVersion->key : '';
-            $lines[] = ($i + 1) . '. ' . $name . $artist . $key;
-        }
-
-        $lines[] = '';
         $lines[] = $url;
 
         return implode("\n", $lines);
