@@ -146,6 +146,8 @@
     "tile_subtitle": "Agrega a tu pantalla de inicio para acceso rápido",
     "installed_title": "App instalada",
     "installed_subtitle": "Ya estás usando la versión instalada",
-    "tile_not_available": "No disponible en este navegador/modo privado"
+    "tile_not_available": "No disponible en este navegador/modo privado",
+    "ios_help_title": "En Safari",
+    "ios_help_body": "Toca Compartir y luego Agregar a pantalla de inicio."
   }
 }

@@ -5,7 +5,7 @@ import { useInstall } from '@/composables/useInstall';
 import Logo from '@/Components/Logo.vue';
 
 const { t } = useI18n();
-const { isInstallable, isInstalled, promptInstall } = useInstall();
+const { isInstalled, canRequestInstall, showManualInstallHelp, promptInstall } = useInstall();
 
 const STORAGE_KEY = 'pwa_banner_dismissed';
 const show = ref(false);
@@ -21,7 +21,7 @@ onMounted(() => {
     if (isInstalled.value) return;
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    if (isInstallable.value) {
+    if (canRequestInstall.value) {
         timer = setTimeout(() => { show.value = true; }, 2500);
     } else {
         window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
@@ -39,8 +39,8 @@ function dismiss() {
 }
 
 async function install() {
-    await promptInstall();
-    dismiss();
+    const handled = await promptInstall();
+    if (handled && !showManualInstallHelp.value) dismiss();
 }
 </script>
 
@@ -116,6 +116,14 @@ async function install() {
                         >
                             {{ t('install.install') }}
                         </button>
+                    </div>
+
+                    <div
+                        v-if="showManualInstallHelp"
+                        class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-700"
+                    >
+                        <p class="font-semibold">{{ t('install.ios_help_title') }}</p>
+                        <p class="mt-1 text-xs leading-relaxed text-indigo-500">{{ t('install.ios_help_body') }}</p>
                     </div>
                 </div>
             </div>
