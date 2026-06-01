@@ -137,14 +137,19 @@ const sharing        = ref(false);
 const sharingId      = ref(null);
 const shareData      = ref(null);
 const copied         = ref(false);
+const selectedShareService = ref(null);
+const includeTeamInShare = ref(false);
 
-async function openShare(serviceId) {
+async function openShare(service) {
     openMenuId.value = null;
-    sharingId.value  = serviceId;
+    sharingId.value  = service.id;
     sharing.value    = true;
+    selectedShareService.value = service;
+    includeTeamInShare.value = false;
     try {
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
-        const res  = await fetch('/services/' + serviceId + '/share', {
+        const url = '/services/' + service.id + '/share' + (includeTeamInShare.value ? '?include_team=1' : '');
+        const res  = await fetch(url, {
             method:  'POST',
             headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
         });
@@ -160,6 +165,23 @@ function closeShare() {
     showShareSheet.value = false;
     shareData.value      = null;
     copied.value         = false;
+    selectedShareService.value = null;
+}
+
+async function refreshShareData() {
+    if (!selectedShareService.value) return;
+    sharing.value = true;
+    try {
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        const url = '/services/' + selectedShareService.value.id + '/share' + (includeTeamInShare.value ? '?include_team=1' : '');
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        });
+        shareData.value = await res.json();
+    } finally {
+        sharing.value = false;
+    }
 }
 
 async function toggleAllowJoin() {
@@ -179,6 +201,11 @@ async function toggleAllowJoin() {
         const data = await res.json();
         shareData.value = { ...shareData.value, allow_join: !!data.allow_join };
     } catch {}
+}
+
+async function toggleIncludeTeamInShare() {
+    includeTeamInShare.value = !includeTeamInShare.value;
+    await refreshShareData();
 }
 
 async function copyLink() {
@@ -409,7 +436,7 @@ function submitDuplicate() {
                             >
                                 <button
                                     type="button"
-                                    @click.stop="openShare(service.id)"
+                                    @click.stop="openShare(service)"
                                     :disabled="sharing && sharingId === service.id"
                                     class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
                                 >
@@ -588,6 +615,34 @@ function submitDuplicate() {
                             </span>
                             <span class="block text-[11px] mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-500'">
                                 {{ t('services.share_allow_join_hint') }}
+                            </span>
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="toggleIncludeTeamInShare"
+                        :disabled="!selectedShareService?.service_assignments_count"
+                        class="w-full flex items-center gap-3 px-3.5 py-3 mb-3 rounded-xl border transition-colors text-left disabled:opacity-60 disabled:cursor-not-allowed"
+                        :class="includeTeamInShare
+                            ? 'bg-indigo-50 border-indigo-200'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300'"
+                    >
+                        <span
+                            class="relative w-9 h-5 rounded-full shrink-0 transition-colors"
+                            :class="includeTeamInShare ? 'bg-indigo-600' : 'bg-slate-300'"
+                        >
+                            <span
+                                class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                :class="includeTeamInShare ? 'translate-x-4' : 'translate-x-0'"
+                            />
+                        </span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold" :class="includeTeamInShare ? 'text-indigo-700' : 'text-slate-700'">
+                                {{ t('share.include_team_label') }}
+                            </span>
+                            <span class="block text-[11px] mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-500'">
+                                {{ selectedShareService?.service_assignments_count ? t('share.include_team_hint') : t('share.include_team_disabled') }}
                             </span>
                         </span>
                     </button>

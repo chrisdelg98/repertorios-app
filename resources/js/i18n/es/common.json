@@ -1,153 +1,183 @@
 {
-  "app": {
-    "name": "Repertorios",
-    "tagline": "Plataforma de repertorios para banda de alabanza"
-  },
-  "nav": {
-    "home": "Inicio",
-    "songs": "Canciones",
-    "services": "Servicios",
-    "setlists": "Repertorios",
-    "add": "Agregar",
-    "settings": "Ajustes",
-    "logout": "Salir"
-  },
-  "lang": {
-    "en": "English",
-    "es": "Español",
-    "switch": "Cambiar idioma"
-  },
-  "welcome": {
-    "title": "Bienvenido",
-    "status": "Inertia.js + Vue 3 + Tailwind ejecutándose",
-    "versions": "Laravel {laravel} · PHP {php}",
-    "phase0": "Fase 0: Configuración y Fundación — completada",
-    "phase1": "Fase 1: i18n + base PWA — completada",
-    "next": "Siguiente: Autenticación"
-  },
-  "landing": {
-    "meta_title": "Repertorios — Repertorios de alabanza, simplificados",
-    "nav": {
-      "sign_in": "Iniciar sesión"
-    },
-    "hero": {
-      "badge": "Hecho para equipos de alabanza",
-      "title_pre": "Repertorios de alabanza,",
-      "title_accent": "perfectamente organizados.",
-      "subtitle": "Planea servicios, mantén tu biblioteca de canciones en un solo lugar y comparte el repertorio con tu equipo en segundos — directo a WhatsApp.",
-      "cta_primary": "Empezar",
-      "cta_donate": "Apoya el proyecto"
-    },
-    "features": {
-      "eyebrow": "Todo lo que necesitas",
-      "title": "Diseñado para la forma en que realmente funciona un equipo de alabanza",
-      "subtitle": "Tres herramientas que trabajan juntas para que el domingo fluya sin estrés.",
-      "plan_title": "Planea cada servicio",
-      "plan_body": "Crea servicios para cualquier día, define la hora, agrega notas y reordena las canciones con un toque.",
-      "library_title": "Tu biblioteca de canciones",
-      "library_body": "Guarda canciones con artista, versión, tonalidad, BPM y enlace de YouTube. Encuentra cualquiera en segundos.",
-      "share_title": "Comparte en un toque",
-      "share_body": "Envía el repertorio completo a tu equipo por WhatsApp o un enlace público — sin necesidad de instalar nada."
-    },
-    "steps": {
-      "eyebrow": "Cómo funciona",
-      "title": "Configúralo en minutos",
-      "one_title": "Crea tu banda",
-      "one_body": "Entra como administrador. Tu equipo se une con un código — sin cuentas separadas que administrar.",
-      "two_title": "Arma tu biblioteca",
-      "two_body": "Agrega las canciones que tu equipo toca. Marca la tonalidad, la versión y el enlace.",
-      "three_title": "Planea y comparte",
-      "three_body": "Arma el repertorio del próximo servicio y comparte el enlace en el grupo de WhatsApp."
-    },
-    "donate": {
-      "title": "Apoya el proyecto",
-      "body": "Repertorios fue creado para hacerle la vida más fácil a los líderes de alabanza. Si te ha servido, una pequeña donación lo mantiene funcionando y mejorando.",
-      "cta": "Donar"
-    },
-    "final": {
-      "title": "¿Listo para el próximo servicio?",
-      "subtitle": "Inicia sesión y ten tu repertorio listo en minutos.",
-      "cta": "Empezar"
-    }
-  },
-  "dashboard": {
-    "greeting_morning": "Buenos días",
-    "greeting_afternoon": "Buenas tardes",
-    "greeting_evening": "Buenas noches",
-    "next_service": "Próximo servicio",
-    "upcoming": "Próximos",
-    "today": "Hoy",
-    "tomorrow": "Mañana",
-    "in_days": "en {count} días",
-    "songs_count": "{count} canciones | {count} canción | {count} canciones",
-    "no_upcoming_title": "No hay servicios próximos",
-    "no_upcoming_body": "Toca para planear el siguiente",
-    "quick_actions": "Acciones rápidas",
-    "new_service": "Nuevo servicio",
-    "new_service_hint": "Crear un repertorio",
-    "browse_library": "Biblioteca",
-    "browse_library_hint": "Ver canciones",
-    "no_upcoming_readonly": "Tu admin aún no ha planeado uno",
-    "upgrade_title": "Estás usando un acceso temporal",
-    "upgrade_subtitle": "Crea tu cuenta gratis para hacerlo permanente.",
-    "upgrade_benefit_1": "Guarda tu acceso — sin depender del enlace de invitación",
-    "upgrade_benefit_2": "Recibe un rol en la banda (Teclado, Bajo, Coros…)",
-    "upgrade_benefit_3": "Inicia sesión desde cualquier dispositivo con correo y contraseña",
-    "upgrade_cta": "Crear mi cuenta",
-    "upgrade_optional": "Opcional, pero recomendado.",
-    "locked_admin_only": "Solo administradores"
-  },
-  "public": {
-    "powered_by": "Hecho con Repertorios",
-    "no_songs": "Sin canciones en este servicio",
-    "expired_title": "Enlace expirado",
-    "expired_body": "Este enlace ya no es válido.",
-    "join_cta": "Unirse a {band} →"
-  },
-  "donate": {
-    "tile_title": "Apoya el proyecto",
-    "tile_subtitle": "Ayuda a mantener Repertorios gratis y creciendo"
-  },
-  "playlist": {
-    "title": "Reproductor del repertorio",
-    "play_all": "Reproducir todo",
-    "public_cta": "Ver y escuchar el repertorio completo",
-    "empty_title": "Sin video",
-    "no_videos": "Ninguna canción del repertorio tiene enlace de YouTube.",
-    "prev": "Anterior",
-    "next": "Siguiente",
-    "close": "Cerrar"
-  },
-  "welcome": {
-    "eyebrow": "Bienvenido a Repertorios",
-    "greeting": "¡Bendiciones, {name}!",
-    "blessing": "Que este sea un lugar que haga cada domingo más liviano y la alabanza de tu equipo más dulce. Toma un minuto para configurar lo básico — te guiamos.",
-    "checklist_title": "Empieza en 4 pasos",
-    "step_templates_title": "Configura las plantillas de horario",
-    "step_templates_body": "Domingo 10 AM, miércoles 7 PM… así crear servicios es un solo toque.",
-    "step_songs_title": "Agrega tus canciones",
-    "step_songs_body": "Arma tu biblioteca: nombre, tonalidad, versión. Puedes pegar también el enlace de YouTube.",
-    "step_service_title": "Planea tu primer servicio",
-    "step_service_body": "Elige fecha, agrega las canciones y listo.",
-    "step_share_title": "Comparte acceso con tu equipo",
-    "step_share_body": "Envía el enlace de invitación desde Ajustes de Banda — un toque y entran, sin necesidad de cuenta.",
-    "cta_explore": "Listo, vamos",
-    "dont_show_again": "No volver a mostrar"
-  },
-  "install": {
-    "banner_title": "Agregar a la pantalla de inicio",
-    "banner_subtitle": "Disfruta la experiencia completa de la app",
-    "benefit_1": "Abre al instante desde tu pantalla de inicio",
-    "benefit_2": "Carga más rápido — recursos guardados localmente",
-    "benefit_3": "Pantalla completa, sin barra del navegador",
-    "install": "Instalar",
-    "later": "Ahora no",
-    "tile_title": "Instalar App",
-    "tile_subtitle": "Agrega a tu pantalla de inicio para acceso rápido",
-    "installed_title": "App instalada",
-    "installed_subtitle": "Ya estás usando la versión instalada",
-    "tile_not_available": "No disponible en este navegador/modo privado",
-    "ios_help_title": "En Safari",
-    "ios_help_body": "Toca Compartir y luego Agregar a pantalla de inicio."
-  }
+    "app":  {
+                "name":  "Repertorios",
+                "tagline":  "Plataforma de repertorios para banda de alabanza"
+            },
+    "nav":  {
+                "home":  "Inicio",
+                "songs":  "Canciones",
+                "services":  "Servicios",
+                "setlists":  "Repertorios",
+                "add":  "Agregar",
+                "settings":  "Ajustes",
+                "logout":  "Salir"
+            },
+    "lang":  {
+                 "en":  "English",
+                 "es":  "Español",
+                 "switch":  "Cambiar idioma"
+             },
+    "welcome":  {
+                    "eyebrow":  "Bienvenido a Repertorios",
+                    "greeting":  "¡Bendiciones, {name}!",
+                    "blessing":  "Que este sea un lugar que haga cada domingo más liviano y la alabanza de tu equipo más dulce. Toma un minuto para configurar lo básico — te guiamos.",
+                    "checklist_title":  "Empieza en 4 pasos",
+                    "step_templates_title":  "Configura las plantillas de horario",
+                    "step_templates_body":  "Domingo 10 AM, miércoles 7 PM… así crear servicios es un solo toque.",
+                    "step_songs_title":  "Agrega tus canciones",
+                    "step_songs_body":  "Arma tu biblioteca: nombre, tonalidad, versión. Puedes pegar también el enlace de YouTube.",
+                    "step_service_title":  "Planea tu primer servicio",
+                    "step_service_body":  "Elige fecha, agrega las canciones y listo.",
+                    "step_share_title":  "Comparte acceso con tu equipo",
+                    "step_share_body":  "Envía el enlace de invitación desde Ajustes de Banda — un toque y entran, sin necesidad de cuenta.",
+                    "cta_explore":  "Listo, vamos",
+                    "dont_show_again":  "No volver a mostrar"
+                },
+    "landing":  {
+                    "meta_title":  "Repertorios — Repertorios de alabanza, simplificados",
+                    "nav":  {
+                                "sign_in":  "Iniciar sesión"
+                            },
+                    "hero":  {
+                                 "badge":  "Hecho para equipos de alabanza",
+                                 "title_pre":  "Repertorios de alabanza,",
+                                 "title_accent":  "perfectamente organizados.",
+                                 "subtitle":  "Planea servicios, mantén tu biblioteca de canciones en un solo lugar y comparte el repertorio con tu equipo en segundos — directo a WhatsApp.",
+                                 "cta_primary":  "Empezar",
+                                 "cta_donate":  "Apoya el proyecto"
+                             },
+                    "features":  {
+                                     "eyebrow":  "Todo lo que necesitas",
+                                     "title":  "Diseñado para la forma en que realmente funciona un equipo de alabanza",
+                                     "subtitle":  "Tres herramientas que trabajan juntas para que el domingo fluya sin estrés.",
+                                     "plan_title":  "Planea cada servicio",
+                                     "plan_body":  "Crea servicios para cualquier día, define la hora, agrega notas y reordena las canciones con un toque.",
+                                     "library_title":  "Tu biblioteca de canciones",
+                                     "library_body":  "Guarda canciones con artista, versión, tonalidad, BPM y enlace de YouTube. Encuentra cualquiera en segundos.",
+                                     "share_title":  "Comparte en un toque",
+                                     "share_body":  "Envía el repertorio completo a tu equipo por WhatsApp o un enlace público — sin necesidad de instalar nada."
+                                 },
+                    "steps":  {
+                                  "eyebrow":  "Cómo funciona",
+                                  "title":  "Configúralo en minutos",
+                                  "one_title":  "Crea tu banda",
+                                  "one_body":  "Entra como administrador. Tu equipo se une con un código — sin cuentas separadas que administrar.",
+                                  "two_title":  "Arma tu biblioteca",
+                                  "two_body":  "Agrega las canciones que tu equipo toca. Marca la tonalidad, la versión y el enlace.",
+                                  "three_title":  "Planea y comparte",
+                                  "three_body":  "Arma el repertorio del próximo servicio y comparte el enlace en el grupo de WhatsApp."
+                              },
+                    "donate":  {
+                                   "title":  "Apoya el proyecto",
+                                   "body":  "Repertorios fue creado para hacerle la vida más fácil a los líderes de alabanza. Si te ha servido, una pequeña donación lo mantiene funcionando y mejorando.",
+                                   "cta":  "Donar"
+                               },
+                    "final":  {
+                                  "title":  "¿Listo para el próximo servicio?",
+                                  "subtitle":  "Inicia sesión y ten tu repertorio listo en minutos.",
+                                  "cta":  "Empezar"
+                              }
+                },
+    "dashboard":  {
+                      "greeting_morning":  "Buenos días",
+                      "greeting_afternoon":  "Buenas tardes",
+                      "greeting_evening":  "Buenas noches",
+                      "next_service":  "Próximo servicio",
+                      "upcoming":  "Próximos",
+                      "today":  "Hoy",
+                      "tomorrow":  "Mañana",
+                      "in_days":  "en {count} días",
+                      "songs_count":  "{count} canciones | {count} canción | {count} canciones",
+                      "no_upcoming_title":  "No hay servicios próximos",
+                      "no_upcoming_body":  "Toca para planear el siguiente",
+                      "quick_actions":  "Acciones rápidas",
+                      "new_service":  "Nuevo servicio",
+                      "new_service_hint":  "Crear un repertorio",
+                      "browse_library":  "Biblioteca",
+                      "browse_library_hint":  "Ver canciones",
+                      "no_upcoming_readonly":  "Tu admin aún no ha planeado uno",
+                      "upgrade_title":  "Estás usando un acceso temporal",
+                      "upgrade_subtitle":  "Crea tu cuenta gratis para hacerlo permanente.",
+                      "upgrade_benefit_1":  "Guarda tu acceso — sin depender del enlace de invitación",
+                      "upgrade_benefit_2":  "Recibe un rol en la banda (Teclado, Bajo, Coros…)",
+                      "upgrade_benefit_3":  "Inicia sesión desde cualquier dispositivo con correo y contraseña",
+                      "upgrade_cta":  "Crear mi cuenta",
+                      "upgrade_optional":  "Opcional, pero recomendado.",
+                      "locked_admin_only":  "Solo administradores"
+                  },
+    "public":  {
+                   "powered_by":  "Hecho con Repertorios",
+                   "no_songs":  "Sin canciones en este servicio",
+                   "expired_title":  "Enlace expirado",
+                   "expired_body":  "Este enlace ya no es válido.",
+                   "join_cta":  "Unirse a {band} →"
+               },
+    "donate":  {
+                   "tile_title":  "Apoya el proyecto",
+                   "tile_subtitle":  "Ayuda a mantener Repertorios gratis y creciendo"
+               },
+    "playlist":  {
+                     "title":  "Reproductor del repertorio",
+                     "play_all":  "Reproducir todo",
+                     "public_cta":  "Ver y escuchar el repertorio completo",
+                     "empty_title":  "Sin video",
+                     "no_videos":  "Ninguna canción del repertorio tiene enlace de YouTube.",
+                     "prev":  "Anterior",
+                     "next":  "Siguiente",
+                     "close":  "Cerrar"
+                 },
+    "install":  {
+                    "banner_title":  "Agregar a la pantalla de inicio",
+                    "banner_subtitle":  "Disfruta la experiencia completa de la app",
+                    "benefit_1":  "Abre al instante desde tu pantalla de inicio",
+                    "benefit_2":  "Carga más rápido — recursos guardados localmente",
+                    "benefit_3":  "Pantalla completa, sin barra del navegador",
+                    "install":  "Instalar",
+                    "later":  "Ahora no",
+                    "tile_title":  "Instalar App",
+                    "tile_subtitle":  "Agrega a tu pantalla de inicio para acceso rápido",
+                    "installed_title":  "App instalada",
+                    "installed_subtitle":  "Ya estás usando la versión instalada",
+                    "tile_not_available":  "No disponible en este navegador/modo privado",
+                    "ios_help_title":  "En Safari",
+                    "ios_help_body":  "Toca Compartir y luego Agregar a pantalla de inicio."
+                },
+    "assignments":  {
+                        "section_title":  "Equipo del servicio",
+                        "section_empty_admin":  "Aun no has asignado el equipo",
+                        "section_empty_hint":  "Toca para agregar quien toca este servicio",
+                        "add_button":  "Agregar al equipo",
+                        "add_sheet_title":  "Agregar al equipo",
+                        "search_placeholder":  "Busca o escribe un nombre...",
+                        "registered_members":  "Miembros del equipo",
+                        "add_manually":  "Agregar manualmente",
+                        "role_suggested":  "Sugerido: {role}",
+                        "already_assigned_as":  "Ya asignado a {role}",
+                        "confirm_role_title":  "Asignar a {name}",
+                        "confirm_role_as":  "como {role}",
+                        "change_role":  "Cambiar rol",
+                        "other_role":  "Otro rol...",
+                        "edit_title":  "Editar asignacion",
+                        "manual_name_label":  "Nombre",
+                        "role_label":  "Rol",
+                        "role_placeholder":  "Elige un rol",
+                        "delete_confirm":  "Quitar a {name} del equipo?",
+                        "you_play_role":  "Tu tocas {roles}",
+                        "manual_badge":  "invitado",
+                        "save_button":  "Guardar",
+                        "saved_toast":  "Agregado al equipo",
+                        "removed_toast":  "Quitado del equipo",
+                        "updated_toast":  "Asignacion actualizada",
+                        "errors":  {
+                                       "dupe":  "Esa persona ya esta asignada a ese rol",
+                                       "missing_role":  "Elige un rol",
+                                       "missing_name":  "Escribe el nombre"
+                                   }
+                    },
+    "share":  {
+                  "include_team_label":  "Incluir equipo del servicio",
+                  "include_team_hint":  "Adjunta la lista de musicos en el mensaje",
+                  "include_team_disabled":  "Aun no hay equipo asignado",
+                  "whatsapp_team_header":  "*Equipo del servicio:*"
+              }
 }

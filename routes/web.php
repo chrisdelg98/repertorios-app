@@ -12,6 +12,7 @@ use App\Http\Controllers\Public\JoinController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
+use App\Http\Controllers\Services\ServiceAssignmentController;
 use App\Http\Controllers\Services\ShareController;
 use App\Http\Controllers\Settings\BandSettingsController;
 use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
@@ -93,6 +94,11 @@ Route::middleware('band.access')->group(function () {
     Route::post('/services/{service}/songs/reorder', [ServiceSongController::class, 'reorder'])->name('service-songs.reorder');
     Route::post('/services/{service}/songs', [ServiceSongController::class, 'store'])->name('service-songs.store');
     Route::delete('/services/{service}/songs/{serviceSong}', [ServiceSongController::class, 'destroy'])->name('service-songs.destroy');
+
+    // Service assignments
+    Route::post('/services/{service}/assignments', [ServiceAssignmentController::class, 'store'])->name('service-assignments.store');
+    Route::patch('/assignments/{assignment}', [ServiceAssignmentController::class, 'update'])->name('service-assignments.update');
+    Route::delete('/assignments/{assignment}', [ServiceAssignmentController::class, 'destroy'])->name('service-assignments.destroy');
 
     // Songs library
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');

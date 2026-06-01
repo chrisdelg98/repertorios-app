@@ -5,14 +5,121 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
+import AssignTeamMemberSheet from '@/Components/AssignTeamMemberSheet.vue';
+import EditAssignmentSheet from '@/Components/EditAssignmentSheet.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
     service: Object,
     song_versions: Array,
     can_write: Boolean,
+    can_manage_assignments: Boolean,
+    team_members: Array,
+    role_types: Array,
 });
+
+const localAssignments = ref([...(props.service.assignments ?? [])]);
+const showAssignSheet = ref(false);
+const showEditAssignmentSheet = ref(false);
+const showTeamSheet = ref(false);
+const selectedAssignment = ref(null);
+const assignmentsProcessing = ref(false);
+const assignmentError = ref('');
+const includeTeamInShare = ref(false);
+
+const canManageAssignments = computed(() => !!props.can_manage_assignments);
+const showAssignmentsSection = computed(() =>
+    canManageAssignments.value || localAssignments.value.length > 0
+);
+
+function roleLabel(roleLike) {
+    if (!roleLike) return '';
+    if (roleLike.role_name_es || roleLike.role_name_en) {
+        return locale.value === 'en' ? roleLike.role_name_en : roleLike.role_name_es;
+    }
+    return locale.value === 'en' ? roleLike.name_en : roleLike.name_es;
+}
+
+async function saveAssignment(payload) {
+    assignmentsProcessing.value = true;
+    assignmentError.value = '';
+    try {
+        const csrf = document.querySelector('meta[name=\"csrf-token\"]').content;
+        const res = await fetch('/services/' + props.service.id + '/assignments', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            assignmentError.value = data?.code === 'dupe' ? t('assignments.errors.dupe') : (data?.message || 'Error');
+            return;
+        }
+        localAssignments.value = [...localAssignments.value, data.assignment].sort((a, b) => a.position - b.position);
+        showAssignSheet.value = false;
+    } finally {
+        assignmentsProcessing.value = false;
+    }
+}
+
+async function updateAssignment(payload) {
+    assignmentsProcessing.value = true;
+    assignmentError.value = '';
+    try {
+        const csrf = document.querySelector('meta[name=\"csrf-token\"]').content;
+        const res = await fetch('/assignments/' + payload.id, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                band_role_type_id: payload.band_role_type_id,
+                manual_name: payload.manual_name,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            assignmentError.value = data?.code === 'dupe' ? t('assignments.errors.dupe') : (data?.message || 'Error');
+            return;
+        }
+        localAssignments.value = localAssignments.value.map((assignment) =>
+            assignment.id === data.assignment.id ? data.assignment : assignment
+        );
+        showEditAssignmentSheet.value = false;
+        selectedAssignment.value = null;
+    } finally {
+        assignmentsProcessing.value = false;
+    }
+}
+
+async function removeAssignment(assignment) {
+    if (!confirm(t('assignments.delete_confirm', { name: assignment.display_name }))) return;
+    assignmentsProcessing.value = true;
+    assignmentError.value = '';
+    try {
+        const csrf = document.querySelector('meta[name=\"csrf-token\"]').content;
+        const res = await fetch('/assignments/' + assignment.id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+        });
+        if (!res.ok) return;
+        localAssignments.value = localAssignments.value.filter((row) => row.id !== assignment.id);
+        showEditAssignmentSheet.value = false;
+        selectedAssignment.value = null;
+    } finally {
+        assignmentsProcessing.value = false;
+    }
+}
 
 // --- Add song sheet ---
 const showAddSheet = ref(false);
@@ -99,11 +206,11 @@ const shareData = ref(null);
 const copied = ref(false);
 
 async function fetchShareData() {
-    if (shareData.value) return shareData.value;
     sharing.value = true;
     try {
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
-        const res  = await fetch('/services/' + props.service.id + '/share', {
+        const url = '/services/' + props.service.id + '/share' + (includeTeamInShare.value ? '?include_team=1' : '');
+        const res  = await fetch(url, {
             method:  'POST',
             headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
         });
@@ -115,8 +222,15 @@ async function fetchShareData() {
 }
 
 async function openShare() {
+    includeTeamInShare.value = false;
     await fetchShareData();
     showShareSheet.value = true;
+}
+
+async function toggleIncludeTeamInShare() {
+    includeTeamInShare.value = !includeTeamInShare.value;
+    if (!showShareSheet.value) return;
+    await fetchShareData();
 }
 
 async function previewAsGuest() {
@@ -210,6 +324,9 @@ function closeActionsMenu(e) {
 onMounted(() => document.addEventListener('click', closeActionsMenu));
 onBeforeUnmount(() => document.removeEventListener('click', closeActionsMenu));
 watch(() => props.service.service_songs, (songs) => { localSongs.value = [...songs]; });
+watch(() => props.service.assignments, (assignments) => {
+    localAssignments.value = [...(assignments ?? [])];
+});
 
 let reorderTimer = null;
 
@@ -312,10 +429,21 @@ function scheduleReorder() {
                             class="absolute right-0 mt-1.5 w-48 z-20 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
                         >
                             <button
+                                v-if="showAssignmentsSection"
+                                type="button"
+                                @click.stop="actionsMenuOpen = false; showTeamSheet = true"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-3a3 3 0 00-3-3H10a3 3 0 00-3 3v3m10 0H7m10-10a3 3 0 11-6 0 3 3 0 016 0zm-8 3a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {{ t('assignments.section_title') }}
+                            </button>
+                            <button
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; previewAsGuest()"
                                 :disabled="sharing"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -597,6 +725,80 @@ function scheduleReorder() {
             </div>
         </Teleport>
 
+        <!-- Team sheet -->
+        <Teleport to="body">
+            <div v-if="showTeamSheet" class="fixed inset-0 z-40 bg-black/40" @click="showTeamSheet = false" />
+            <div v-if="showTeamSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full max-w-lg lg:max-w-3xl z-50 bg-white rounded-t-2xl px-4 lg:px-6 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-slate-900">{{ t('assignments.section_title') }}</h2>
+                    <button @click="showTeamSheet = false" class="text-slate-500 hover:text-slate-600 text-lg leading-none">✕</button>
+                </div>
+
+                <div class="overflow-y-auto flex-1">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                            {{ t('assignments.section_title') }}
+                        </p>
+                        <span v-if="localAssignments.length" class="text-xs text-slate-500">{{ localAssignments.length }}</span>
+                    </div>
+
+                    <div v-if="!localAssignments.length && canManageAssignments" class="text-center py-6">
+                        <p class="text-sm font-semibold text-slate-700">{{ t('assignments.section_empty_admin') }}</p>
+                        <p class="text-xs text-slate-500 mt-1">{{ t('assignments.section_empty_hint') }}</p>
+                        <button
+                            type="button"
+                            @click="showTeamSheet = false; showAssignSheet = true"
+                            class="mt-3 inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
+                        >
+                            + {{ t('assignments.add_button') }}
+                        </button>
+                    </div>
+
+                    <div v-if="localAssignments.length" class="space-y-1.5">
+                        <div
+                            v-for="assignment in localAssignments"
+                            :key="assignment.id"
+                            class="flex items-center gap-2.5 px-2 py-2 rounded-lg border border-slate-100"
+                        >
+                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-xs font-semibold">
+                                {{ assignment.is_manual ? '?' : 'U' }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-slate-900 truncate">{{ assignment.display_name }}</p>
+                                <p class="text-xs text-slate-500 truncate">
+                                    {{ roleLabel(assignment) }}
+                                    <span v-if="assignment.is_manual" class="ml-1 text-[10px] text-slate-400">({{ t('assignments.manual_badge') }})</span>
+                                </p>
+                            </div>
+
+                            <button
+                                v-if="canManageAssignments"
+                                type="button"
+                                @click="selectedAssignment = assignment; showTeamSheet = false; showEditAssignmentSheet = true"
+                                class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                                aria-label="Edit assignment"
+                            >
+                                <svg class="w-3.5 h-3.5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    v-if="canManageAssignments && localAssignments.length"
+                    type="button"
+                    @click="showTeamSheet = false; showAssignSheet = true"
+                    class="w-full mt-3 py-2.5 text-sm font-semibold text-indigo-600 border-2 border-dashed border-indigo-200 rounded-xl hover:bg-indigo-50 transition-colors"
+                >
+                    + {{ t('assignments.add_button') }}
+                </button>
+
+                <p v-if="assignmentError" class="text-xs text-red-600 mt-2">{{ assignmentError }}</p>
+            </div>
+        </Teleport>
+
         <!-- Share sheet -->
         <Teleport to="body">
             <div v-if="showShareSheet" class="fixed inset-0 z-40 bg-black/40" @click="showShareSheet = false" />
@@ -653,6 +855,34 @@ function scheduleReorder() {
                         </span>
                     </button>
 
+                    <button
+                        type="button"
+                        @click="toggleIncludeTeamInShare"
+                        :disabled="!localAssignments.length"
+                        class="w-full flex items-center gap-3 px-3.5 py-3 mb-3 rounded-xl border transition-colors text-left disabled:opacity-60 disabled:cursor-not-allowed"
+                        :class="includeTeamInShare
+                            ? 'bg-indigo-50 border-indigo-200'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300'"
+                    >
+                        <span
+                            class="relative w-9 h-5 rounded-full shrink-0 transition-colors"
+                            :class="includeTeamInShare ? 'bg-indigo-600' : 'bg-slate-300'"
+                        >
+                            <span
+                                class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                :class="includeTeamInShare ? 'translate-x-4' : 'translate-x-0'"
+                            />
+                        </span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold" :class="includeTeamInShare ? 'text-indigo-700' : 'text-slate-700'">
+                                {{ t('share.include_team_label') }}
+                            </span>
+                            <span class="block text-[11px] mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-500'">
+                                {{ localAssignments.length ? t('share.include_team_hint') : t('share.include_team_disabled') }}
+                            </span>
+                        </span>
+                    </button>
+
                     <a
                         :href="shareData?.whatsapp_url"
                         target="_blank"
@@ -688,6 +918,27 @@ function scheduleReorder() {
                 </button>
             </div>
         </Teleport>
+
+        <AssignTeamMemberSheet
+            :open="showAssignSheet"
+            :members="team_members"
+            :roles="role_types"
+            :assignments="localAssignments"
+            :processing="assignmentsProcessing"
+            @close="showAssignSheet = false"
+            @add-registered="saveAssignment"
+            @add-manual="saveAssignment"
+        />
+
+        <EditAssignmentSheet
+            :open="showEditAssignmentSheet"
+            :assignment="selectedAssignment"
+            :roles="role_types"
+            :processing="assignmentsProcessing"
+            @close="showEditAssignmentSheet = false; selectedAssignment = null"
+            @save="updateAssignment"
+            @delete="removeAssignment"
+        />
 
         <!-- Song detail (read-only) -->
         <SongDetailSheet :song="detailSong" @close="detailSong = null" />

@@ -6,7 +6,7 @@ import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
     service: Object,
@@ -32,6 +32,12 @@ function openDetail(song) {
 
 const playlistOpen = ref(false);
 const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.youtube_url));
+const hasAssignments = computed(() => (props.service?.assignments ?? []).length > 0);
+
+function assignmentRoleLabel(assignment) {
+    if (!assignment) return '';
+    return locale.value === 'en' ? assignment.role_name_en : assignment.role_name_es;
+}
 </script>
 
 <template>
@@ -67,6 +73,19 @@ const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.y
             <!-- Notes -->
             <div v-if="service.notes" class="bg-white border-b border-slate-100 px-5 py-3">
                 <p class="text-sm text-slate-600">{{ service.notes }}</p>
+            </div>
+
+            <div v-if="hasAssignments" class="bg-white border-b border-slate-100 px-5 py-4">
+                <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-2">{{ t('assignments.section_title') }}</p>
+                <div class="space-y-1.5">
+                    <div
+                        v-for="(assignment, index) in service.assignments"
+                        :key="index"
+                        class="text-sm text-slate-700"
+                    >
+                        {{ assignment.display_name }} - {{ assignmentRoleLabel(assignment) }}
+                    </div>
+                </div>
             </div>
 
             <!-- Songs -->

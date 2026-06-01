@@ -62,6 +62,17 @@ function daysFromNow(dateStr) {
 function typeLabel(type) {
     return type === 'other' ? t('services.type_other') : type;
 }
+
+function roleLabel(role) {
+    if (!role) return '';
+    return locale.value === 'en' ? role.name_en : role.name_es;
+}
+
+const nextServiceRolesText = computed(() => {
+    const roles = nextService.value?.my_roles ?? [];
+    if (!roles.length) return '';
+    return roles.map((role) => roleLabel(role)).filter(Boolean).join(', ');
+});
 </script>
 
 <template>
@@ -142,6 +153,12 @@ function typeLabel(type) {
                 </div>
 
                 <div class="flex items-center gap-4 mt-4 pt-4 border-t border-white/15 text-xs text-indigo-100">
+                    <span v-if="nextServiceRolesText" class="flex items-center gap-1.5 font-semibold">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                        </svg>
+                        {{ t('assignments.you_play_role', { roles: nextServiceRolesText }) }}
+                    </span>
                     <span class="flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />

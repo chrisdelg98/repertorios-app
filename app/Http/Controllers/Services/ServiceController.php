@@ -6,11 +6,14 @@ use App\Actions\Services\DuplicateService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Requests\Services\StoreServiceRequest;
+use App\Models\BandRoleType;
 use App\Models\ScheduleTemplate;
 use App\Models\Service;
 use App\Models\SongVersion;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,6 +27,7 @@ class ServiceController extends Controller
             ->orderByDesc('date')
             ->orderByDesc('time')
             ->withCount('serviceSongs')
+            ->withCount('assignments')
             ->get(['id', 'band_id', 'date', 'time', 'type', 'created_at']);
 
         return Inertia::render('Services/Index', [
@@ -66,7 +70,7 @@ class ServiceController extends Controller
     {
         abort_unless($service->band_id === $this->bandId(), 403);
 
-        $service->load('serviceSongs.songVersion.song');
+        $service->load('serviceSongs.songVersion.song', 'assignments.role', 'assignments.user');
 
         $songVersions = SongVersion::where('band_id', $this->bandId())
             ->with('song')
@@ -90,6 +94,18 @@ class ServiceController extends Controller
                 'time'  => $service->time,
                 'type'  => $service->type,
                 'notes' => $service->notes,
+                'assignments' => $service->assignments->map(fn ($assignment) => [
+                    'id' => $assignment->id,
+                    'service_id' => $assignment->service_id,
+                    'user_id' => $assignment->user_id,
+                    'manual_name' => $assignment->manual_name,
+                    'display_name' => $assignment->display_name,
+                    'is_manual' => $assignment->is_manual,
+                    'position' => $assignment->position,
+                    'band_role_type_id' => $assignment->band_role_type_id,
+                    'role_name_es' => $assignment->role?->name_es,
+                    'role_name_en' => $assignment->role?->name_en,
+                ])->values(),
                 'service_songs' => $service->serviceSongs->map(fn ($ss) => [
                     'id' => $ss->id,
                     'position' => $ss->position,
@@ -109,7 +125,24 @@ class ServiceController extends Controller
                 ]),
             ],
             'song_versions' => $songVersions,
+            'team_members' => User::where('band_id', $this->bandId())
+                ->with(['bandRoles:id,name_es,name_en'])
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (User $user) => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'roles' => $user->bandRoles->map(fn ($role) => [
+                        'id' => $role->id,
+                        'name_es' => $role->name_es,
+                        'name_en' => $role->name_en,
+                    ])->values(),
+                ])->values(),
+            'role_types' => BandRoleType::orderBy('sort_order')->orderBy('name_es')
+                ->get(['id', 'name_es', 'name_en'])
+                ->values(),
             'can_write' => $this->canWrite(),
+            'can_manage_assignments' => Auth::check() && Auth::user()->role === 'admin',
         ]);
     }
 

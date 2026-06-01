@@ -1,153 +1,183 @@
 {
-  "app": {
-    "name": "Repertorios",
-    "tagline": "Worship band repertoire platform"
-  },
-  "nav": {
-    "home": "Home",
-    "songs": "Songs",
-    "services": "Services",
-    "setlists": "Setlists",
-    "add": "Add",
-    "settings": "Settings",
-    "logout": "Logout"
-  },
-  "lang": {
-    "en": "English",
-    "es": "Español",
-    "switch": "Change language"
-  },
-  "welcome": {
-    "title": "Welcome",
-    "status": "Inertia.js + Vue 3 + Tailwind running",
-    "versions": "Laravel {laravel} · PHP {php}",
-    "phase0": "Phase 0: Setup & Foundation — done",
-    "phase1": "Phase 1: i18n + PWA base — done",
-    "next": "Next: Authentication"
-  },
-  "landing": {
-    "meta_title": "Repertorios — Worship setlists, simplified",
-    "nav": {
-      "sign_in": "Sign in"
-    },
-    "hero": {
-      "badge": "Built for worship teams",
-      "title_pre": "Worship setlists,",
-      "title_accent": "beautifully organized.",
-      "subtitle": "Plan services, keep your song library in one place, and share the setlist with your team in seconds — straight to WhatsApp.",
-      "cta_primary": "Get started",
-      "cta_donate": "Support the project"
-    },
-    "features": {
-      "eyebrow": "Everything you need",
-      "title": "Built around the way worship teams actually work",
-      "subtitle": "Three tools, working together so Sunday morning runs smoothly.",
-      "plan_title": "Plan every service",
-      "plan_body": "Create services for any day, set the time, add notes — reorder songs with a tap.",
-      "library_title": "Keep your song library",
-      "library_body": "Save songs with artist, version, key, BPM and YouTube link. Find anything in seconds.",
-      "share_title": "Share with one tap",
-      "share_body": "Send the full repertoire to your team via WhatsApp or a public link — no app required."
-    },
-    "steps": {
-      "eyebrow": "How it works",
-      "title": "Get set up in minutes",
-      "one_title": "Create your band",
-      "one_body": "Sign in as the admin. Your team joins with a code — no separate accounts to manage.",
-      "two_title": "Build your library",
-      "two_body": "Add the songs your team plays. Mark the key, the version, and the link.",
-      "three_title": "Plan and share",
-      "three_body": "Build the setlist for next service and share the link in your WhatsApp group."
-    },
-    "donate": {
-      "title": "Support the project",
-      "body": "Repertorios is built to make worship leaders' lives easier. If it has helped your team, a small donation keeps it running and improving.",
-      "cta": "Donate"
-    },
-    "final": {
-      "title": "Ready for your next service?",
-      "subtitle": "Sign in and have your setlist ready in minutes.",
-      "cta": "Get started"
-    }
-  },
-  "dashboard": {
-    "greeting_morning": "Good morning",
-    "greeting_afternoon": "Good afternoon",
-    "greeting_evening": "Good evening",
-    "next_service": "Next service",
-    "upcoming": "Upcoming",
-    "today": "Today",
-    "tomorrow": "Tomorrow",
-    "in_days": "in {count} days",
-    "songs_count": "{count} songs | {count} song | {count} songs",
-    "no_upcoming_title": "No upcoming services",
-    "no_upcoming_body": "Tap to plan your next one",
-    "no_upcoming_readonly": "Your admin hasn't planned one yet",
-    "upgrade_title": "You're using a guest access",
-    "upgrade_subtitle": "Create a free account to make it permanent.",
-    "upgrade_benefit_1": "Save your access — no more depending on the invite link",
-    "upgrade_benefit_2": "Get assigned a role in the band (Keyboard, Bass, Choir…)",
-    "upgrade_benefit_3": "Sign in from any device with email + password",
-    "upgrade_cta": "Create my account",
-    "upgrade_optional": "Optional, but recommended.",
-    "quick_actions": "Quick actions",
-    "new_service": "New service",
-    "new_service_hint": "Plan a setlist",
-    "browse_library": "Song library",
-    "browse_library_hint": "View all songs",
-    "locked_admin_only": "Admins only"
-  },
-  "public": {
-    "powered_by": "Made with Repertorios",
-    "no_songs": "No songs in this service",
-    "expired_title": "Link expired",
-    "expired_body": "This link is no longer valid.",
-    "join_cta": "Join {band} →"
-  },
-  "donate": {
-    "tile_title": "Support the project",
-    "tile_subtitle": "Help keep Repertorios free and growing"
-  },
-  "playlist": {
-    "title": "Setlist player",
-    "play_all": "Play all",
-    "public_cta": "Watch & play the full setlist",
-    "empty_title": "No video",
-    "no_videos": "No songs in this setlist have a YouTube link.",
-    "prev": "Previous",
-    "next": "Next",
-    "close": "Close"
-  },
-  "welcome": {
-    "eyebrow": "Welcome to Repertorios",
-    "greeting": "Bless you, {name}!",
-    "blessing": "May this be a place that makes every Sunday lighter and your team's worship sweeter. Take a minute to set up the basics — we'll guide you.",
-    "checklist_title": "Get started in 4 steps",
-    "step_templates_title": "Set up your schedule templates",
-    "step_templates_body": "Sunday 10 AM, Wednesday 7 PM… so creating services takes one tap.",
-    "step_songs_title": "Add your songs",
-    "step_songs_body": "Build your library — name, key, version. You can paste a YouTube link too.",
-    "step_service_title": "Plan your first service",
-    "step_service_body": "Pick a date, drop in the songs, and you're ready.",
-    "step_share_title": "Share access with your team",
-    "step_share_body": "Send the invite link from Band settings — one tap to join, no account needed.",
-    "cta_explore": "Got it, let's go",
-    "dont_show_again": "Don't show this again"
-  },
-  "install": {
-    "banner_title": "Add to Home Screen",
-    "banner_subtitle": "Get the full app experience",
-    "benefit_1": "Open instantly from your home screen",
-    "benefit_2": "Faster load — assets cached locally",
-    "benefit_3": "Full screen, no browser bar",
-    "install": "Install",
-    "later": "Maybe later",
-    "tile_title": "Install App",
-    "tile_subtitle": "Add to your home screen for faster access",
-    "installed_title": "App installed",
-    "installed_subtitle": "You're already using the installed version",
-    "tile_not_available": "Not available in this browser/private mode",
-    "ios_help_title": "In Safari",
-    "ios_help_body": "Tap Share, then Add to Home Screen."
-  }
+    "app":  {
+                "name":  "Repertorios",
+                "tagline":  "Worship band repertoire platform"
+            },
+    "nav":  {
+                "home":  "Home",
+                "songs":  "Songs",
+                "services":  "Services",
+                "setlists":  "Setlists",
+                "add":  "Add",
+                "settings":  "Settings",
+                "logout":  "Logout"
+            },
+    "lang":  {
+                 "en":  "English",
+                 "es":  "Español",
+                 "switch":  "Change language"
+             },
+    "welcome":  {
+                    "eyebrow":  "Welcome to Repertorios",
+                    "greeting":  "Bless you, {name}!",
+                    "blessing":  "May this be a place that makes every Sunday lighter and your team\u0027s worship sweeter. Take a minute to set up the basics — we\u0027ll guide you.",
+                    "checklist_title":  "Get started in 4 steps",
+                    "step_templates_title":  "Set up your schedule templates",
+                    "step_templates_body":  "Sunday 10 AM, Wednesday 7 PM… so creating services takes one tap.",
+                    "step_songs_title":  "Add your songs",
+                    "step_songs_body":  "Build your library — name, key, version. You can paste a YouTube link too.",
+                    "step_service_title":  "Plan your first service",
+                    "step_service_body":  "Pick a date, drop in the songs, and you\u0027re ready.",
+                    "step_share_title":  "Share access with your team",
+                    "step_share_body":  "Send the invite link from Band settings — one tap to join, no account needed.",
+                    "cta_explore":  "Got it, let\u0027s go",
+                    "dont_show_again":  "Don\u0027t show this again"
+                },
+    "landing":  {
+                    "meta_title":  "Repertorios — Worship setlists, simplified",
+                    "nav":  {
+                                "sign_in":  "Sign in"
+                            },
+                    "hero":  {
+                                 "badge":  "Built for worship teams",
+                                 "title_pre":  "Worship setlists,",
+                                 "title_accent":  "beautifully organized.",
+                                 "subtitle":  "Plan services, keep your song library in one place, and share the setlist with your team in seconds — straight to WhatsApp.",
+                                 "cta_primary":  "Get started",
+                                 "cta_donate":  "Support the project"
+                             },
+                    "features":  {
+                                     "eyebrow":  "Everything you need",
+                                     "title":  "Built around the way worship teams actually work",
+                                     "subtitle":  "Three tools, working together so Sunday morning runs smoothly.",
+                                     "plan_title":  "Plan every service",
+                                     "plan_body":  "Create services for any day, set the time, add notes — reorder songs with a tap.",
+                                     "library_title":  "Keep your song library",
+                                     "library_body":  "Save songs with artist, version, key, BPM and YouTube link. Find anything in seconds.",
+                                     "share_title":  "Share with one tap",
+                                     "share_body":  "Send the full repertoire to your team via WhatsApp or a public link — no app required."
+                                 },
+                    "steps":  {
+                                  "eyebrow":  "How it works",
+                                  "title":  "Get set up in minutes",
+                                  "one_title":  "Create your band",
+                                  "one_body":  "Sign in as the admin. Your team joins with a code — no separate accounts to manage.",
+                                  "two_title":  "Build your library",
+                                  "two_body":  "Add the songs your team plays. Mark the key, the version, and the link.",
+                                  "three_title":  "Plan and share",
+                                  "three_body":  "Build the setlist for next service and share the link in your WhatsApp group."
+                              },
+                    "donate":  {
+                                   "title":  "Support the project",
+                                   "body":  "Repertorios is built to make worship leaders\u0027 lives easier. If it has helped your team, a small donation keeps it running and improving.",
+                                   "cta":  "Donate"
+                               },
+                    "final":  {
+                                  "title":  "Ready for your next service?",
+                                  "subtitle":  "Sign in and have your setlist ready in minutes.",
+                                  "cta":  "Get started"
+                              }
+                },
+    "dashboard":  {
+                      "greeting_morning":  "Good morning",
+                      "greeting_afternoon":  "Good afternoon",
+                      "greeting_evening":  "Good evening",
+                      "next_service":  "Next service",
+                      "upcoming":  "Upcoming",
+                      "today":  "Today",
+                      "tomorrow":  "Tomorrow",
+                      "in_days":  "in {count} days",
+                      "songs_count":  "{count} songs | {count} song | {count} songs",
+                      "no_upcoming_title":  "No upcoming services",
+                      "no_upcoming_body":  "Tap to plan your next one",
+                      "no_upcoming_readonly":  "Your admin hasn\u0027t planned one yet",
+                      "upgrade_title":  "You\u0027re using a guest access",
+                      "upgrade_subtitle":  "Create a free account to make it permanent.",
+                      "upgrade_benefit_1":  "Save your access — no more depending on the invite link",
+                      "upgrade_benefit_2":  "Get assigned a role in the band (Keyboard, Bass, Choir…)",
+                      "upgrade_benefit_3":  "Sign in from any device with email + password",
+                      "upgrade_cta":  "Create my account",
+                      "upgrade_optional":  "Optional, but recommended.",
+                      "quick_actions":  "Quick actions",
+                      "new_service":  "New service",
+                      "new_service_hint":  "Plan a setlist",
+                      "browse_library":  "Song library",
+                      "browse_library_hint":  "View all songs",
+                      "locked_admin_only":  "Admins only"
+                  },
+    "public":  {
+                   "powered_by":  "Made with Repertorios",
+                   "no_songs":  "No songs in this service",
+                   "expired_title":  "Link expired",
+                   "expired_body":  "This link is no longer valid.",
+                   "join_cta":  "Join {band} →"
+               },
+    "donate":  {
+                   "tile_title":  "Support the project",
+                   "tile_subtitle":  "Help keep Repertorios free and growing"
+               },
+    "playlist":  {
+                     "title":  "Setlist player",
+                     "play_all":  "Play all",
+                     "public_cta":  "Watch \u0026 play the full setlist",
+                     "empty_title":  "No video",
+                     "no_videos":  "No songs in this setlist have a YouTube link.",
+                     "prev":  "Previous",
+                     "next":  "Next",
+                     "close":  "Close"
+                 },
+    "install":  {
+                    "banner_title":  "Add to Home Screen",
+                    "banner_subtitle":  "Get the full app experience",
+                    "benefit_1":  "Open instantly from your home screen",
+                    "benefit_2":  "Faster load — assets cached locally",
+                    "benefit_3":  "Full screen, no browser bar",
+                    "install":  "Install",
+                    "later":  "Maybe later",
+                    "tile_title":  "Install App",
+                    "tile_subtitle":  "Add to your home screen for faster access",
+                    "installed_title":  "App installed",
+                    "installed_subtitle":  "You\u0027re already using the installed version",
+                    "tile_not_available":  "Not available in this browser/private mode",
+                    "ios_help_title":  "In Safari",
+                    "ios_help_body":  "Tap Share, then Add to Home Screen."
+                },
+    "assignments":  {
+                        "section_title":  "Service team",
+                        "section_empty_admin":  "You have not assigned the team yet",
+                        "section_empty_hint":  "Tap to add who is playing this service",
+                        "add_button":  "Add to team",
+                        "add_sheet_title":  "Add to team",
+                        "search_placeholder":  "Search or type a name...",
+                        "registered_members":  "Band members",
+                        "add_manually":  "Add manually",
+                        "role_suggested":  "Suggested: {role}",
+                        "already_assigned_as":  "Already assigned as {role}",
+                        "confirm_role_title":  "Assign {name}",
+                        "confirm_role_as":  "as {role}",
+                        "change_role":  "Change role",
+                        "other_role":  "Other role...",
+                        "edit_title":  "Edit assignment",
+                        "manual_name_label":  "Name",
+                        "role_label":  "Role",
+                        "role_placeholder":  "Choose a role",
+                        "delete_confirm":  "Remove {name} from the team?",
+                        "you_play_role":  "You are playing {roles}",
+                        "manual_badge":  "guest",
+                        "save_button":  "Save",
+                        "saved_toast":  "Added to team",
+                        "removed_toast":  "Removed from team",
+                        "updated_toast":  "Assignment updated",
+                        "errors":  {
+                                       "dupe":  "That person is already assigned to that role",
+                                       "missing_role":  "Choose a role",
+                                       "missing_name":  "Enter a name"
+                                   }
+                    },
+    "share":  {
+                  "include_team_label":  "Include service team",
+                  "include_team_hint":  "Attaches the musician list to the message",
+                  "include_team_disabled":  "No team assigned yet",
+                  "whatsapp_team_header":  "*Service team:*"
+              }
 }

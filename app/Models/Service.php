@@ -27,4 +27,11 @@ class Service extends Model
     {
         return $this->hasMany(ServiceSong::class)->orderBy('position');
     }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(ServiceAssignment::class)
+            ->orderBy('position')
+            ->with(['role', 'user']);
+    }
 }
