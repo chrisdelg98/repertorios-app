@@ -11,7 +11,18 @@ class Service extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['band_id', 'date', 'time', 'type', 'notes'];
+    /**
+     * Accent colours a service can take. Keys, not hex values — the actual
+     * shades live in resources/js/Constants/serviceColors.js so both ends
+     * agree and Tailwind can see the class names.
+     */
+    public const COLORS = [
+        'indigo', 'violet', 'sky', 'emerald', 'amber', 'orange', 'rose', 'slate',
+    ];
+
+    public const DEFAULT_COLOR = 'indigo';
+
+    protected $fillable = ['band_id', 'date', 'time', 'type', 'color', 'notes'];
 
     protected function casts(): array
     {

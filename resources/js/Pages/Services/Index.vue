@@ -4,6 +4,8 @@ import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import MultiSelect from '@/Components/MultiSelect.vue';
+import ServiceColorSwatches from '@/Components/ServiceColorSwatches.vue';
+import { serviceColor } from '@/Constants/serviceColors';
 
 const { t, locale } = useI18n();
 const page = usePage();
@@ -93,14 +95,39 @@ function clearFilters() {
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
 const openMenuId = ref(null);
+// The same dropdown box swaps its contents for the palette instead of opening
+// a second popover on top of the first.
+const colorPickerId = ref(null);
 
 function toggleMenu(id, event) {
     event?.stopPropagation();
     openMenuId.value = openMenuId.value === id ? null : id;
+    colorPickerId.value = null;
 }
 
 function closeMenuOnDocClick(e) {
-    if (!e.target.closest('[data-card-menu]')) openMenuId.value = null;
+    if (!e.target.closest('[data-card-menu]')) {
+        openMenuId.value = null;
+        colorPickerId.value = null;
+    }
+}
+
+function setColor(service, color) {
+    if (color === (service.color || 'indigo')) {
+        openMenuId.value = null;
+        colorPickerId.value = null;
+        return;
+    }
+    // Optimistic: the swatch should answer instantly, the request just confirms.
+    service.color = color;
+    router.patch(`/services/${service.id}/color`, { color }, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => {
+            openMenuId.value = null;
+            colorPickerId.value = null;
+        },
+    });
 }
 
 onMounted(() => document.addEventListener('click', closeMenuOnDocClick));
@@ -381,10 +408,13 @@ function submitDuplicate() {
                         :href="'/services/' + service.id"
                         class="flex-1 flex items-center gap-3 px-3 py-3 text-left min-w-0 rounded-l-xl active:bg-slate-50 transition-colors"
                     >
-                        <!-- Calendar anchor -->
-                        <div class="w-10 h-10 bg-indigo-50 group-hover:bg-indigo-100 rounded-lg flex items-center justify-center shrink-0 transition-colors">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <!-- Calendar anchor — solid glyph so the accent colour reads -->
+                        <div
+                            class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+                            :class="[serviceColor(service.color).tile, serviceColor(service.color).tileHover]"
+                        >
+                            <svg class="w-5 h-5" :class="serviceColor(service.color).icon" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd" />
                             </svg>
                         </div>
 
@@ -432,13 +462,42 @@ function submitDuplicate() {
                         >
                             <div
                                 v-if="openMenuId === service.id"
-                                class="absolute right-2 top-12 z-20 w-44 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
+                                class="absolute right-2 top-12 z-20 w-56 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
                             >
+                                <!-- Palette panel: replaces the actions in place -->
+                                <div v-if="colorPickerId === service.id" class="p-3">
+                                    <div class="flex items-center justify-between mb-2.5">
+                                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">
+                                            {{ t('services.color_label') }}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            @click.stop="colorPickerId = null"
+                                            class="text-2xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                                        >{{ t('services.color_back') }}</button>
+                                    </div>
+                                    <ServiceColorSwatches
+                                        :model-value="service.color"
+                                        @update:model-value="setColor(service, $event)"
+                                    />
+                                </div>
+
+                                <template v-else>
+                                <button
+                                    v-if="canWrite"
+                                    type="button"
+                                    @click.stop="colorPickerId = service.id"
+                                    class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                    <span class="w-4 h-4 rounded-full shrink-0" :class="serviceColor(service.color).swatch" />
+                                    {{ t('services.color_label') }}
+                                </button>
                                 <button
                                     type="button"
                                     @click.stop="openShare(service)"
                                     :disabled="sharing && sharingId === service.id"
-                                    class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                    class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 border-slate-100"
+                                    :class="canWrite ? 'border-t' : ''"
                                 >
                                     <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -467,6 +526,7 @@ function submitDuplicate() {
                                     </svg>
                                     {{ t('services.delete') }}
                                 </button>
+                                </template>
                             </div>
                         </Transition>
                     </div>

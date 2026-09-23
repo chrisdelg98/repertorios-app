@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
+import { serviceColor } from '@/Constants/serviceColors';
 
 const { t, locale } = useI18n();
 
@@ -16,6 +17,8 @@ const props = defineProps({
     team_members: Array,
     role_types: Array,
 });
+
+const accent = computed(() => serviceColor(props.service.color));
 
 const localAssignments = ref([...(props.service.assignments ?? [])]);
 const showTeamSheet = ref(false);
@@ -501,16 +504,19 @@ function scheduleReorder() {
     <AppLayout>
         <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-3xl mx-auto">
             <!-- Service header card -->
-            <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white mb-4 shadow-md shadow-indigo-200">
-                <p class="text-xs font-medium text-indigo-100 uppercase tracking-wide">
+            <div
+                class="bg-gradient-to-br rounded-2xl p-5 text-white mb-4 shadow-md"
+                :class="[accent.gradient, accent.shadow]"
+            >
+                <p class="text-xs font-medium text-white/80 uppercase tracking-wide">
                     {{ t('services.title') }}
                 </p>
                 <h1 class="text-xl font-bold mt-1 capitalize">{{ typeLabel(service.type) }}</h1>
-                <p class="text-sm font-medium text-indigo-50 mt-1">
+                <p class="text-sm font-medium text-white/95 mt-1">
                     {{ formatDate(service.date) }}
                     <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
                 </p>
-                <p v-if="service.notes" class="mt-3 pt-3 border-t border-white/15 text-sm text-indigo-50">
+                <p v-if="service.notes" class="mt-3 pt-3 border-t border-white/20 text-sm text-white/90">
                     {{ service.notes }}
                 </p>
             </div>

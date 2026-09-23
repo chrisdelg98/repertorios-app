@@ -98,6 +98,7 @@ Route::middleware('band.access')->group(function () {
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
     Route::get('/services/{service}/edit', [ServiceController::class, 'edit'])->name('services.edit');
     Route::put('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
+    Route::patch('/services/{service}/color', [ServiceController::class, 'updateColor'])->name('services.color');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     Route::post('/services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
     Route::post('/services/{service}/share', [ShareController::class, 'store'])->name('services.share');

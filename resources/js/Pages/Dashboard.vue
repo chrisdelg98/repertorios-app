@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { serviceColor } from '@/Constants/serviceColors';
 
 const { t, locale } = useI18n();
 const page = usePage();
@@ -134,15 +135,16 @@ const nextServiceRolesText = computed(() => {
             <Link
                 v-if="nextService"
                 :href="`/services/${nextService.id}`"
-                class="block bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white shadow-md shadow-indigo-200"
+                class="block bg-gradient-to-br rounded-2xl p-5 text-white shadow-md"
+                :class="[serviceColor(nextService.color).gradient, serviceColor(nextService.color).shadow]"
             >
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                        <p class="text-xs font-medium text-indigo-100 uppercase tracking-wide">
+                        <p class="text-xs font-medium text-white/80 uppercase tracking-wide">
                             {{ t('dashboard.next_service') }}
                         </p>
                         <h2 class="text-lg font-bold mt-1 capitalize truncate">{{ typeLabel(nextService.type) }}</h2>
-                        <p class="text-sm font-medium text-indigo-50 mt-0.5">
+                        <p class="text-sm font-medium text-white/95 mt-0.5">
                             {{ formatDate(nextService.date) }}
                             <span v-if="nextService.time"> · {{ nextService.time.slice(0, 5) }}</span>
                         </p>
@@ -152,7 +154,7 @@ const nextServiceRolesText = computed(() => {
                     </span>
                 </div>
 
-                <div class="flex items-center gap-4 mt-4 pt-4 border-t border-white/15 text-xs text-indigo-50">
+                <div class="flex items-center gap-4 mt-4 pt-4 border-t border-white/20 text-xs text-white/95">
                     <span v-if="nextServiceRolesText" class="flex items-center gap-1.5 font-semibold">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
@@ -207,9 +209,19 @@ const nextServiceRolesText = computed(() => {
                         :href="`/services/${s.id}`"
                         class="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3"
                     >
-                        <div class="min-w-0">
-                            <p class="text-sm font-medium text-slate-900 capitalize truncate">{{ typeLabel(s.type) }}</p>
-                            <p class="text-xs font-medium text-slate-600 mt-0.5">{{ formatShortDate(s.date) }}<span v-if="s.time"> · {{ s.time.slice(0, 5) }}</span></p>
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div
+                                class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                                :class="serviceColor(s.color).tile"
+                            >
+                                <svg class="w-[18px] h-[18px]" :class="serviceColor(s.color).icon" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-slate-900 capitalize truncate">{{ typeLabel(s.type) }}</p>
+                                <p class="text-xs font-medium text-slate-600 mt-0.5">{{ formatShortDate(s.date) }}<span v-if="s.time"> · {{ s.time.slice(0, 5) }}</span></p>
+                            </div>
                         </div>
                         <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />

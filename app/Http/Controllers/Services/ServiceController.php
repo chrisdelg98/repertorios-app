@@ -29,7 +29,7 @@ class ServiceController extends Controller
             ->orderByDesc('time')
             ->withCount('serviceSongs')
             ->withCount('assignments')
-            ->get(['id', 'band_id', 'date', 'time', 'type', 'created_at']);
+            ->get(['id', 'band_id', 'date', 'time', 'type', 'color', 'created_at']);
 
         return Inertia::render('Services/Index', [
             'services' => $services,
@@ -94,6 +94,7 @@ class ServiceController extends Controller
                 'date'  => $service->date->toDateString(),
                 'time'  => $service->time,
                 'type'  => $service->type,
+                'color' => $service->color,
                 'notes' => $service->notes,
                 'assignments' => $service->assignments->map(fn ($assignment) => [
                     'id' => $assignment->id,
@@ -154,6 +155,20 @@ class ServiceController extends Controller
         $service->update($request->validated());
 
         return redirect()->route('services.show', $service)->with('success', 'Service updated.');
+    }
+
+    public function updateColor(Request $request, Service $service): RedirectResponse
+    {
+        $this->requireWrite();
+        abort_unless($service->band_id === $this->bandId(), 403);
+
+        $data = $request->validate([
+            'color' => ['required', \Illuminate\Validation\Rule::in(Service::COLORS)],
+        ]);
+
+        $service->update($data);
+
+        return back()->with('success', true);
     }
 
     public function destroy(Service $service): RedirectResponse

@@ -26,12 +26,13 @@ class DashboardController extends Controller
             ->limit(3)
             ->withCount('serviceSongs')
             ->with(['assignments.role'])
-            ->get(['id', 'date', 'time', 'type'])
+            ->get(['id', 'date', 'time', 'type', 'color'])
             ->map(fn ($s) => [
                 'id'         => $s->id,
                 'date'       => $s->date->toDateString(),
                 'time'       => $s->time,
                 'type'       => $s->type,
+                'color'      => $s->color,
                 'song_count' => $s->service_songs_count,
                 'my_roles'   => $userId
                     ? $s->assignments

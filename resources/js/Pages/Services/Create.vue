@@ -3,6 +3,8 @@ import { ref, computed, watch } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import ServiceColorPicker from '@/Components/ServiceColorPicker.vue';
+import { DEFAULT_SERVICE_COLOR } from '@/Constants/serviceColors';
 
 const { t, locale } = useI18n();
 
@@ -17,6 +19,8 @@ const form = useForm({
     date: props.service?.date?.slice(0, 10) ?? today(),
     time: props.service?.time?.slice(0, 5) ?? '',
     type: props.service?.type ?? 'other',
+    // Optional: it already carries the brand colour, nobody has to choose.
+    color: props.service?.color ?? DEFAULT_SERVICE_COLOR,
     notes: props.service?.notes ?? '',
 });
 
@@ -178,6 +182,15 @@ function submit() {
                         type="time"
                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
+                </div>
+
+                <!-- Colour — optional accent, defaults to the brand indigo -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-medium text-slate-600">
+                        {{ t('services.color_label') }}
+                        <span class="text-slate-500 font-normal">· {{ t('services.color_optional') }}</span>
+                    </label>
+                    <ServiceColorPicker v-model="form.color" />
                 </div>
 
                 <!-- Notes -->
