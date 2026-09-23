@@ -80,7 +80,7 @@ class ShareController extends Controller
                     'version' => $ss->songVersion->name,
                     'key' => $ss->songVersion->key,
                     'bpm' => $ss->songVersion->bpm,
-                    'notes' => $ss->songVersion->notes,
+                    'notes' => $ss->effective_notes,
                     'youtube_url' => $ss->songVersion->youtube_url,
                 ])->values(),
             ],

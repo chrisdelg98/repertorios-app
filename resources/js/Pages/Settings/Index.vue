@@ -1,13 +1,27 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useInstall } from '@/composables/useInstall';
+import InstallSheet from '@/Components/InstallSheet.vue';
+import { useInstall } from '@/Composables/useInstall';
 
 const { t } = useI18n();
 const page = usePage();
-const { isInstalled, canRequestInstall, showManualInstallHelp, promptInstall } = useInstall();
+const { isInstalled, isIosSafari, promptInstall } = useInstall();
+
+const installSheetOpen = ref(false);
+
+// iOS has no install prompt to fire, so it goes straight to the instructions.
+async function onInstallClick() {
+    if (isIosSafari.value) {
+        installSheetOpen.value = true;
+        return;
+    }
+
+    const accepted = await promptInstall();
+    if (!accepted) installSheetOpen.value = true;
+}
 
 const donateUrl = computed(() => page.props.donate?.url || null);
 const isAdmin   = computed(() => page.props.auth?.access === 'admin');
@@ -105,10 +119,8 @@ const sections = computed(() => {
                 <!-- Install app tile (hidden only when already installed) -->
                 <button
                     v-if="!isInstalled"
-                    @click="promptInstall"
-                    :disabled="!canRequestInstall"
-                    class="w-full flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl px-4 py-3.5 border border-indigo-100 hover:from-indigo-100 hover:to-violet-100 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 transition"
-                    :title="canRequestInstall ? '' : t('install.tile_not_available')"
+                    @click="onInstallClick"
+                    class="w-full flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl px-4 py-3.5 border border-indigo-100 hover:from-indigo-100 hover:to-violet-100 active:scale-[0.99] transition"
                 >
                     <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -126,13 +138,7 @@ const sections = computed(() => {
                     </svg>
                 </button>
 
-                <div
-                    v-if="!isInstalled && showManualInstallHelp"
-                    class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700"
-                >
-                    <p class="font-semibold">{{ t('install.ios_help_title') }}</p>
-                    <p class="mt-1 text-xs leading-relaxed text-indigo-700">{{ t('install.ios_help_body') }}</p>
-                </div>
+
 
                 <!-- Already installed badge -->
                 <div
@@ -173,5 +179,7 @@ const sections = computed(() => {
                 </button>
             </div>
         </div>
+
+        <InstallSheet :open="installSheetOpen" @close="installSheetOpen = false" />
     </AppLayout>
 </template>

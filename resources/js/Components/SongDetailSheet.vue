@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { youTubeEmbedUrl, parseYouTube, formatStart } from '@/Utils/youtube';
 
 const { t } = useI18n();
 
@@ -13,9 +14,13 @@ const props = defineProps({
     // Song with versions array (library viewer use case):
     // { name, artist, versions: [{ id, name, key, bpm, notes, youtube_url }] }
     song: Object,
+    // Set when the sheet is opened from a service: enables editing the note
+    // for that service alone, leaving the song's own note untouched.
+    editableServiceNote: { type: Boolean, default: false },
+    savingNote: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'save-note']);
 
 const selectedVersionIdx = ref(0);
 
@@ -39,16 +44,45 @@ const current = computed(() => {
     };
 });
 
-const youtubeEmbed = computed(() => {
-    const url = current.value?.youtube_url;
-    if (!url) return null;
-    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-    return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+// Honours the ?t= in the pasted link, so a song that starts at 1:13 does.
+const youtubeEmbed = computed(() => youTubeEmbedUrl(current.value?.youtube_url));
+
+const youtubeStart = computed(() => {
+    const parsed = parseYouTube(current.value?.youtube_url);
+    return parsed?.start ? formatStart(parsed.start) : '';
 });
+
+// The note the song carries everywhere, and the one this service overrode it
+// with. Either can be absent.
+const songNote    = computed(() => props.song?.song_notes ?? current.value?.notes ?? '');
+const serviceNote = computed(() => props.song?.service_notes ?? '');
+const shownNote   = computed(() => serviceNote.value || songNote.value);
+const noteIsOverride = computed(() => !!serviceNote.value && serviceNote.value !== songNote.value);
+
+const editingNote = ref(false);
+const noteDraft   = ref('');
+
+watch(() => props.song, () => { editingNote.value = false; });
+
+function startEditingNote() {
+    noteDraft.value = serviceNote.value || songNote.value || '';
+    editingNote.value = true;
+}
+
+function saveNote() {
+    emit('save-note', noteDraft.value);
+    editingNote.value = false;
+}
+
+/** Drop the override so the song's own note shows again. */
+function resetNote() {
+    emit('save-note', '');
+    editingNote.value = false;
+}
 
 const hasAnyDetail = computed(() => {
     const c = current.value;
-    return !!(c && (c.key || c.bpm || c.youtube_url || c.notes));
+    return !!(c && (c.key || c.bpm || c.youtube_url || shownNote.value || props.editableServiceNote));
 });
 </script>
 
@@ -138,7 +172,12 @@ const hasAnyDetail = computed(() => {
 
                     <!-- YouTube -->
                     <div v-if="current?.youtube_url" class="space-y-2">
-                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">YouTube</p>
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">
+                            YouTube
+                            <span v-if="youtubeStart" class="text-indigo-600 normal-case tracking-normal">
+                                · {{ t('services.starts_at', { time: youtubeStart }) }}
+                            </span>
+                        </p>
                         <div v-if="youtubeEmbed" class="aspect-video rounded-xl overflow-hidden bg-slate-100">
                             <iframe
                                 :src="youtubeEmbed"
@@ -161,10 +200,61 @@ const hasAnyDetail = computed(() => {
                         </a>
                     </div>
 
-                    <!-- Notes -->
-                    <div v-if="current?.notes" class="space-y-1.5">
-                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">{{ t('songs.form.notes') }}</p>
-                        <p class="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap">{{ current.notes }}</p>
+                    <!-- Notes: the song's own note, or this service's override -->
+                    <div v-if="shownNote || editableServiceNote" class="space-y-1.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">
+                                {{ t('songs.form.notes') }}
+                                <span v-if="noteIsOverride" class="text-indigo-600 normal-case tracking-normal">
+                                    · {{ t('services.note_for_this_service') }}
+                                </span>
+                            </p>
+                            <button
+                                v-if="editableServiceNote && !editingNote"
+                                type="button"
+                                @click="startEditingNote"
+                                class="text-2xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors shrink-0"
+                            >
+                                {{ shownNote ? t('services.note_edit') : t('services.note_add') }}
+                            </button>
+                        </div>
+
+                        <div v-if="editingNote" class="space-y-2">
+                            <textarea
+                                v-model="noteDraft"
+                                rows="3"
+                                maxlength="500"
+                                autofocus
+                                :placeholder="t('services.note_placeholder')"
+                                class="w-full px-3 py-2.5 text-sm rounded-xl border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                            />
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    @click="saveNote"
+                                    :disabled="savingNote"
+                                    class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
+                                >{{ savingNote ? t('services.form.saving') : t('services.form.save') }}</button>
+                                <button
+                                    type="button"
+                                    @click="editingNote = false"
+                                    class="px-3 py-2 text-xs font-semibold text-slate-600 rounded-lg border border-slate-300"
+                                >{{ t('services.form.cancel') }}</button>
+                            </div>
+                            <button
+                                v-if="noteIsOverride"
+                                type="button"
+                                @click="resetNote"
+                                class="text-2xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                            >{{ t('services.note_restore') }}</button>
+                        </div>
+
+                        <p
+                            v-else-if="shownNote"
+                            class="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap"
+                        >{{ shownNote }}</p>
+
+                        <p v-else class="text-xs text-slate-600 italic">{{ t('services.note_empty') }}</p>
                     </div>
                 </div>
 

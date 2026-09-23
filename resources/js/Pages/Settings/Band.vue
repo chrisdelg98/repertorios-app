@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { compressImage, ImageTooLargeError, MAX_INPUT_MB } from '@/composables/useImageCompressor';
+import { compressImage, ImageTooLargeError, MAX_INPUT_MB } from '@/Composables/useImageCompressor';
 
 const { t } = useI18n();
 

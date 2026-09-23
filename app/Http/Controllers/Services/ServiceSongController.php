@@ -22,7 +22,13 @@ class ServiceSongController extends Controller
         $this->requireWrite();
         abort_unless($service->band_id === $this->bandId(), 403);
 
-        if ($request->filled('song_version_id')) {
+        // A note typed while creating a song describes the song itself, so it
+        // is stored globally and shows up every time it is added anywhere.
+        // A note typed for a song that already exists can only mean "for this
+        // service", so it lands on the pivot as an override.
+        $isNewSong = !$request->filled('song_version_id');
+
+        if (!$isNewSong) {
             $versionId = (int) $request->song_version_id;
         } else {
             $artist     = trim($request->artist ?? '');
@@ -55,10 +61,31 @@ class ServiceSongController extends Controller
         $service->serviceSongs()->create([
             'song_version_id' => $versionId,
             'position' => $position,
-            'notes' => $request->notes,
+            'notes' => $isNewSong ? null : $request->notes,
         ]);
 
         return back()->with('success', 'Song added.');
+    }
+
+    /**
+     * Set or clear this song's note for this service. Sending an empty value
+     * removes the override and the song's own note takes over again.
+     */
+    public function update(Request $request, Service $service, ServiceSong $serviceSong): RedirectResponse
+    {
+        $this->requireWrite();
+        abort_unless($service->band_id === $this->bandId(), 403);
+        abort_unless($serviceSong->service_id === $service->id, 403);
+
+        $data = $request->validate([
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $serviceSong->update([
+            'notes' => filled($data['notes'] ?? null) ? trim($data['notes']) : null,
+        ]);
+
+        return back(303)->with('success', true);
     }
 
     public function reorder(Request $request, Service $service): RedirectResponse

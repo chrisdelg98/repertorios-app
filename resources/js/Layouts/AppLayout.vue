@@ -5,13 +5,8 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 import BandSwitcher from '@/Components/BandSwitcher.vue';
 import WelcomeOverlay from '@/Components/WelcomeOverlay.vue';
-
-const donateUrl = computed(() => page.props.donate?.url || null);
-
-function openDonate() {
-    if (!donateUrl.value) return;
-    window.open(donateUrl.value, '_blank', 'noopener,noreferrer');
-}
+import InstallSheet from '@/Components/InstallSheet.vue';
+import { useInstall } from '@/Composables/useInstall';
 
 const { t } = useI18n();
 const page = usePage();
@@ -22,6 +17,25 @@ const currentPath = computed(() => page.url.split('?')[0]);
 function isActive(href) {
     if (href === '/dashboard') return currentPath.value === '/dashboard';
     return currentPath.value.startsWith(href);
+}
+
+// Install entry. iOS never fires beforeinstallprompt, so on iPhone the only
+// way in is the manual sheet — hence showing the item whenever the platform
+// can be installed at all, not just when the browser offers a prompt.
+const { isInstalled, isIosSafari, canRequestInstall, promptInstall } = useInstall();
+
+const showInstall      = computed(() => !isInstalled.value && canRequestInstall.value);
+const installSheetOpen = ref(false);
+
+async function onInstallClick() {
+    if (isIosSafari.value) {
+        installSheetOpen.value = true;
+        return;
+    }
+
+    const accepted = await promptInstall();
+    // No native prompt available (or dismissed without installing) → explain it.
+    if (!accepted) installSheetOpen.value = true;
 }
 
 const menuOpen = ref(false);
@@ -124,16 +138,16 @@ const navItems = computed(() => {
                 </Link>
             </div>
 
-            <!-- Support project (donate) -->
-            <div v-if="donateUrl" class="px-3 pb-2">
+            <!-- Install the app (donating now lives in Settings only) -->
+            <div v-if="showInstall" class="px-3 pb-2">
                 <button
-                    @click="openDonate"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                    @click="onInstallClick"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 transition-colors"
                 >
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
                     </svg>
-                    {{ t('donate.tile_title') }}
+                    {{ t('install.tile_title') }}
                 </button>
             </div>
 
@@ -247,6 +261,9 @@ const navItems = computed(() => {
 
         <!-- Welcome overlay (admin first login) -->
         <WelcomeOverlay v-if="auth.show_welcome" />
+
+        <!-- How to install, for platforms with no native prompt -->
+        <InstallSheet :open="installSheetOpen" @close="installSheetOpen = false" />
 
         <!-- ─────────────────────────────────────────────────────────── -->
         <!-- Mobile bottom nav (hidden on lg+)                           -->

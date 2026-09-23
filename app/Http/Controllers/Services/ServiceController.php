@@ -111,6 +111,8 @@ class ServiceController extends Controller
                 'service_songs' => $service->serviceSongs->map(fn ($ss) => [
                     'id' => $ss->id,
                     'position' => $ss->position,
+                    // The override for this service (null = use the song's own note)
+                    'notes' => $ss->notes,
                     'song_version' => [
                         'id'          => $ss->songVersion->id,
                         'name'        => $ss->songVersion->name,

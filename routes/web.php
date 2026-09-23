@@ -107,6 +107,7 @@ Route::middleware('band.access')->group(function () {
     // Service songs
     Route::post('/services/{service}/songs/reorder', [ServiceSongController::class, 'reorder'])->name('service-songs.reorder');
     Route::post('/services/{service}/songs', [ServiceSongController::class, 'store'])->name('service-songs.store');
+    Route::patch('/services/{service}/songs/{serviceSong}', [ServiceSongController::class, 'update'])->name('service-songs.update');
     Route::delete('/services/{service}/songs/{serviceSong}', [ServiceSongController::class, 'destroy'])->name('service-songs.destroy');
 
     // Service assignments

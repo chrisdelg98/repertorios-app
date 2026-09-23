@@ -1,26 +1,26 @@
 <script setup>
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { parseYouTube, formatStart } from '@/Utils/youtube';
 
 const { t } = useI18n();
 
 const props = defineProps({
     open:  { type: Boolean, default: false },
-    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url }
+    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, notes }
 });
 
 const emit = defineEmits(['close']);
 
-function extractId(url) {
-    if (!url) return null;
-    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-    return m ? m[1] : null;
-}
-
 const playable = computed(() =>
     props.songs
-        .map(s => ({ ...s, _videoId: extractId(s.youtube_url) }))
-        .filter(s => s._videoId)
+        .map(s => {
+            const parsed = parseYouTube(s.youtube_url);
+            return parsed
+                ? { ...s, _videoId: parsed.id, _start: parsed.start, _startLabel: formatStart(parsed.start) }
+                : null;
+        })
+        .filter(Boolean)
 );
 
 const currentIdx = ref(0);
@@ -58,9 +58,13 @@ function buildPlayer() {
     if (!apiReady.value || !playerEl.value || !playable.value.length) return;
     if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
 
+    const first = playable.value[currentIdx.value];
+
     ytPlayer = new window.YT.Player(playerEl.value, {
-        videoId: playable.value[currentIdx.value]._videoId,
-        playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+        videoId: first._videoId,
+        // `start` honours the ?t= of the pasted link — a song that begins at
+        // 1:13 of a longer video should not play the intro every time.
+        playerVars: { playsinline: 1, rel: 0, modestbranding: 1, start: first._start || 0 },
         events: {
             onStateChange: (e) => {
                 // 0 = ended → advance
@@ -72,9 +76,13 @@ function buildPlayer() {
 }
 
 function loadAt(idx) {
-    if (!ytPlayer || !playable.value[idx]) return;
+    const song = playable.value[idx];
+    if (!ytPlayer || !song) return;
     currentIdx.value = idx;
-    ytPlayer.loadVideoById(playable.value[idx]._videoId);
+    ytPlayer.loadVideoById({
+        videoId: song._videoId,
+        startSeconds: song._start || 0,
+    });
 }
 
 function playNext() {
@@ -191,6 +199,21 @@ const current = computed(() => playable.value[currentIdx.value]);
                                 </svg>
                             </button>
                             <p class="text-xs text-slate-300 ml-auto">{{ currentIdx + 1 }} / {{ playable.length }}</p>
+                        </div>
+
+                        <!-- What the team needs to know about the song playing -->
+                        <div
+                            v-if="current && (current.notes || current._start)"
+                            class="mx-3 mb-2 rounded-xl bg-white/10 px-3 py-2.5 shrink-0"
+                        >
+                            <p v-if="current._start" class="text-2xs font-semibold text-indigo-300 uppercase tracking-wide">
+                                {{ t('services.starts_at', { time: current._startLabel }) }}
+                            </p>
+                            <p
+                                v-if="current.notes"
+                                class="text-xs text-white/90 whitespace-pre-wrap"
+                                :class="current._start ? 'mt-1' : ''"
+                            >{{ current.notes }}</p>
                         </div>
 
                         <!-- Queue list -->

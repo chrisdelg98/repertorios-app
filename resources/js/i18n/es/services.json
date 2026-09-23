@@ -77,5 +77,12 @@
         "orange": "Naranja",
         "rose": "Rosa",
         "slate": "Gris"
-    }
+    },
+    "note_for_this_service": "solo este servicio",
+    "note_edit": "Editar",
+    "note_add": "Agregar nota",
+    "note_empty": "Sin notas para esta canción.",
+    "note_placeholder": "Ej. entra en el minuto 1:13, repetir el coro dos veces...",
+    "note_restore": "Quitar la nota de este servicio y usar la de la canción",
+    "starts_at": "empieza en {time}"
 }

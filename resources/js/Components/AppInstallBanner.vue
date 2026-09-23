@@ -1,11 +1,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useInstall } from '@/composables/useInstall';
+import { useInstall } from '@/Composables/useInstall';
 import Logo from '@/Components/Logo.vue';
+import InstallSheet from '@/Components/InstallSheet.vue';
 
 const { t } = useI18n();
-const { isInstalled, canRequestInstall, showManualInstallHelp, promptInstall } = useInstall();
+const { isInstalled, canRequestInstall, isIos, promptInstall } = useInstall();
+
+const installSheetOpen = ref(false);
 
 const STORAGE_KEY = 'pwa_banner_dismissed';
 const show = ref(false);
@@ -39,8 +42,18 @@ function dismiss() {
 }
 
 async function install() {
-    const handled = await promptInstall();
-    if (handled && !showManualInstallHelp.value) dismiss();
+    // iOS has no prompt to fire; everywhere else we only fall back to the
+    // instructions when the browser had nothing to offer.
+    if (isIos.value) {
+        installSheetOpen.value = true;
+        return;
+    }
+
+    if (await promptInstall()) {
+        dismiss();
+    } else {
+        installSheetOpen.value = true;
+    }
 }
 </script>
 
@@ -117,16 +130,10 @@ async function install() {
                             {{ t('install.install') }}
                         </button>
                     </div>
-
-                    <div
-                        v-if="showManualInstallHelp"
-                        class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-700"
-                    >
-                        <p class="font-semibold">{{ t('install.ios_help_title') }}</p>
-                        <p class="mt-1 text-xs leading-relaxed text-indigo-700">{{ t('install.ios_help_body') }}</p>
-                    </div>
                 </div>
             </div>
         </Transition>
     </Teleport>
+
+    <InstallSheet :open="installSheetOpen" @close="installSheetOpen = false" />
 </template>

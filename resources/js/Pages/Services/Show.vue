@@ -418,16 +418,44 @@ function typeLabel(type) {
 // --- Song detail view (read-only) ---
 const detailSong = ref(null);
 
+const detailServiceSongId = ref(null);
+const savingNote = ref(false);
+
 function openDetail(ss) {
+    detailServiceSongId.value = ss.id;
     detailSong.value = {
         name:        ss.song_version.song.name,
         artist:      ss.song_version.song.artist,
         version:     ss.song_version.name,
         key:         ss.song_version.key,
         bpm:         ss.song_version.bpm,
-        notes:       ss.song_version.notes,
+        // Two layers: what the song carries, and what this service overrode.
+        song_notes:    ss.song_version.notes ?? '',
+        service_notes: ss.notes ?? '',
         youtube_url: ss.song_version.youtube_url,
     };
+}
+
+function closeDetail() {
+    detailSong.value = null;
+    detailServiceSongId.value = null;
+}
+
+/** Empty text clears the override and the song's own note takes over again. */
+function saveServiceNote(text) {
+    const id = detailServiceSongId.value;
+    if (!id) return;
+
+    savingNote.value = true;
+    router.patch(`/services/${props.service.id}/songs/${id}`, { notes: text }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            const target = localSongs.value.find(ss => ss.id === id);
+            if (target) target.notes = text || null;
+            if (detailSong.value) detailSong.value.service_notes = text || '';
+        },
+        onFinish: () => { savingNote.value = false; },
+    });
 }
 
 // --- Song reorder ---
@@ -440,6 +468,7 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     artist:      ss.song_version.song.artist,
     version:     ss.song_version.name,
     key:         ss.song_version.key,
+    notes:       ss.notes || ss.song_version.notes || '',
     youtube_url: ss.song_version.youtube_url,
 })));
 const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url));
@@ -684,6 +713,14 @@ function scheduleReorder() {
                         <p class="text-sm font-semibold text-slate-900 truncate leading-tight">{{ ss.song_version.song.name }}</p>
                         <p class="text-xs font-medium text-slate-600 mt-0.5 truncate">
                             <span v-if="ss.song_version.song.artist">{{ ss.song_version.song.artist }} · </span>{{ ss.song_version.name }}<span v-if="ss.song_version.key" class="text-indigo-600 font-semibold"> · {{ ss.song_version.key }}</span>
+                            <!-- A note exists but lives inside the sheet; say so here -->
+                            <svg
+                                v-if="ss.notes || ss.song_version.notes"
+                                class="inline-block w-3.5 h-3.5 ml-1 -mt-0.5 text-indigo-500"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                         </p>
                     </button>
                     <button
@@ -1262,7 +1299,13 @@ function scheduleReorder() {
         </Teleport>
 
         <!-- Song detail (read-only) -->
-        <SongDetailSheet :song="detailSong" @close="detailSong = null" />
+        <SongDetailSheet
+            :song="detailSong"
+            :editable-service-note="can_write"
+            :saving-note="savingNote"
+            @save-note="saveServiceNote"
+            @close="closeDetail"
+        />
 
         <!-- Playlist overlay -->
         <PlaylistOverlay :open="playlistOpen" :songs="playlistSongs" @close="playlistOpen = false" />
