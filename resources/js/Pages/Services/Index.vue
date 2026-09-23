@@ -274,7 +274,7 @@ function submitDuplicate() {
                         @click="showAll = false"
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
-                            !showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                            !showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700',
                         ]"
                     >
                         {{ t('services.filter_upcoming') }}
@@ -284,7 +284,7 @@ function submitDuplicate() {
                         @click="showAll = true"
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
-                            showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                            showAll ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-700',
                         ]"
                     >
                         {{ t('services.filter_all') }}
@@ -338,7 +338,7 @@ function submitDuplicate() {
                         />
                     </div>
 
-                    <div v-if="hasActiveFilters" class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                    <div v-if="hasActiveFilters" class="flex items-center justify-between text-xs text-slate-600 pt-1">
                         <span>{{ t('services.filter_results', { shown: filteredServices.length, total: services.length }) }}</span>
                         <button
                             @click="clearFilters"
@@ -349,7 +349,7 @@ function submitDuplicate() {
             </div>
 
             <!-- Empty state: no services at all -->
-            <div v-if="!services.length" class="text-center py-16 text-slate-500">
+            <div v-if="!services.length" class="text-center py-16 text-slate-600">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -357,7 +357,7 @@ function submitDuplicate() {
             </div>
 
             <!-- Empty state: no matches -->
-            <div v-else-if="!filteredServices.length" class="text-center py-16 text-slate-500">
+            <div v-else-if="!filteredServices.length" class="text-center py-16 text-slate-600">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                 </svg>
@@ -391,14 +391,14 @@ function submitDuplicate() {
                         <!-- Info -->
                         <div class="flex-1 min-w-0">
                             <p class="font-semibold text-slate-900 text-sm capitalize truncate">{{ typeLabel(service.type) }}</p>
-                            <p class="text-xs text-slate-500 mt-0.5 truncate">
+                            <p class="text-xs font-medium text-slate-600 mt-0.5 truncate">
                                 {{ formatDate(service.date) }}
                                 <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
                             </p>
                         </div>
 
                         <!-- Songs count badge -->
-                        <div class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 group-hover:bg-slate-200 rounded-md px-2 py-1 shrink-0 transition-colors">
+                        <div class="flex items-center gap-1 text-xs font-semibold text-slate-600 bg-slate-100 group-hover:bg-slate-200 rounded-md px-2 py-1 shrink-0 transition-colors">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                             </svg>
@@ -412,7 +412,7 @@ function submitDuplicate() {
                         <button
                             type="button"
                             @click="toggleMenu(service.id, $event)"
-                            class="w-11 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-r-xl transition-colors"
+                            class="w-11 flex items-center justify-center text-slate-600 hover:text-slate-700 hover:bg-slate-50 rounded-r-xl transition-colors"
                             :aria-label="t('services.actions')"
                             :aria-expanded="openMenuId === service.id"
                         >
@@ -515,7 +515,7 @@ function submitDuplicate() {
                         <h2 class="text-base font-semibold text-slate-900">{{ t('services.delete_title') }}</h2>
                     </div>
 
-                    <p class="text-sm text-slate-500 mb-4">{{ t('services.delete_confirm') }}</p>
+                    <p class="text-sm text-slate-600 mb-4">{{ t('services.delete_confirm') }}</p>
 
                     <div class="flex gap-2">
                         <button
@@ -569,7 +569,7 @@ function submitDuplicate() {
                 >
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.share_title') }}</h2>
-                        <button @click="closeShare" class="text-slate-500 text-lg leading-none">✕</button>
+                        <button @click="closeShare" class="text-slate-600 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="flex gap-2 mb-3">
@@ -613,7 +613,7 @@ function submitDuplicate() {
                             <span class="block text-xs font-semibold" :class="shareData?.allow_join ? 'text-indigo-700' : 'text-slate-700'">
                                 {{ t('services.share_allow_join_title') }}
                             </span>
-                            <span class="block text-[11px] mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-500'">
+                            <span class="block text-xs mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-600'">
                                 {{ t('services.share_allow_join_hint') }}
                             </span>
                         </span>
@@ -641,7 +641,7 @@ function submitDuplicate() {
                             <span class="block text-xs font-semibold" :class="includeTeamInShare ? 'text-indigo-700' : 'text-slate-700'">
                                 {{ t('share.include_team_label') }}
                             </span>
-                            <span class="block text-[11px] mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-500'">
+                            <span class="block text-xs mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-600'">
                                 {{ selectedShareService?.service_assignments_count ? t('share.include_team_hint') : t('share.include_team_disabled') }}
                             </span>
                         </span>

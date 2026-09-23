@@ -84,7 +84,7 @@ async function install() {
                         <Logo :size="56" />
                         <div>
                             <p class="text-base font-bold text-slate-900 leading-tight">{{ t('install.banner_title') }}</p>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ t('install.banner_subtitle') }}</p>
+                            <p class="text-xs text-slate-600 mt-0.5">{{ t('install.banner_subtitle') }}</p>
                         </div>
                     </div>
 
@@ -106,7 +106,7 @@ async function install() {
                     <div class="flex gap-2.5">
                         <button
                             @click="dismiss"
-                            class="flex-1 py-3 text-sm font-medium text-slate-500 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                            class="flex-1 py-3 text-sm font-medium text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
                         >
                             {{ t('install.later') }}
                         </button>
@@ -123,7 +123,7 @@ async function install() {
                         class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-700"
                     >
                         <p class="font-semibold">{{ t('install.ios_help_title') }}</p>
-                        <p class="mt-1 text-xs leading-relaxed text-indigo-500">{{ t('install.ios_help_body') }}</p>
+                        <p class="mt-1 text-xs leading-relaxed text-indigo-700">{{ t('install.ios_help_body') }}</p>
                     </div>
                 </div>
             </div>

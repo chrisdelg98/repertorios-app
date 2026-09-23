@@ -235,7 +235,7 @@ function confirmDelete() {
             <div v-if="songs.length" class="mb-3 lg:mb-4 space-y-2">
                 <!-- Search -->
                 <div class="relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                     </svg>
                     <input
@@ -247,7 +247,7 @@ function confirmDelete() {
                     <button
                         v-if="search"
                         @click="search = ''"
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 transition-colors"
                         :aria-label="t('songs.filter_clear')"
                     >
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -286,7 +286,7 @@ function confirmDelete() {
                 </div>
 
                 <!-- Results summary -->
-                <div v-if="hasActiveFilters" class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                <div v-if="hasActiveFilters" class="flex items-center justify-between text-xs text-slate-600 pt-1">
                     <span>{{ t('songs.filter_results', { shown: filteredSongs.length, total: songs.length }) }}</span>
                     <button
                         @click="clearFilters"
@@ -296,7 +296,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state: no songs at all -->
-            <div v-if="!songs.length" class="text-center py-16 text-slate-500">
+            <div v-if="!songs.length" class="text-center py-16 text-slate-600">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
@@ -304,7 +304,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state: no matches -->
-            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-500">
+            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-600">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                 </svg>
@@ -326,14 +326,14 @@ function confirmDelete() {
                     <div class="px-4 pt-3.5 pb-2 lg:pt-4 lg:pb-3 flex items-start gap-3">
                         <div class="flex-1 min-w-0">
                             <p class="font-semibold text-slate-900 text-sm leading-snug line-clamp-2">{{ song.name }}</p>
-                            <p v-if="song.artist" class="text-xs text-slate-500 mt-0.5 truncate">{{ song.artist }}</p>
+                            <p v-if="song.artist" class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ song.artist }}</p>
                         </div>
 
                         <!-- Mobile actions stay inline -->
                         <div class="lg:hidden flex items-center gap-1 shrink-0">
                             <button
                                 @click="openView(song)"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                 :aria-label="t('songs.view')"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -344,7 +344,7 @@ function confirmDelete() {
                             <button
                                 v-if="can_write"
                                 @click="openEdit(song)"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                 :aria-label="t('songs.edit')"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -369,7 +369,7 @@ function confirmDelete() {
                         <span
                             v-for="v in song.versions"
                             :key="v.id"
-                            class="inline-flex items-center gap-1 text-[11px] text-slate-600 bg-slate-100 rounded-md px-2 py-0.5 font-medium"
+                            class="inline-flex items-center gap-1 text-xs text-slate-600 bg-slate-100 rounded-md px-2 py-0.5 font-medium"
                         >
                             {{ v.name }}
                             <span v-if="v.key" class="text-indigo-700 font-bold">· {{ v.key }}</span>
@@ -380,7 +380,7 @@ function confirmDelete() {
                     <div class="hidden lg:flex items-center justify-end gap-1 mt-auto px-4 py-2.5 border-t border-slate-100">
                         <button
                             @click="openView(song)"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                             :aria-label="t('songs.view')"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -391,7 +391,7 @@ function confirmDelete() {
                         <button
                             v-if="can_write"
                             @click="openEdit(song)"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                             :aria-label="t('songs.edit')"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -475,7 +475,7 @@ function confirmDelete() {
 
                         <!-- Version section (matches edit-sheet card anatomy) -->
                         <div class="space-y-2">
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                                 {{ t('songs.form.version') }}
                             </p>
 
@@ -507,7 +507,7 @@ function confirmDelete() {
                                 <div class="p-3 space-y-3 bg-white">
                                     <div class="grid grid-cols-2 gap-3">
                                         <div class="space-y-1.5">
-                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.key') }}</label>
+                                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.key') }}</label>
                                             <input
                                                 v-model="form.key"
                                                 type="text"
@@ -517,7 +517,7 @@ function confirmDelete() {
                                             />
                                         </div>
                                         <div class="space-y-1.5">
-                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
+                                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
                                             <input
                                                 v-model="form.bpm"
                                                 type="number"
@@ -529,7 +529,7 @@ function confirmDelete() {
                                     </div>
 
                                     <div class="space-y-1.5">
-                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
                                         <input
                                             v-model="form.youtube_url"
                                             type="url"
@@ -539,7 +539,7 @@ function confirmDelete() {
                                     </div>
 
                                     <div class="space-y-1.5">
-                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
                                         <textarea
                                             v-model="form.notes"
                                             rows="2"
@@ -614,7 +614,7 @@ function confirmDelete() {
                         <h2 class="text-base font-semibold text-slate-900">{{ t('songs.delete_title') }}</h2>
                     </div>
 
-                    <p class="text-sm text-slate-500 mb-4">{{ t('songs.delete_confirm') }}</p>
+                    <p class="text-sm text-slate-600 mb-4">{{ t('songs.delete_confirm') }}</p>
 
                     <div class="flex gap-2">
                         <button
@@ -699,7 +699,7 @@ function confirmDelete() {
 
                         <!-- Versions -->
                         <div v-if="editForm.versions.length" class="space-y-2">
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                                 {{ t('songs.versions') }}
                             </p>
 
@@ -717,10 +717,10 @@ function confirmDelete() {
                                     <div class="flex items-center gap-2 min-w-0">
                                         <span class="text-sm font-medium text-slate-800 truncate">{{ v.name || t('songs.form.version') }}</span>
                                         <span v-if="v.key" class="text-xs text-indigo-600 font-semibold">{{ v.key }}</span>
-                                        <span v-if="v.bpm" class="text-xs text-slate-500">{{ v.bpm }} bpm</span>
+                                        <span v-if="v.bpm" class="text-xs text-slate-600">{{ v.bpm }} bpm</span>
                                     </div>
                                     <svg
-                                        class="w-4 h-4 text-slate-500 transition-transform shrink-0"
+                                        class="w-4 h-4 text-slate-600 transition-transform shrink-0"
                                         :class="expandedVersions[v.id] ? 'rotate-180' : ''"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                                     >
@@ -731,7 +731,7 @@ function confirmDelete() {
                                 <!-- Version fields -->
                                 <div v-if="expandedVersions[v.id]" class="p-3 space-y-3 bg-white">
                                     <div class="space-y-1.5">
-                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.version') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.version') }}</label>
                                         <input
                                             v-model="v.name"
                                             type="text"
@@ -741,7 +741,7 @@ function confirmDelete() {
 
                                     <div class="grid grid-cols-2 gap-3">
                                         <div class="space-y-1.5">
-                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.key') }}</label>
+                                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.key') }}</label>
                                             <input
                                                 v-model="v.key"
                                                 type="text"
@@ -751,7 +751,7 @@ function confirmDelete() {
                                             />
                                         </div>
                                         <div class="space-y-1.5">
-                                            <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
+                                            <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.bpm') }}</label>
                                             <input
                                                 v-model="v.bpm"
                                                 type="number"
@@ -763,7 +763,7 @@ function confirmDelete() {
                                     </div>
 
                                     <div class="space-y-1.5">
-                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.youtube_url') }}</label>
                                         <input
                                             v-model="v.youtube_url"
                                             type="url"
@@ -773,7 +773,7 @@ function confirmDelete() {
                                     </div>
 
                                     <div class="space-y-1.5">
-                                        <label class="block text-[11px] font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600">{{ t('songs.form.notes') }}</label>
                                         <textarea
                                             v-model="v.notes"
                                             rows="2"

@@ -83,7 +83,7 @@ const sections = computed(() => {
 
                     <div class="flex-1 min-w-0">
                         <p class="font-medium text-slate-900 text-sm">{{ s.title() }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5 truncate">{{ s.subtitle() }}</p>
+                        <p class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ s.subtitle() }}</p>
                     </div>
 
                     <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -107,7 +107,7 @@ const sections = computed(() => {
 
                     <div class="flex-1 min-w-0 text-left">
                         <p class="font-medium text-indigo-700 text-sm">{{ t('install.tile_title') }}</p>
-                        <p class="text-xs text-indigo-400 mt-0.5 truncate">{{ t('install.tile_subtitle') }}</p>
+                        <p class="text-xs text-indigo-600 mt-0.5 truncate">{{ t('install.tile_subtitle') }}</p>
                     </div>
 
                     <svg class="w-4 h-4 text-indigo-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -120,7 +120,7 @@ const sections = computed(() => {
                     class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700"
                 >
                     <p class="font-semibold">{{ t('install.ios_help_title') }}</p>
-                    <p class="mt-1 text-xs leading-relaxed text-indigo-500">{{ t('install.ios_help_body') }}</p>
+                    <p class="mt-1 text-xs leading-relaxed text-indigo-700">{{ t('install.ios_help_body') }}</p>
                 </div>
 
                 <!-- Already installed badge -->

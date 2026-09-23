@@ -79,7 +79,7 @@ const steps = [
             </div>
 
             <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-20 sm:pb-24 text-center">
-                <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-5 uppercase tracking-wide">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-5 uppercase tracking-wide">
                     <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                     {{ t('landing.hero.badge') }}
                 </span>
@@ -91,7 +91,7 @@ const steps = [
                     </span>
                 </h1>
 
-                <p class="mt-5 text-base sm:text-lg text-slate-500 max-w-2xl mx-auto">
+                <p class="mt-5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
                     {{ t('landing.hero.subtitle') }}
                 </p>
 
@@ -158,7 +158,7 @@ const steps = [
                 <div class="text-center mb-12">
                     <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-2">{{ t('landing.features.eyebrow') }}</p>
                     <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">{{ t('landing.features.title') }}</h2>
-                    <p class="text-slate-500 mt-3 max-w-xl mx-auto">{{ t('landing.features.subtitle') }}</p>
+                    <p class="text-slate-600 mt-3 max-w-xl mx-auto">{{ t('landing.features.subtitle') }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -179,7 +179,7 @@ const steps = [
                             </svg>
                         </div>
                         <h3 class="font-bold text-base">{{ t(f.title) }}</h3>
-                        <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">{{ t(f.body) }}</p>
+                        <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">{{ t(f.body) }}</p>
                     </div>
                 </div>
             </div>
@@ -204,7 +204,7 @@ const steps = [
                         </div>
                         <div class="min-w-0">
                             <h3 class="font-semibold text-base">{{ t(s.title) }}</h3>
-                            <p class="text-sm text-slate-500 mt-1">{{ t(s.body) }}</p>
+                            <p class="text-sm text-slate-600 mt-1">{{ t(s.body) }}</p>
                         </div>
                     </div>
                 </div>
@@ -248,7 +248,7 @@ const steps = [
         <section class="py-16 sm:py-20">
             <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center">
                 <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">{{ t('landing.final.title') }}</h2>
-                <p class="text-slate-500 mt-3 max-w-xl mx-auto">{{ t('landing.final.subtitle') }}</p>
+                <p class="text-slate-600 mt-3 max-w-xl mx-auto">{{ t('landing.final.subtitle') }}</p>
                 <Link
                     href="/login"
                     class="mt-7 inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl active:scale-[0.98] transition"
@@ -263,7 +263,7 @@ const steps = [
 
         <!-- ── Footer ────────────────────────────────────────────────── -->
         <footer class="border-t border-slate-100 py-8">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
                 <div class="flex items-center gap-2">
                     <Logo :size="20" />
                     <span>{{ appName }} · &copy; {{ new Date().getFullYear() }}</span>

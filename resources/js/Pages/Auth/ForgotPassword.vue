@@ -52,7 +52,7 @@ function submit() {
             </button>
         </form>
 
-        <p class="text-center text-xs text-slate-500 mt-5">
+        <p class="text-center text-xs text-slate-600 mt-5">
             <Link href="/login" class="font-semibold text-indigo-600 hover:text-indigo-700">{{ t('auth.actions.back_to_login') }}</Link>
         </p>
     </AuthLayout>

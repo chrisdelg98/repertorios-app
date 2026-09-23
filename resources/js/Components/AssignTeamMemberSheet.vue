@@ -98,7 +98,7 @@ watch(() => props.open, (isOpen) => {
             <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
             <div class="flex items-center justify-between mb-3">
                 <h2 class="font-semibold text-slate-900">{{ t('assignments.add_sheet_title') }}</h2>
-                <button @click="emit('close')" class="text-slate-500 text-lg leading-none">x</button>
+                <button @click="emit('close')" class="text-slate-600 text-lg leading-none">x</button>
             </div>
 
             <input
@@ -109,7 +109,7 @@ watch(() => props.open, (isOpen) => {
             />
 
             <div class="overflow-y-auto flex-1 pr-0.5">
-                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide px-1 mb-1.5">
+                <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide px-1 mb-1.5">
                     {{ t('assignments.registered_members') }}
                 </p>
 
@@ -122,7 +122,7 @@ watch(() => props.open, (isOpen) => {
                         class="w-full min-h-11 px-3 py-2 text-left rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors"
                     >
                         <p class="text-sm font-medium text-slate-900">{{ member.name }}</p>
-                        <p v-if="member.roles?.length" class="text-[11px] text-slate-500 mt-0.5">
+                        <p v-if="member.roles?.length" class="text-xs font-medium text-slate-600 mt-0.5">
                             {{ t('assignments.role_suggested', { role: roleLabel(member.roles[0]) }) }}
                         </p>
                     </button>
@@ -161,17 +161,17 @@ watch(() => props.open, (isOpen) => {
 
                 <div class="flex items-center gap-3 my-3">
                     <div class="flex-1 h-px bg-slate-200" />
-                    <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('services.or') }}</span>
+                    <span class="text-2xs font-semibold text-slate-600 uppercase tracking-wider">{{ t('services.or') }}</span>
                     <div class="flex-1 h-px bg-slate-200" />
                 </div>
 
-                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide px-1 mb-1.5">
+                <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide px-1 mb-1.5">
                     {{ t('assignments.add_manually') }}
                 </p>
 
                 <div class="border border-slate-200 rounded-xl p-3 space-y-2.5">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.manual_name_label') }}</label>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.manual_name_label') }}</label>
                         <input
                             v-model="manualName"
                             type="text"
@@ -180,7 +180,7 @@ watch(() => props.open, (isOpen) => {
                         />
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.role_label') }}</label>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.role_label') }}</label>
                         <select
                             v-model="manualRoleId"
                             class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"

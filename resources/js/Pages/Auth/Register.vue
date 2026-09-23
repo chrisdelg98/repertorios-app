@@ -50,17 +50,17 @@ function submit() {
         <!-- Step indicator -->
         <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-2">
-                <span class="w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold transition-colors"
-                    :class="step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'">1</span>
+                <span class="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+                    :class="step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'">1</span>
                 <span class="text-xs font-medium transition-colors"
-                    :class="step === 1 ? 'text-slate-900' : 'text-slate-500'">{{ t('auth.register.step_account') }}</span>
+                    :class="step === 1 ? 'text-slate-900' : 'text-slate-600'">{{ t('auth.register.step_account') }}</span>
             </div>
             <div class="flex-1 h-px bg-slate-200 mx-3" />
             <div class="flex items-center gap-2">
-                <span class="w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold transition-colors"
-                    :class="step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'">2</span>
+                <span class="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold transition-colors"
+                    :class="step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'">2</span>
                 <span class="text-xs font-medium transition-colors"
-                    :class="step === 2 ? 'text-slate-900' : 'text-slate-500'">{{ t('auth.register.step_band') }}</span>
+                    :class="step === 2 ? 'text-slate-900' : 'text-slate-600'">{{ t('auth.register.step_band') }}</span>
             </div>
         </div>
 
@@ -109,7 +109,7 @@ function submit() {
                     :placeholder="t('auth.placeholders.password')"
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
-                <p class="text-[11px] text-slate-500 mt-1">{{ t('auth.register.password_hint') }}</p>
+                <p class="text-xs text-slate-600 mt-1">{{ t('auth.register.password_hint') }}</p>
                 <p v-if="form.errors.password" class="text-xs text-red-600 mt-1">{{ form.errors.password }}</p>
             </div>
 
@@ -149,7 +149,7 @@ function submit() {
                     :placeholder="t('auth.placeholders.band_name')"
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
-                <p class="text-[11px] text-slate-500 mt-1">{{ t('auth.register.band_name_hint') }}</p>
+                <p class="text-xs text-slate-600 mt-1">{{ t('auth.register.band_name_hint') }}</p>
                 <p v-if="form.errors.band_name" class="text-xs text-red-600 mt-1">{{ form.errors.band_name }}</p>
             </div>
 
@@ -157,7 +157,7 @@ function submit() {
                 <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p class="text-[11px] text-indigo-700 leading-relaxed">{{ t('auth.register.info_what_next') }}</p>
+                <p class="text-xs text-indigo-700 leading-relaxed">{{ t('auth.register.info_what_next') }}</p>
             </div>
 
             <div class="flex gap-2 pt-1">
@@ -179,7 +179,7 @@ function submit() {
         </form>
 
         <!-- Switch to login -->
-        <p class="text-center text-xs text-slate-500 mt-5">
+        <p class="text-center text-xs text-slate-600 mt-5">
             {{ t('auth.register.have_account') }}
             <Link href="/login" class="font-semibold text-indigo-600 hover:text-indigo-700 ml-1">{{ t('auth.register.sign_in') }}</Link>
         </p>

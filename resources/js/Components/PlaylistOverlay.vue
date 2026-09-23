@@ -129,7 +129,7 @@ const current = computed(() => playable.value[currentIdx.value]);
                 <!-- Header -->
                 <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
                     <div class="min-w-0">
-                        <p class="text-[10px] font-semibold text-indigo-300 uppercase tracking-widest">{{ t('playlist.title') }}</p>
+                        <p class="text-2xs font-semibold text-indigo-300 uppercase tracking-widest">{{ t('playlist.title') }}</p>
                         <p class="text-sm font-bold text-white truncate">
                             {{ current ? current.name : t('playlist.empty_title') }}
                             <span v-if="current?.artist" class="font-normal text-slate-300"> · {{ current.artist }}</span>
@@ -212,12 +212,12 @@ const current = computed(() => playable.value[currentIdx.value]);
                                     <svg v-if="i === currentIdx" class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 5v14l11-7z" />
                                     </svg>
-                                    <span v-else class="text-[11px] font-bold text-slate-400">{{ i + 1 }}</span>
+                                    <span v-else class="text-xs font-bold text-slate-400">{{ i + 1 }}</span>
                                 </span>
 
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium truncate">{{ s.name }}</p>
-                                    <p class="text-[11px] opacity-70 truncate">
+                                    <p class="text-xs font-medium opacity-80 truncate">
                                         <span v-if="s.artist">{{ s.artist }} · </span>{{ s.version
                                         }}<span v-if="s.key"> · {{ s.key }}</span>
                                     </p>

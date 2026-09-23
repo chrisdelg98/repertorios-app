@@ -77,21 +77,21 @@ function dismissOnce() {
                         <div class="relative flex items-center gap-3">
                             <Logo :size="48" />
                             <div class="min-w-0 flex-1">
-                                <p class="text-xs font-semibold text-indigo-200 uppercase tracking-wide">{{ t('welcome.eyebrow') }}</p>
+                                <p class="text-xs font-semibold text-indigo-100 uppercase tracking-wide">{{ t('welcome.eyebrow') }}</p>
                                 <h2 class="text-xl font-bold leading-tight truncate">
                                     {{ t('welcome.greeting', { name: userName }) }}
                                 </h2>
                             </div>
                         </div>
 
-                        <p class="relative mt-3 text-sm text-indigo-100 leading-relaxed">
+                        <p class="relative mt-3 text-sm text-indigo-50 leading-relaxed">
                             {{ t('welcome.blessing') }}
                         </p>
                     </div>
 
                     <!-- Body: checklist -->
                     <div class="px-5 py-5 overflow-y-auto flex-1">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                        <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
                             {{ t('welcome.checklist_title') }}
                         </p>
 
@@ -110,7 +110,7 @@ function dismissOnce() {
 
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-semibold text-slate-900">{{ t(item.titleKey) }}</p>
-                                    <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ t(item.bodyKey) }}</p>
+                                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">{{ t(item.bodyKey) }}</p>
                                 </div>
 
                                 <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 shrink-0 mt-1 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -132,7 +132,7 @@ function dismissOnce() {
                         <button
                             type="button"
                             @click="dismissOnce"
-                            class="w-full py-2 text-xs font-medium text-slate-500 hover:text-slate-600 transition-colors"
+                            class="w-full py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
                         >
                             {{ t('welcome.dont_show_again') }}
                         </button>

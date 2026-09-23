@@ -9,11 +9,37 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Type scale — one notch above Tailwind's defaults so the secondary line
+       (artist · version · key) stays legible without leaning in.
+       Line heights are unitless so they follow the mobile bump below. */
+    --text-2xs: 0.75rem;        /* 12px — micro labels, badges, tab bar */
+    --text-2xs--line-height: 1.4;
+    --text-xs: 0.8125rem;       /* 13px — subtitles, metadata, section labels */
+    --text-xs--line-height: 1.45;
+    --text-sm: 0.9375rem;       /* 15px — body copy, card titles, buttons */
+    --text-sm--line-height: 1.45;
+    --text-base: 1.0625rem;     /* 17px — inputs, sheet titles */
+    --text-base--line-height: 1.5;
+    --text-lg: 1.1875rem;       /* 19px */
+    --text-lg--line-height: 1.45;
+}
+
+/* Mobile-first bump: on phones every step goes up once more. The app is used
+   standing up, at arm's length, often in low light — desktop can stay compact. */
+@media (max-width: 767px) {
+    :root {
+        --text-2xs: 0.8125rem;  /* 13px */
+        --text-xs: 0.875rem;    /* 14px */
+        --text-sm: 1rem;        /* 16px */
+        --text-base: 1.0625rem; /* 17px */
+        --text-lg: 1.25rem;     /* 20px */
+    }
 }
 
 /* Prevent iOS Safari auto-zoom on input focus.
    Safari zooms when font-size < 16px. We force 16px on mobile only,
-   so desktop keeps its compact 14px (text-sm) design. */
+   so desktop keeps its more compact form controls. */
 @media (max-width: 767px) {
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]),
     textarea,

@@ -123,7 +123,7 @@ function roleBadgeClass(m) {
     <AppLayout>
         <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
 
-            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-600 mb-4 transition-colors">
+            <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 mb-4 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -147,10 +147,10 @@ function roleBadgeClass(m) {
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <p class="text-sm font-medium text-slate-900 truncate">{{ member.name }}</p>
-                                <span :class="['text-[10px] font-semibold px-1.5 py-0.5 rounded-md shrink-0', roleBadgeClass(member)]">{{ roleLabel(member) }}</span>
-                                <span v-if="member.is_you" class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md shrink-0">{{ t('settings.members.you') }}</span>
+                                <span :class="['text-2xs font-semibold px-1.5 py-0.5 rounded-md shrink-0', roleBadgeClass(member)]">{{ roleLabel(member) }}</span>
+                                <span v-if="member.is_you" class="text-2xs font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md shrink-0">{{ t('settings.members.you') }}</span>
                             </div>
-                            <p class="text-xs text-slate-500 truncate">{{ member.email }}</p>
+                            <p class="text-xs font-medium text-slate-600 truncate">{{ member.email }}</p>
                         </div>
 
                         <!-- Actions: only creator (you) acts on others -->
@@ -158,7 +158,7 @@ function roleBadgeClass(m) {
                             <button
                                 v-if="member.role === 'member'"
                                 @click="promote(member.id)"
-                                class="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
                                 :title="t('settings.members.promote')"
                             >
                                 {{ t('settings.members.promote') }}
@@ -166,7 +166,7 @@ function roleBadgeClass(m) {
                             <button
                                 v-else
                                 @click="demote(member.id)"
-                                class="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                                class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                                 :title="t('settings.members.demote')"
                             >
                                 {{ t('settings.members.demote') }}
@@ -190,25 +190,25 @@ function roleBadgeClass(m) {
                             <span
                                 v-for="rid in member.role_ids"
                                 :key="rid"
-                                class="text-[11px] font-medium text-violet-700 bg-violet-50 border border-violet-100 rounded-md px-2 py-0.5"
+                                class="text-xs font-medium text-violet-700 bg-violet-50 border border-violet-100 rounded-md px-2 py-0.5"
                             >
                                 {{ roleNameById[rid] }}
                             </span>
                         </template>
-                        <span v-else class="text-[11px] text-slate-400 italic">{{ t('settings.members.no_band_roles') }}</span>
+                        <span v-else class="text-xs text-slate-500 italic">{{ t('settings.members.no_band_roles') }}</span>
 
                         <!-- Edit roles button: any admin (creator + delegated) can edit, including themselves -->
                         <button
                             v-if="auth.access === 'admin'"
                             @click="openRolesEditor(member)"
-                            class="ml-auto text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+                            class="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-700"
                         >
                             {{ member.role_ids?.length ? t('settings.members.edit_roles') : t('settings.members.add_roles') }}
                         </button>
                     </div>
                 </div>
 
-                <p v-if="!members.length" class="text-sm text-slate-500 text-center py-8">{{ t('settings.members.empty') }}</p>
+                <p v-if="!members.length" class="text-sm text-slate-600 text-center py-8">{{ t('settings.members.empty') }}</p>
             </div>
 
             <!-- Visitor stats -->
@@ -216,23 +216,23 @@ function roleBadgeClass(m) {
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-slate-900">{{ t('settings.members.visitors_title') }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ t('settings.members.visitors_hint') }}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">{{ t('settings.members.visitors_hint') }}</p>
                     </div>
                     <button
                         v-if="visit_stats.total > 0"
                         @click="showResetVisits = true"
-                        class="text-[11px] font-semibold text-slate-500 hover:text-red-600 transition-colors shrink-0"
+                        class="text-xs font-semibold text-slate-600 hover:text-red-600 transition-colors shrink-0"
                     >
                         {{ t('settings.members.visitors_reset') }}
                     </button>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mt-3">
                     <div class="bg-indigo-50 rounded-xl px-3 py-2.5">
-                        <p class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">{{ t('settings.members.visitors_total') }}</p>
+                        <p class="text-2xs font-semibold text-indigo-600 uppercase tracking-wide">{{ t('settings.members.visitors_total') }}</p>
                         <p class="text-xl font-bold text-indigo-700 mt-0.5">{{ visit_stats.total }}</p>
                     </div>
                     <div class="bg-slate-50 rounded-xl px-3 py-2.5">
-                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{{ t('settings.members.visitors_30d') }}</p>
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">{{ t('settings.members.visitors_30d') }}</p>
                         <p class="text-xl font-bold text-slate-800 mt-0.5">{{ visit_stats.last_30_days }}</p>
                     </div>
                 </div>
@@ -255,7 +255,7 @@ function roleBadgeClass(m) {
                         </div>
                         <h2 class="text-base font-semibold text-slate-900">{{ t('settings.members.remove_title') }}</h2>
                     </div>
-                    <p class="text-sm text-slate-500 mb-4">{{ t('settings.members.remove_confirm') }}</p>
+                    <p class="text-sm text-slate-600 mb-4">{{ t('settings.members.remove_confirm') }}</p>
                     <div class="flex gap-2">
                         <button type="button" @click="cancelRemove" class="flex-1 py-2.5 text-sm font-medium text-slate-600 rounded-xl border border-slate-300">{{ t('settings.members.cancel') }}</button>
                         <button type="button" @click="confirmRemove" :disabled="acting" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors">{{ acting ? t('settings.members.deleting') : t('settings.members.remove') }}</button>
@@ -277,7 +277,7 @@ function roleBadgeClass(m) {
                             <h2 class="text-base font-semibold text-slate-900">{{ t('settings.members.roles_title') }}</h2>
                             <button @click="closeRolesEditor" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
                         </div>
-                        <p class="text-xs text-slate-500 mb-3">{{ t('settings.members.roles_hint') }}</p>
+                        <p class="text-xs text-slate-600 mb-3">{{ t('settings.members.roles_hint') }}</p>
 
                         <!-- Search input -->
                         <div class="relative mb-3">
@@ -301,15 +301,15 @@ function roleBadgeClass(m) {
                             </button>
                         </div>
 
-                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
                             {{ roleSearch.trim() ? t('settings.members.search_results') : t('settings.members.roles_available') }}
-                            <span class="text-slate-400 font-medium normal-case tracking-normal ml-1">· {{ draftRoleIds.length }} {{ t('settings.members.selected') }}</span>
+                            <span class="text-slate-500 font-medium normal-case tracking-normal ml-1">· {{ draftRoleIds.length }} {{ t('settings.members.selected') }}</span>
                         </p>
                     </div>
 
                     <!-- Scrollable roles list -->
                     <div class="flex-1 overflow-y-auto px-4 min-h-0">
-                        <div v-if="!filteredRoleTypes.length" class="text-center py-8 text-sm text-slate-400 italic">
+                        <div v-if="!filteredRoleTypes.length" class="text-center py-8 text-sm text-slate-500 italic">
                             {{ t('settings.members.no_role_matches') }}
                         </div>
                         <div v-else class="space-y-1">
@@ -361,7 +361,7 @@ function roleBadgeClass(m) {
                 <div v-if="showResetVisits" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-3 pb-8 shadow-xl">
                     <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
                     <h2 class="text-base font-semibold text-slate-900 mb-1">{{ t('settings.members.visitors_reset_title') }}</h2>
-                    <p class="text-sm text-slate-500 mb-4">{{ t('settings.members.visitors_reset_confirm') }}</p>
+                    <p class="text-sm text-slate-600 mb-4">{{ t('settings.members.visitors_reset_confirm') }}</p>
                     <div class="flex gap-2">
                         <button type="button" @click="showResetVisits = false" class="flex-1 py-2.5 text-sm font-medium text-slate-600 rounded-xl border border-slate-300">{{ t('settings.members.cancel') }}</button>
                         <button type="button" @click="resetVisitors" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors">{{ t('settings.members.visitors_reset') }}</button>

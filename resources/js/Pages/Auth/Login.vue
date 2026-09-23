@@ -40,7 +40,7 @@ function joinBand() {
                 type="button"
                 @click="tab = 'admin'"
                 class="py-2.5 text-sm font-semibold transition-colors"
-                :class="tab === 'admin' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-600'"
+                :class="tab === 'admin' ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'"
             >
                 {{ t('auth.tabs.admin') }}
             </button>
@@ -48,7 +48,7 @@ function joinBand() {
                 type="button"
                 @click="tab = 'member'"
                 class="py-2.5 text-sm font-semibold transition-colors"
-                :class="tab === 'member' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-600'"
+                :class="tab === 'member' ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'"
             >
                 {{ t('auth.tabs.member') }}
             </button>
@@ -77,7 +77,7 @@ function joinBand() {
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label for="password" class="block text-xs font-medium text-slate-600">{{ t('auth.fields.password') }}</label>
-                    <Link href="/forgot-password" class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700">
+                    <Link href="/forgot-password" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
                         {{ t('auth.forgot_link') }}
                     </Link>
                 </div>
@@ -108,7 +108,7 @@ function joinBand() {
                 <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                 </svg>
-                <p class="text-[11px] text-indigo-700 leading-relaxed">{{ t('auth.member_invite_hint') }}</p>
+                <p class="text-xs text-indigo-700 leading-relaxed">{{ t('auth.member_invite_hint') }}</p>
             </div>
 
             <div>
@@ -149,7 +149,7 @@ function joinBand() {
         </form>
 
         <!-- Discrete register link (admin tab only) -->
-        <p v-if="tab === 'admin'" class="text-center text-xs text-slate-500 mt-5">
+        <p v-if="tab === 'admin'" class="text-center text-xs text-slate-600 mt-5">
             {{ t('auth.no_account') }}
             <Link href="/register" class="font-semibold text-indigo-600 hover:text-indigo-700 ml-1">{{ t('auth.create_band') }}</Link>
         </p>

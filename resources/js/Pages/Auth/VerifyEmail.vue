@@ -40,7 +40,7 @@ function logout() {
             </div>
         </div>
 
-        <p class="text-center text-xs text-slate-500 mb-5 leading-relaxed">
+        <p class="text-center text-xs text-slate-600 mb-5 leading-relaxed">
             {{ t('auth.verify.tip') }}
         </p>
 
@@ -54,7 +54,7 @@ function logout() {
 
         <button
             @click="logout"
-            class="w-full mt-2 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+            class="w-full mt-2 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-700 transition-colors"
         >
             {{ t('auth.actions.logout') }}
         </button>

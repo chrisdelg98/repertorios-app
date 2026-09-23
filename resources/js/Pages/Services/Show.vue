@@ -502,15 +502,15 @@ function scheduleReorder() {
         <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-3xl mx-auto">
             <!-- Service header card -->
             <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white mb-4 shadow-md shadow-indigo-200">
-                <p class="text-xs font-medium text-indigo-200 uppercase tracking-wide">
+                <p class="text-xs font-medium text-indigo-100 uppercase tracking-wide">
                     {{ t('services.title') }}
                 </p>
                 <h1 class="text-xl font-bold mt-1 capitalize">{{ typeLabel(service.type) }}</h1>
-                <p class="text-sm text-indigo-100 mt-1">
+                <p class="text-sm font-medium text-indigo-50 mt-1">
                     {{ formatDate(service.date) }}
                     <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
                 </p>
-                <p v-if="service.notes" class="mt-3 pt-3 border-t border-white/15 text-sm text-indigo-100">
+                <p v-if="service.notes" class="mt-3 pt-3 border-t border-white/15 text-sm text-indigo-50">
                     {{ service.notes }}
                 </p>
             </div>
@@ -544,7 +544,7 @@ function scheduleReorder() {
                 <div v-if="can_write" class="relative" data-actions-menu>
                     <button
                         @click="toggleActionsMenu"
-                        class="w-11 h-full flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-50 transition-colors"
+                        class="w-11 h-full flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
                         :aria-label="t('services.actions')"
                         :aria-expanded="actionsMenuOpen"
                     >
@@ -625,17 +625,17 @@ function scheduleReorder() {
 
             <!-- Songs section heading -->
             <div class="flex items-center justify-between mb-2 px-1">
-                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                     {{ t('services.setlist') }}
                 </p>
-                <span v-if="localSongs.length" class="text-xs text-slate-500">{{ localSongs.length }}</span>
+                <span v-if="localSongs.length" class="text-xs text-slate-600">{{ localSongs.length }}</span>
             </div>
 
             <!-- Songs list -->
             <div class="space-y-2 mb-4">
                 <div
                     v-if="!localSongs.length"
-                    class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-500 text-sm"
+                    class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-600 text-sm"
                 >
                     {{ t('services.no_songs') }}
                 </div>
@@ -651,7 +651,7 @@ function scheduleReorder() {
                             @click="moveUp(i)"
                             :disabled="i === 0"
                             :aria-label="t('services.move_up')"
-                            class="w-6 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-500 transition-colors"
+                            class="w-6 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-600 transition-colors"
                         >
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
@@ -661,7 +661,7 @@ function scheduleReorder() {
                             @click="moveDown(i)"
                             :disabled="i === localSongs.length - 1"
                             :aria-label="t('services.move_down')"
-                            class="w-6 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-500 transition-colors"
+                            class="w-6 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-600 transition-colors"
                         >
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -669,15 +669,15 @@ function scheduleReorder() {
                         </button>
                     </div>
 
-                    <span class="w-6 h-6 flex items-center justify-center text-[11px] font-bold text-indigo-600 bg-indigo-50 rounded-full shrink-0">{{ i + 1 }}</span>
+                    <span class="w-6 h-6 flex items-center justify-center text-xs font-bold text-indigo-600 bg-indigo-50 rounded-full shrink-0">{{ i + 1 }}</span>
                     <button
                         type="button"
                         @click="openDetail(ss)"
                         class="flex-1 min-w-0 text-left"
                     >
                         <p class="text-sm font-semibold text-slate-900 truncate leading-tight">{{ ss.song_version.song.name }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5 truncate">
-                            <span v-if="ss.song_version.song.artist">{{ ss.song_version.song.artist }} · </span>{{ ss.song_version.name }}<span v-if="ss.song_version.key" class="text-indigo-500 font-medium"> · {{ ss.song_version.key }}</span>
+                        <p class="text-xs font-medium text-slate-600 mt-0.5 truncate">
+                            <span v-if="ss.song_version.song.artist">{{ ss.song_version.song.artist }} · </span>{{ ss.song_version.name }}<span v-if="ss.song_version.key" class="text-indigo-600 font-semibold"> · {{ ss.song_version.key }}</span>
                         </p>
                     </button>
                     <button
@@ -712,7 +712,7 @@ function scheduleReorder() {
             <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.add_song') }}</h2>
-                        <button @click="closeAddSheet" class="text-slate-500 hover:text-slate-600 text-lg leading-none">✕</button>
+                        <button @click="closeAddSheet" class="text-slate-600 hover:text-slate-900 text-lg leading-none">✕</button>
                     </div>
 
                     <!-- Search input — text-base (16px) prevents iOS zoom-on-focus -->
@@ -729,7 +729,7 @@ function scheduleReorder() {
                     <div class="overflow-y-auto flex-1 mb-4">
                         <!-- Suggestions section -->
                         <div v-if="filtered.length">
-                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide px-1 mb-1.5">
+                            <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide px-1 mb-1.5">
                                 {{ search.trim() ? t('services.suggestions_matching') : t('services.suggestions_recent') }}
                             </p>
                             <div class="space-y-1">
@@ -756,11 +756,11 @@ function scheduleReorder() {
                         <div v-if="isNewSong">
                             <div v-if="filtered.length" class="flex items-center gap-3 my-4">
                                 <div class="flex-1 h-px bg-slate-200" />
-                                <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('services.or') }}</span>
+                                <span class="text-2xs font-semibold text-slate-600 uppercase tracking-wider">{{ t('services.or') }}</span>
                                 <div class="flex-1 h-px bg-slate-200" />
                             </div>
 
-                            <p class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide px-1 mb-1.5">
+                            <p class="text-2xs font-semibold text-indigo-600 uppercase tracking-wide px-1 mb-1.5">
                                 {{ t('services.new_song_section') }}
                             </p>
                             <div class="border border-dashed border-indigo-200 bg-indigo-50/30 rounded-xl p-3 space-y-3">
@@ -773,7 +773,7 @@ function scheduleReorder() {
 
                             <!-- Artist -->
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.artist') }}</label>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('songs.form.artist') }}</label>
                                 <input
                                     v-model="addForm.artist"
                                     type="text"
@@ -785,7 +785,7 @@ function scheduleReorder() {
 
                             <!-- Version preset -->
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1.5">{{ t('songs.form.version') }}</label>
+                                <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ t('songs.form.version') }}</label>
                                 <div class="flex gap-1.5 flex-wrap">
                                     <button
                                         v-for="v in ['Original', 'Live', 'Acoustic']"
@@ -818,7 +818,7 @@ function scheduleReorder() {
                             <div v-if="showSongDetails" class="space-y-2 pt-1">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.key') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('songs.form.key') }}</label>
                                         <input
                                             v-model="addForm.key"
                                             type="text"
@@ -828,7 +828,7 @@ function scheduleReorder() {
                                         />
                                     </div>
                                     <div>
-                                        <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.bpm') }}</label>
+                                        <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('songs.form.bpm') }}</label>
                                         <input
                                             v-model="addForm.bpm"
                                             type="number"
@@ -839,7 +839,7 @@ function scheduleReorder() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('songs.form.youtube_url') }}</label>
+                                    <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('songs.form.youtube_url') }}</label>
                                     <input
                                         v-model="addForm.youtube_url"
                                         type="url"
@@ -880,15 +880,15 @@ function scheduleReorder() {
 
                 <div class="overflow-y-auto flex-1">
                     <div class="flex items-center justify-between mb-2 px-1">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                             {{ t('assignments.section_title') }}
                         </p>
-                        <span v-if="localAssignments.length" class="text-xs text-slate-500">{{ localAssignments.length }}</span>
+                        <span v-if="localAssignments.length" class="text-xs text-slate-600">{{ localAssignments.length }}</span>
                     </div>
 
                     <div v-if="!localAssignments.length && canManageAssignments" class="text-center py-6">
                         <p class="text-sm font-semibold text-slate-700">{{ t('assignments.section_empty_admin') }}</p>
-                        <p class="text-xs text-slate-500 mt-1">{{ t('assignments.section_empty_hint') }}</p>
+                        <p class="text-xs text-slate-600 mt-1">{{ t('assignments.section_empty_hint') }}</p>
                         <button
                             v-if="!teamComposerOpen"
                             type="button"
@@ -904,7 +904,7 @@ function scheduleReorder() {
                         class="border border-slate-200 rounded-xl p-3 mb-3"
                     >
                         <div class="flex items-center justify-between mb-2">
-                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                            <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">
                                 {{ t('assignments.add_sheet_title') }}
                             </p>
                             <button
@@ -939,7 +939,7 @@ function scheduleReorder() {
                                     class="w-full text-left px-3 py-2.5 border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
                                 >
                                     <p class="text-sm font-medium text-slate-900">{{ member.name }}</p>
-                                    <p v-if="member.roles?.length" class="text-[11px] text-slate-500 mt-0.5">
+                                    <p v-if="member.roles?.length" class="text-xs font-medium text-slate-600 mt-0.5">
                                         {{ t('assignments.role_suggested', { role: roleLabel(member.roles[0]) }) }}
                                     </p>
                                 </button>
@@ -977,7 +977,7 @@ function scheduleReorder() {
 
                         <div class="flex items-center gap-3 my-3">
                             <div class="flex-1 h-px bg-slate-200" />
-                            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('services.or') }}</span>
+                            <span class="text-2xs font-semibold text-slate-600 uppercase tracking-wider">{{ t('services.or') }}</span>
                             <div class="flex-1 h-px bg-slate-200" />
                         </div>
 
@@ -994,7 +994,7 @@ function scheduleReorder() {
 
                         <div v-if="teamManualOpen" class="mt-2.5 border border-slate-200 rounded-xl p-3 space-y-2.5">
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.manual_name_label') }}</label>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.manual_name_label') }}</label>
                                 <input
                                     v-model="teamManualName"
                                     type="text"
@@ -1003,7 +1003,7 @@ function scheduleReorder() {
                                 />
                             </div>
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.role_label') }}</label>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.role_label') }}</label>
                                 <select
                                     v-model="teamManualRoleId"
                                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1030,14 +1030,14 @@ function scheduleReorder() {
                             class="space-y-1.5"
                         >
                             <div class="flex items-center gap-2.5 px-2 py-2 rounded-lg border border-slate-100">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 text-xs font-semibold">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 text-xs font-semibold">
                                     {{ assignment.is_manual ? '?' : 'U' }}
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-sm font-medium text-slate-900 truncate">{{ assignment.display_name }}</p>
-                                    <p class="text-xs text-slate-500 truncate">
+                                    <p class="text-xs font-medium text-slate-600 truncate">
                                         {{ roleLabel(assignment) }}
-                                        <span v-if="assignment.is_manual" class="ml-1 text-[10px] text-slate-400">({{ t('assignments.manual_badge') }})</span>
+                                        <span v-if="assignment.is_manual" class="ml-1 text-2xs text-slate-500">({{ t('assignments.manual_badge') }})</span>
                                     </p>
                                 </div>
 
@@ -1045,7 +1045,7 @@ function scheduleReorder() {
                                     v-if="canManageAssignments"
                                     type="button"
                                     @click="openInlineEdit(assignment)"
-                                    class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                                    class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                                     aria-label="Edit assignment"
                                 >
                                     <svg class="w-3.5 h-3.5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -1059,7 +1059,7 @@ function scheduleReorder() {
                                 class="ml-10 border border-slate-200 rounded-xl p-3 space-y-2.5 bg-slate-50"
                             >
                                 <div v-if="assignment.is_manual">
-                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.manual_name_label') }}</label>
+                                    <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.manual_name_label') }}</label>
                                     <input
                                         v-model="editAssignmentName"
                                         type="text"
@@ -1069,7 +1069,7 @@ function scheduleReorder() {
                                 </div>
 
                                 <div>
-                                    <label class="block text-[11px] font-medium text-slate-500 mb-1">{{ t('assignments.role_label') }}</label>
+                                    <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('assignments.role_label') }}</label>
                                     <select
                                         v-model="editAssignmentRoleId"
                                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1141,7 +1141,7 @@ function scheduleReorder() {
             <div v-if="showShareSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.share_title') }}</h2>
-                        <button @click="showShareSheet = false" class="text-slate-500 text-lg leading-none">✕</button>
+                        <button @click="showShareSheet = false" class="text-slate-600 text-lg leading-none">✕</button>
                     </div>
 
                     <div class="flex gap-2 mb-3">
@@ -1185,7 +1185,7 @@ function scheduleReorder() {
                             <span class="block text-xs font-semibold" :class="shareData?.allow_join ? 'text-indigo-700' : 'text-slate-700'">
                                 {{ t('services.share_allow_join_title') }}
                             </span>
-                            <span class="block text-[11px] mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-500'">
+                            <span class="block text-xs mt-0.5" :class="shareData?.allow_join ? 'text-indigo-600' : 'text-slate-600'">
                                 {{ t('services.share_allow_join_hint') }}
                             </span>
                         </span>
@@ -1213,7 +1213,7 @@ function scheduleReorder() {
                             <span class="block text-xs font-semibold" :class="includeTeamInShare ? 'text-indigo-700' : 'text-slate-700'">
                                 {{ t('share.include_team_label') }}
                             </span>
-                            <span class="block text-[11px] mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-500'">
+                            <span class="block text-xs mt-0.5" :class="includeTeamInShare ? 'text-indigo-600' : 'text-slate-600'">
                                 {{ localAssignments.length ? t('share.include_team_hint') : t('share.include_team_disabled') }}
                             </span>
                         </span>

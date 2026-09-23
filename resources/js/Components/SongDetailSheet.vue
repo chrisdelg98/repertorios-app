@@ -87,11 +87,11 @@ const hasAnyDetail = computed(() => {
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
                             <h2 class="text-base font-bold text-slate-900 truncate">{{ song.name }}</h2>
-                            <p v-if="song.artist" class="text-xs text-slate-500 mt-0.5 truncate">{{ song.artist }}</p>
+                            <p v-if="song.artist" class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ song.artist }}</p>
                         </div>
                         <span
                             v-if="!hasVersionList && current?.name"
-                            class="shrink-0 inline-flex items-center text-[11px] font-semibold text-slate-600 bg-slate-100 rounded-md px-2 py-1"
+                            class="shrink-0 inline-flex items-center text-xs font-semibold text-slate-600 bg-slate-100 rounded-md px-2 py-1"
                         >
                             {{ current.name }}
                         </span>
@@ -105,7 +105,7 @@ const hasAnyDetail = computed(() => {
                             type="button"
                             @click="selectedVersionIdx = i"
                             :class="[
-                                'shrink-0 px-2.5 py-1 text-[11px] font-semibold rounded-md border transition-colors',
+                                'shrink-0 px-2.5 py-1 text-xs font-semibold rounded-md border transition-colors',
                                 selectedVersionIdx === i
                                     ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300',
@@ -120,25 +120,25 @@ const hasAnyDetail = computed(() => {
                 <!-- Body -->
                 <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                     <!-- Empty state -->
-                    <p v-if="!hasAnyDetail" class="text-center text-sm text-slate-500 py-8">
+                    <p v-if="!hasAnyDetail" class="text-center text-sm text-slate-600 py-8">
                         {{ t('services.no_details') }}
                     </p>
 
                     <!-- Key + BPM -->
                     <div v-if="current?.key || current?.bpm" class="grid grid-cols-2 gap-3">
                         <div v-if="current.key" class="bg-indigo-50 rounded-xl px-3 py-2.5">
-                            <p class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wide">{{ t('songs.form.key') }}</p>
+                            <p class="text-2xs font-semibold text-indigo-600 uppercase tracking-wide">{{ t('songs.form.key') }}</p>
                             <p class="text-lg font-bold text-indigo-700 mt-0.5">{{ current.key }}</p>
                         </div>
                         <div v-if="current.bpm" class="bg-violet-50 rounded-xl px-3 py-2.5">
-                            <p class="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">{{ t('songs.form.bpm') }}</p>
+                            <p class="text-2xs font-semibold text-violet-600 uppercase tracking-wide">{{ t('songs.form.bpm') }}</p>
                             <p class="text-lg font-bold text-violet-700 mt-0.5">{{ current.bpm }}</p>
                         </div>
                     </div>
 
                     <!-- YouTube -->
                     <div v-if="current?.youtube_url" class="space-y-2">
-                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">YouTube</p>
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">YouTube</p>
                         <div v-if="youtubeEmbed" class="aspect-video rounded-xl overflow-hidden bg-slate-100">
                             <iframe
                                 :src="youtubeEmbed"
@@ -163,7 +163,7 @@ const hasAnyDetail = computed(() => {
 
                     <!-- Notes -->
                     <div v-if="current?.notes" class="space-y-1.5">
-                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{{ t('songs.form.notes') }}</p>
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide">{{ t('songs.form.notes') }}</p>
                         <p class="text-sm text-slate-700 bg-slate-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap">{{ current.notes }}</p>
                     </div>
                 </div>

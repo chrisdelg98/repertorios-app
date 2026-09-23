@@ -54,7 +54,7 @@ const notes = [
         <div class="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
             <Link
                 href="/"
-                class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 transition-colors"
+                class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-indigo-600 transition-colors"
             >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -70,7 +70,7 @@ const notes = [
             <div class="text-center mb-6">
                 <Logo :size="64" class="mx-auto" />
                 <h1 v-if="heading" class="text-2xl font-bold text-slate-900 mt-3 tracking-tight">{{ heading }}</h1>
-                <p v-if="$slots.subheading || subheading" class="text-sm text-slate-500 mt-1">
+                <p v-if="$slots.subheading || subheading" class="text-sm text-slate-600 mt-1">
                     <slot name="subheading">{{ subheading }}</slot>
                 </p>
             </div>
@@ -79,7 +79,7 @@ const notes = [
                 <slot />
             </div>
 
-            <p class="text-center text-[11px] text-slate-500 mt-5">
+            <p class="text-center text-xs text-slate-600 mt-5">
                 {{ t('app.tagline') }}
             </p>
         </div>
