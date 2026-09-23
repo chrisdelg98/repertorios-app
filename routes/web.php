@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\UpgradeAccountController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\BandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Public\JoinController;
 use App\Http\Controllers\WelcomeController;
@@ -70,9 +71,21 @@ Route::middleware('auth')->group(function () {
         ->name('verification.send');
 });
 
+// Logout sits outside band.access on purpose: a user who belongs to no band is
+// bounced to bands.create by that middleware, and would not be able to log out.
+Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.logout');
+
+// Multi-band: switching and starting an extra band. Registered users only —
+// these sit outside band.access because they are what you reach when you have
+// no active band yet.
+Route::middleware('auth')->group(function () {
+    Route::get('/bands/create', [BandController::class, 'create'])->name('bands.create');
+    Route::post('/bands', [BandController::class, 'store'])->middleware('throttle:10,1')->name('bands.store');
+    Route::post('/bands/{band}/switch', [BandController::class, 'switch'])->name('bands.switch');
+});
+
 // Protected
 Route::middleware('band.access')->group(function () {
-    Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Welcome overlay — admin dismisses it permanently

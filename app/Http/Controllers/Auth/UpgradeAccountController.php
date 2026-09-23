@@ -52,12 +52,13 @@ class UpgradeAccountController extends Controller
         abort_unless($bandId && Band::whereKey($bandId)->exists(), 403, 'No band session.');
 
         $user = User::create([
-            'band_id'  => $bandId,
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'role'     => 'member',
-            'password' => Hash::make($request->password),
+            'active_band_id' => $bandId,
+            'name'           => $request->name,
+            'email'          => $request->email,
+            'password'       => Hash::make($request->password),
         ]);
+
+        $user->joinBand(Band::findOrFail($bandId), 'member');
 
         event(new Registered($user));
 

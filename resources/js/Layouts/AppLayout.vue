@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
-import Logo from '@/Components/Logo.vue';
+import BandSwitcher from '@/Components/BandSwitcher.vue';
 import WelcomeOverlay from '@/Components/WelcomeOverlay.vue';
 
 const donateUrl = computed(() => page.props.donate?.url || null);
@@ -68,10 +68,7 @@ const navItems = computed(() => {
         <aside class="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex-col z-30">
             <!-- Brand -->
             <div class="px-5 py-5">
-                <Link href="/dashboard" class="flex items-center gap-2.5 min-w-0">
-                    <Logo :size="36" />
-                    <span class="font-bold text-slate-900 truncate">{{ auth.band?.name ?? t('app.name') }}</span>
-                </Link>
+                <BandSwitcher />
             </div>
 
             <!-- New Service CTA (write access only) -->
@@ -171,12 +168,7 @@ const navItems = computed(() => {
         <!-- Mobile header (hidden on lg+)                               -->
         <!-- ─────────────────────────────────────────────────────────── -->
         <header class="lg:hidden bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between sticky top-0 z-20">
-            <Link href="/dashboard" class="flex items-center gap-2 min-w-0">
-                <Logo :size="32" />
-                <span class="font-semibold text-slate-900 text-sm truncate">
-                    {{ auth.band?.name ?? t('app.name') }}
-                </span>
-            </Link>
+            <BandSwitcher compact />
 
             <div class="flex items-center gap-2">
                 <LanguageSwitcher />

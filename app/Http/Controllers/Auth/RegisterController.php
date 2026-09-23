@@ -37,15 +37,16 @@ class RegisterController extends Controller
             ]);
 
             $user = User::create([
-                'band_id'  => $band->id,
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'role'     => 'admin',
-                'password' => Hash::make($request->password),
+                'active_band_id' => $band->id,
+                'name'           => $request->name,
+                'email'          => $request->email,
+                'password'       => Hash::make($request->password),
             ]);
 
             // Mark this user as the band creator (exclusive delete/sensitive-settings rights)
             $band->update(['creator_id' => $user->id]);
+
+            $user->joinBand($band, 'admin');
 
             return $user;
         });

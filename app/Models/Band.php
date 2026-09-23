@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -15,9 +16,16 @@ class Band extends Model
 
     protected $hidden = ['access_pin', 'edit_pin'];
 
-    public function admins(): HasMany
+    /** Everyone who belongs to this band, with their role in it. */
+    public function members(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'band_user')
+            ->withPivot(['role', 'joined_at']);
+    }
+
+    public function admins(): BelongsToMany
+    {
+        return $this->members()->wherePivot('role', 'admin');
     }
 
     public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo

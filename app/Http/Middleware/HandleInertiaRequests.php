@@ -42,11 +42,11 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => fn () => $user ? array_merge(
-                    $user->only(['id', 'name', 'email', 'band_id']),
+                    $user->only(['id', 'name', 'email', 'active_band_id']),
                     ['avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null]
                 ) : null,
                 'band' => function () use ($user, $request) {
-                    $bandId = $user?->band_id ?? $request->session()->get('band_id');
+                    $bandId = $user?->active_band_id ?? $request->session()->get('band_id');
                     if (!$bandId) return null;
                     $band = Band::find($bandId, ['id', 'name', 'code', 'logo']);
                     if (!$band) return null;
@@ -55,18 +55,32 @@ class HandleInertiaRequests extends Middleware
                         ['logo_url' => $band->logo ? asset('storage/' . $band->logo) : null]
                     );
                 },
+                // Every band this user can switch into, with their role in each.
+                // Guests get an empty list — they have no membership to switch.
+                'memberships' => fn () => $user
+                    ? $user->bands()
+                        ->orderBy('bands.name')
+                        ->get(['bands.id', 'bands.name', 'bands.logo'])
+                        ->map(fn ($b) => [
+                            'id'       => $b->id,
+                            'name'     => $b->name,
+                            'role'     => $b->pivot->role,
+                            'logo_url' => $b->logo ? asset('storage/' . $b->logo) : null,
+                            'is_active' => (int) $b->id === (int) $user->active_band_id,
+                        ])->values()
+                    : [],
                 'access' => fn () => $user
-                    ? $user->role
+                    ? ($user->roleIn($user->active_band_id) ?? 'member')
                     : $request->session()->get('access_level'),
-                'can_write' => fn () => ($user && $user->role === 'admin')
+                'can_write' => fn () => ($user && $user->isAdminOf($user->active_band_id))
                     || $request->session()->get('access_level') === 'editor',
                 'is_creator' => function () use ($user) {
                     if (!$user) return false;
-                    $band = Band::find($user->band_id, ['id', 'creator_id']);
+                    $band = Band::find($user->active_band_id, ['id', 'creator_id']);
                     return $band && (int) $band->creator_id === (int) $user->id;
                 },
                 'show_welcome' => function () use ($request, $user) {
-                    if (!$user || $user->role !== 'admin' || $user->welcome_dismissed_at) {
+                    if (!$user || !$user->isAdminOf($user->active_band_id) || $user->welcome_dismissed_at) {
                         return false;
                     }
                     return (bool) $request->session()->pull('welcome_pending', false);

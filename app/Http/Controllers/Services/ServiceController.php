@@ -8,6 +8,7 @@ use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Requests\Services\StoreServiceRequest;
 use App\Models\BandRoleType;
 use App\Models\ScheduleTemplate;
+use App\Models\Band;
 use App\Models\Service;
 use App\Models\SongVersion;
 use App\Models\User;
@@ -125,24 +126,12 @@ class ServiceController extends Controller
                 ]),
             ],
             'song_versions' => $songVersions,
-            'team_members' => User::where('band_id', $this->bandId())
-                ->with(['bandRoles:id,name_es,name_en'])
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (User $user) => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'roles' => $user->bandRoles->map(fn ($role) => [
-                        'id' => $role->id,
-                        'name_es' => $role->name_es,
-                        'name_en' => $role->name_en,
-                    ])->values(),
-                ])->values(),
+            'team_members' => $this->teamMembers(),
             'role_types' => BandRoleType::orderBy('sort_order')->orderBy('name_es')
                 ->get(['id', 'name_es', 'name_en'])
                 ->values(),
             'can_write' => $this->canWrite(),
-            'can_manage_assignments' => Auth::check() && Auth::user()->role === 'admin',
+            'can_manage_assignments' => Auth::check() && Auth::user()->isAdminOf($this->bandId()),
         ]);
     }
 
@@ -187,5 +176,35 @@ class ServiceController extends Controller
         $copy = $action->execute($service, $request->date);
 
         return redirect()->route('services.show', $copy)->with('success', 'Service duplicated.');
+    }
+
+    /**
+     * Members of the active band with the instrument roles they hold IN THIS
+     * band — the same person can be the drummer here and the bassist elsewhere.
+     */
+    private function teamMembers(): \Illuminate\Support\Collection
+    {
+        $bandId = $this->bandId();
+
+        $rolesByUser = \Illuminate\Support\Facades\DB::table('user_band_roles as ubr')
+            ->join('band_role_types as brt', 'brt.id', '=', 'ubr.band_role_type_id')
+            ->where('ubr.band_id', $bandId)
+            ->orderBy('brt.sort_order')
+            ->get(['ubr.user_id', 'brt.id', 'brt.name_es', 'brt.name_en'])
+            ->groupBy('user_id');
+
+        return Band::findOrFail($bandId)->members()
+            ->orderBy('users.name')
+            ->get(['users.id', 'users.name'])
+            ->map(fn ($user) => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'roles' => $rolesByUser->get($user->id, collect())
+                    ->map(fn ($r) => [
+                        'id'      => $r->id,
+                        'name_es' => $r->name_es,
+                        'name_en' => $r->name_en,
+                    ])->values(),
+            ])->values();
     }
 }

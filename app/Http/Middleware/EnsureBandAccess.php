@@ -10,10 +10,25 @@ class EnsureBandAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $isAdmin = $request->user() !== null;
-        $isBandSession = $request->session()->has('band_id');
+        $user = $request->user();
 
-        if (!$isAdmin && !$isBandSession) {
+        if ($user) {
+            // Their active band was deleted, or they were removed from it.
+            // Fall back to any band they still belong to.
+            if (!$user->active_band_id || !$user->belongsToBand($user->active_band_id)) {
+                $fallback = $user->bands()->value('bands.id');
+
+                if (!$fallback) {
+                    return redirect()->route('bands.create');
+                }
+
+                $user->forceFill(['active_band_id' => $fallback])->save();
+            }
+
+            return $next($request);
+        }
+
+        if (!$request->session()->has('band_id')) {
             return redirect()->route('auth.login');
         }
 

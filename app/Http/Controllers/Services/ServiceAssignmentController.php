@@ -30,7 +30,7 @@ class ServiceAssignmentController extends Controller
 
         if ($hasUser) {
             $user = User::findOrFail((int) $data['user_id']);
-            if ((int) $user->band_id !== (int) $service->band_id) {
+            if (!$user->belongsToBand((int) $service->band_id)) {
                 return response()->json(['message' => 'Selected user is not in this band.'], 422);
             }
 

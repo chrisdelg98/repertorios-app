@@ -27,6 +27,10 @@ class AdminLoginController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+
+        // A leftover guest PIN session must not grant rights on top of the
+        // real membership the user just logged into.
+        $request->session()->forget(['band_id', 'access_level']);
         $request->session()->put('welcome_pending', true);
 
         return redirect()->intended(route('dashboard'));

@@ -11,6 +11,7 @@ class BandRoleType extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_band_roles');
+        return $this->belongsToMany(User::class, 'user_band_roles')
+            ->withPivot('band_id');
     }
 }
