@@ -22,6 +22,8 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ScheduleTemplateController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -31,13 +33,21 @@ Route::get('/r/{token}', [ShareController::class, 'show'])->name('share.show');
 // Public join via invite link (no auth required)
 Route::get('/join/{token}', JoinController::class)->name('band.join');
 
-Route::get('/', function () {
+// The landing page is for people who are not in yet. Anyone with a session —
+// a registered user or a guest who came through a PIN or an invite link — goes
+// straight to their dashboard. This is also the PWA's start_url, so the
+// installed app opens on the dashboard instead of the sales pitch.
+Route::get('/', function (Request $request) {
+    if (Auth::check() || $request->session()->has('band_id')) {
+        return redirect()->route('dashboard');
+    }
+
     return Inertia::render('Welcome', [
         'appName' => config('app.name'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('home');
 
 // Auth
 Route::get('/login', [AdminLoginController::class, 'show'])->name('auth.login');
