@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        /** @var \App\Models\User|null $user */
         $user = $request->user();
 
         return [
@@ -92,6 +93,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'donate' => [
                 'url' => config('services.paypal.donate_url'),
+            ],
+            'push' => [
+                // The public half of the VAPID pair is meant to be seen: the
+                // browser needs it to build a subscription.
+                'public_key' => config('services.webpush.public_key'),
             ],
         ];
     }

@@ -22,11 +22,34 @@ class Service extends Model
 
     public const DEFAULT_COLOR = 'indigo';
 
-    protected $fillable = ['band_id', 'date', 'time', 'type', 'color', 'notes'];
+    protected $fillable = ['band_id', 'date', 'time', 'type', 'color', 'notes', 'team_notified_at'];
 
     protected function casts(): array
     {
-        return ['date' => 'date'];
+        return ['date' => 'date', 'team_notified_at' => 'datetime'];
+    }
+
+    /**
+     * How this service reads inside a notification or a message, in a given
+     * language. The locale is explicit because push text is written on the
+     * server for a reader whose language lives in their browser.
+     */
+    public function labelIn(string $locale = 'es'): string
+    {
+        $name = $this->type && $this->type !== 'other' ? $this->type : ($locale === 'en' ? 'Service' : 'Servicio');
+
+        if (!$this->date) {
+            return $name;
+        }
+
+        $when = $this->date->locale($locale)->isoFormat('ddd D MMM');
+
+        return "{$name} · {$when}";
+    }
+
+    public function getLabelAttribute(): string
+    {
+        return $this->labelIn(app()->getLocale());
     }
 
     public function band(): BelongsTo

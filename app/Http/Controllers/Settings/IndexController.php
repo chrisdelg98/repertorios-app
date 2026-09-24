@@ -18,6 +18,22 @@ class IndexController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return Inertia::render('Settings/Index');
+        // The user's own devices only — a subscription belongs to a person,
+        // never to a band, so there is nothing here to scope by band.
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $devices = $user->pushSubscriptions()
+            ->orderByDesc('last_used_at')
+            ->get(['id', 'user_agent', 'last_used_at'])
+            ->map(fn ($device) => [
+                'id'           => $device->id,
+                'label'        => $device->device_label,
+                'last_used_at' => $device->last_used_at?->toIso8601String(),
+            ]);
+
+        return Inertia::render('Settings/Index', [
+            'push_devices' => $devices,
+        ]);
     }
 }

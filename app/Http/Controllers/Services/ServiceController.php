@@ -11,6 +11,7 @@ use App\Models\ScheduleTemplate;
 use App\Models\Band;
 use App\Models\Service;
 use App\Models\SongVersion;
+use App\Services\PushNotifier;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,6 +70,11 @@ class ServiceController extends Controller
 
     public function show(Service $service): Response
     {
+        // A link from a notification (or from a chat) can point at a band the
+        // user belongs to but does not have active. Switching for them beats
+        // a 403 they cannot act on. Someone who is not a member still gets one.
+        $this->switchBandIfMember($service->band_id);
+
         abort_unless($service->band_id === $this->bandId(), 403);
 
         $service->load('serviceSongs.songVersion.song', 'assignments.role', 'assignments.user');
@@ -96,6 +102,7 @@ class ServiceController extends Controller
                 'type'  => $service->type,
                 'color' => $service->color,
                 'notes' => $service->notes,
+                'team_notified_at' => $service->team_notified_at?->toIso8601String(),
                 'assignments' => $service->assignments->map(fn ($assignment) => [
                     'id' => $assignment->id,
                     'service_id' => $assignment->service_id,
@@ -134,7 +141,12 @@ class ServiceController extends Controller
                 ->get(['id', 'name_es', 'name_en'])
                 ->values(),
             'can_write' => $this->canWrite(),
-            'can_manage_assignments' => Auth::check() && Auth::user()->isAdminOf($this->bandId()),
+            // So the admin knows whether pressing "notify" reaches anyone at
+            // all, instead of sending into the void.
+            'notifiable_devices' => $this->canWrite()
+                ? app(PushNotifier::class)->reachableDeviceCount($service->band, Auth::id())
+                : 0,
+            'can_manage_assignments' => (bool) $this->currentUser()?->isAdminOf($this->bandId()),
         ]);
     }
 
@@ -169,6 +181,34 @@ class ServiceController extends Controller
         ]);
 
         $service->update($data);
+
+        return back()->with('success', true);
+    }
+
+    /**
+     * "Notify the team": pushes this service to everyone in ITS band.
+     *
+     * The recipients come from PushNotifier, which derives them from the
+     * band's membership — this controller never assembles a list of users.
+     */
+    public function notifyTeam(Service $service, PushNotifier $notifier): RedirectResponse
+    {
+        $this->requireWrite();
+        abort_unless($service->band_id === $this->bandId(), 403);
+
+        $service->loadMissing('band');
+        $senderId = Auth::id();
+
+        defer(fn () => $notifier->toBand($service->band, [
+            'body_key'    => 'push.team_notified',
+            'body_params' => [
+                'service' => fn (string $locale) => $service->labelIn($locale),
+            ],
+            'url' => '/services/' . $service->id,
+            'tag' => 'service-' . $service->id,
+        ], $senderId));
+
+        $service->forceFill(['team_notified_at' => now()])->save();
 
         return back()->with('success', true);
     }

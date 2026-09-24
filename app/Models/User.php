@@ -47,6 +47,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Band::class, 'active_band_id');
     }
 
+    /** Browsers registered to receive push notifications. */
+    public function pushSubscriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
     /** Every band this user is a member of, with their role in each. */
     public function bands(): BelongsToMany
     {

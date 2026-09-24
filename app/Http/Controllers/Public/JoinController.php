@@ -19,7 +19,10 @@ class JoinController extends Controller
 
         // A logged-in user following an invite link joins for real: this is the
         // whole "be in two bands" flow — no extra screen, no second account.
-        if ($user = Auth::user()) {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if ($user) {
             $user->joinBand($band, 'member');
             $user->switchToBand($band);
 

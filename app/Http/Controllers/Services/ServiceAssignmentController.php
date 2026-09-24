@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Services\StoreServiceAssignmentRequest;
 use App\Http\Requests\Services\UpdateServiceAssignmentRequest;
 use App\Models\Service;
+use App\Services\PushNotifier;
 use App\Models\ServiceAssignment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceAssignmentController extends Controller
 {
@@ -54,6 +56,24 @@ class ServiceAssignmentController extends Controller
         ]);
 
         $assignment->load(['role', 'user']);
+
+        // Tell the musician they are on. Only for registered users — a guest
+        // added by name has no account to notify. Sent after the response so
+        // the admin's screen never waits on the push service.
+        if ($hasUser && $user && $user->id !== Auth::id()) {
+            $service->loadMissing('band');
+            $role = $assignment->role;
+
+            defer(fn () => app(PushNotifier::class)->toUser($user, $service->band, [
+                'body_key'    => $role ? 'push.assigned' : 'push.assigned_norole',
+                'body_params' => [
+                    'role'    => $role?->name_es ?? '',
+                    'service' => fn (string $locale) => $service->labelIn($locale),
+                ],
+                'url' => '/services/' . $service->id,
+                'tag' => 'assignment-' . $assignment->id,
+            ]));
+        }
 
         return response()->json([
             'assignment' => $this->serializeAssignment($assignment),

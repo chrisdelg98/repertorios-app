@@ -39,4 +39,16 @@ return [
         'donate_url' => env('PAYPAL_DONATE_URL'),
     ],
 
+    /*
+     * Web Push (VAPID). The public key is handed to the browser so it can build
+     * a subscription; the private key signs the requests to the push service
+     * and never leaves the server. Changing either invalidates every existing
+     * subscription.
+     */
+    'webpush' => [
+        'public_key'  => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject'     => env('VAPID_SUBJECT', config('app.url')),
+    ],
+
 ];

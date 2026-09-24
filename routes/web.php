@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\UpgradeAccountController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\BandController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Public\JoinController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Services\ServiceController;
@@ -85,6 +86,14 @@ Route::middleware('auth')->group(function () {
 // bounced to bands.create by that middleware, and would not be able to log out.
 Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.logout');
 
+// Web Push: a browser registers and unregisters itself here. Registered users
+// only — a guest has no account to attach a device to.
+Route::middleware('auth')->group(function () {
+    Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::delete('/push/subscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
+    Route::delete('/push/devices/{pushSubscription}', [PushSubscriptionController::class, 'destroyDevice'])->name('push.devices.destroy');
+});
+
 // Multi-band: switching and starting an extra band. Registered users only —
 // these sit outside band.access because they are what you reach when you have
 // no active band yet.
@@ -109,6 +118,9 @@ Route::middleware('band.access')->group(function () {
     Route::get('/services/{service}/edit', [ServiceController::class, 'edit'])->name('services.edit');
     Route::put('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
     Route::patch('/services/{service}/color', [ServiceController::class, 'updateColor'])->name('services.color');
+    Route::post('/services/{service}/notify', [ServiceController::class, 'notifyTeam'])
+        ->middleware('throttle:10,1')
+        ->name('services.notify');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     Route::post('/services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
     Route::post('/services/{service}/share', [ShareController::class, 'store'])->name('services.share');

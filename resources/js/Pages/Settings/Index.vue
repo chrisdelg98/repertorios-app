@@ -1,14 +1,55 @@
 <script setup>
-import { computed, ref } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, ref, onMounted } from 'vue';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import InstallSheet from '@/Components/InstallSheet.vue';
+import NotificationsSheet from '@/Components/NotificationsSheet.vue';
+import { usePush } from '@/Composables/usePush';
 import { useInstall } from '@/Composables/useInstall';
 
 const { t } = useI18n();
 const page = usePage();
 const { isInstalled, isIosSafari, promptInstall } = useInstall();
+
+const props = defineProps({
+    push_devices: { type: Array, default: () => [] },
+});
+
+// --- Notifications ---
+const pushSheetOpen = ref(false);
+const devices = ref([...props.push_devices]);
+
+const { subscribed, busy: pushBusy, isGranted, refresh: refreshPush, unsubscribe } = usePush(
+    page.props.push?.public_key ?? null
+);
+
+onMounted(() => { refreshPush(); });
+
+const pushOn = computed(() => subscribed.value && isGranted.value);
+
+async function disablePush() {
+    if (await unsubscribe()) router.reload({ only: ['push_devices'] });
+}
+
+async function removeDevice(device) {
+    await fetch(`/push/devices/${device.id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+    });
+
+    devices.value = devices.value.filter(d => d.id !== device.id);
+    refreshPush();
+}
+
+function onPushEnabled() {
+    pushSheetOpen.value = false;
+    router.reload({ only: ['push_devices'], onSuccess: () => { devices.value = [...page.props.push_devices]; } });
+}
 
 const installSheetOpen = ref(false);
 
@@ -116,6 +157,58 @@ const sections = computed(() => {
                     </svg>
                 </Link>
 
+                <!-- Notifications -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <button
+                        type="button"
+                        @click="pushOn ? disablePush() : (pushSheetOpen = true)"
+                        :disabled="pushBusy"
+                        class="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-60 transition-colors"
+                    >
+                        <div
+                            class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                            :class="pushOn ? 'bg-emerald-50' : 'bg-indigo-50'"
+                        >
+                            <svg class="w-5 h-5" :class="pushOn ? 'text-emerald-600' : 'text-indigo-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </div>
+
+                        <div class="flex-1 min-w-0 text-left">
+                            <p class="font-medium text-slate-900 text-sm">{{ t('push.settings_title') }}</p>
+                            <p class="text-xs font-medium mt-0.5 truncate" :class="pushOn ? 'text-emerald-600' : 'text-slate-600'">
+                                {{ pushOn ? t('push.settings_on') : t('push.settings_off') }}
+                            </p>
+                        </div>
+
+                        <span
+                            class="shrink-0 text-2xs font-semibold px-2.5 py-1 rounded-full"
+                            :class="pushOn ? 'bg-slate-100 text-slate-600' : 'bg-indigo-600 text-white'"
+                        >{{ pushOn ? t('push.settings_disable') : t('push.enable') }}</span>
+                    </button>
+
+                    <!-- Other devices of this same person -->
+                    <div v-if="devices.length" class="border-t border-slate-100 px-4 py-3">
+                        <p class="text-2xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
+                            {{ t('push.settings_devices') }}
+                        </p>
+                        <div class="space-y-1.5">
+                            <div
+                                v-for="device in devices"
+                                :key="device.id"
+                                class="flex items-center gap-2 text-xs"
+                            >
+                                <span class="flex-1 min-w-0 font-medium text-slate-700 truncate">{{ device.label }}</span>
+                                <button
+                                    type="button"
+                                    @click="removeDevice(device)"
+                                    class="shrink-0 font-semibold text-slate-600 hover:text-red-600 transition-colors"
+                                >{{ t('push.settings_remove_device') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Install app tile (hidden only when already installed) -->
                 <button
                     v-if="!isInstalled"
@@ -181,5 +274,6 @@ const sections = computed(() => {
         </div>
 
         <InstallSheet :open="installSheetOpen" @close="installSheetOpen = false" />
+        <NotificationsSheet :open="pushSheetOpen" @close="pushSheetOpen = false" @enabled="onPushEnabled" />
     </AppLayout>
 </template>

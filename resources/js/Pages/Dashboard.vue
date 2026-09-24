@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { serviceColor } from '@/Constants/serviceColors';
+import NotificationsSheet from '@/Components/NotificationsSheet.vue';
 
 const { t, locale } = useI18n();
 const page = usePage();
@@ -16,6 +17,41 @@ const props = defineProps({
 const auth = computed(() => page.props.auth);
 const canWrite = computed(() => !!auth.value?.can_write);
 const isSessionMember = computed(() => auth.value?.access === 'member' && !auth.value?.user);
+
+// --- Notifications prompt ---
+// Asked once, quietly, and only when there is still something to ask: if the
+// browser was already answered either way, nothing shows. Saying "not now"
+// puts it away for good on this device.
+const DISMISS_KEY = 'push_prompt_dismissed';
+const pushSheetOpen = ref(false);
+let pushTimer = null;
+
+function shouldAskAboutPush() {
+    if (!auth.value?.user) return false;                 // guests have no account to notify
+    if (auth.value?.show_welcome) return false;          // never two modals at once
+    if (typeof window === 'undefined') return false;
+    if (!('Notification' in window)) return false;
+    if (Notification.permission !== 'default') return false;
+
+    try {
+        return !localStorage.getItem(DISMISS_KEY);
+    } catch {
+        return false;
+    }
+}
+
+function dismissPushPrompt() {
+    pushSheetOpen.value = false;
+    try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* private mode */ }
+}
+
+onMounted(() => {
+    if (shouldAskAboutPush()) {
+        pushTimer = setTimeout(() => { pushSheetOpen.value = true; }, 2500);
+    }
+});
+
+onBeforeUnmount(() => clearTimeout(pushTimer));
 
 const greeting = computed(() => {
     const h = new Date().getHours();
@@ -312,5 +348,10 @@ const nextServiceRolesText = computed(() => {
                 </div>
             </div>
         </div>
+        <NotificationsSheet
+            :open="pushSheetOpen"
+            @close="dismissPushPrompt"
+            @enabled="pushSheetOpen = false"
+        />
     </AppLayout>
 </template>

@@ -10,6 +10,7 @@ class EnsureBandAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
+        /** @var \App\Models\User|null $user */
         $user = $request->user();
 
         if ($user) {

@@ -13,12 +13,45 @@ const props = defineProps({
     service: Object,
     song_versions: Array,
     can_write: Boolean,
+    notifiable_devices: { type: Number, default: 0 },
     can_manage_assignments: Boolean,
     team_members: Array,
     role_types: Array,
 });
 
 const accent = computed(() => serviceColor(props.service.color));
+
+// --- Notify the team ---
+const notifying        = ref(false);
+const showNotifyConfirm = ref(false);
+const notifiedAt       = ref(props.service.team_notified_at ?? null);
+
+const notifiedLabel = computed(() => {
+    if (!notifiedAt.value) return '';
+
+    const minutes = Math.round((Date.now() - new Date(notifiedAt.value).getTime()) / 60000);
+
+    if (minutes < 1)  return t('push.notify_team_again', { when: t('dashboard.today').toLowerCase() });
+    if (minutes < 60) return t('push.notify_team_again', { when: `${minutes} min` });
+
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return t('push.notify_team_again', { when: `${hours} h` });
+
+    return t('push.notify_team_again', { when: `${Math.round(hours / 24)} d` });
+});
+
+function notifyTeam() {
+    notifying.value = true;
+    router.post(`/services/${props.service.id}/notify`, {}, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => { notifiedAt.value = new Date().toISOString(); },
+        onFinish: () => {
+            notifying.value = false;
+            showNotifyConfirm.value = false;
+        },
+    });
+}
 
 const localAssignments = ref([...(props.service.assignments ?? [])]);
 const showTeamSheet = ref(false);
@@ -475,6 +508,7 @@ const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url
 
 const __page = usePage();
 const isCreator = computed(() => !!__page.props.auth?.is_creator);
+const bandName  = computed(() => __page.props.auth?.band?.name ?? '');
 
 // --- Actions kebab menu (duplicate / edit / delete) ---
 const actionsMenuOpen = ref(false);
@@ -610,6 +644,17 @@ function scheduleReorder() {
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-3a3 3 0 00-3-3H10a3 3 0 00-3 3v3m10 0H7m10-10a3 3 0 11-6 0 3 3 0 016 0zm-8 3a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                                 {{ t('assignments.section_title') }}
+                            </button>
+                            <button
+                                v-if="can_write"
+                                type="button"
+                                @click.stop="actionsMenuOpen = false; showNotifyConfirm = true"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                            >
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                {{ t('push.notify_team') }}
                             </button>
                             <button
                                 type="button"
@@ -922,12 +967,24 @@ function scheduleReorder() {
                 </div>
 
                 <div class="overflow-y-auto flex-1">
-                    <div class="flex items-center justify-between mb-2 px-1">
+                    <div class="flex items-center justify-between gap-2 mb-2 px-1">
                         <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                             {{ t('assignments.section_title') }}
+                            <span v-if="localAssignments.length" class="text-slate-500">· {{ localAssignments.length }}</span>
                         </p>
-                        <span v-if="localAssignments.length" class="text-xs text-slate-600">{{ localAssignments.length }}</span>
+                        <button
+                            v-if="can_write"
+                            type="button"
+                            @click="showNotifyConfirm = true"
+                            class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 text-2xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            {{ t('push.notify_team') }}
+                        </button>
                     </div>
+                    <p v-if="notifiedLabel" class="text-2xs font-medium text-slate-500 px-1 mb-2">{{ notifiedLabel }}</p>
 
                     <div v-if="!localAssignments.length && canManageAssignments" class="text-center py-6">
                         <p class="text-sm font-semibold text-slate-700">{{ t('assignments.section_empty_admin') }}</p>
@@ -1299,6 +1356,72 @@ function scheduleReorder() {
         </Teleport>
 
         <!-- Song detail (read-only) -->
+        <!-- Notify the team: outward-facing and not undoable, so it confirms -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="showNotifyConfirm" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" @click="showNotifyConfirm = false" />
+            </Transition>
+
+            <Transition
+                enter-active-class="transition duration-250 ease-out"
+                enter-from-class="opacity-0 translate-y-6"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 translate-y-6"
+            >
+                <div
+                    v-if="showNotifyConfirm"
+                    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none"
+                >
+                    <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl pointer-events-auto px-5 pt-5 pb-6">
+                        <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </div>
+
+                        <h3 class="text-base font-bold text-slate-900">{{ t('push.notify_team_confirm_title') }}</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mt-1">
+                            {{ t('push.notify_team_confirm_body', { band: bandName }) }}
+                        </p>
+                        <p
+                            class="text-xs font-medium mt-2"
+                            :class="notifiable_devices ? 'text-slate-600' : 'text-amber-700'"
+                        >
+                            {{ notifiable_devices
+                                ? t('push.notify_team_reach', notifiable_devices, { count: notifiable_devices })
+                                : t('push.notify_team_nobody') }}
+                        </p>
+                        <p v-if="notifiedLabel" class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
+                            {{ notifiedLabel }}
+                        </p>
+
+                        <div class="flex gap-2.5 mt-5">
+                            <button
+                                type="button"
+                                @click="showNotifyConfirm = false"
+                                class="flex-1 py-2.5 text-sm font-semibold text-slate-600 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors"
+                            >{{ t('push.notify_team_cancel') }}</button>
+                            <button
+                                type="button"
+                                @click="notifyTeam"
+                                :disabled="notifying"
+                                class="flex-1 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 active:scale-[0.98] disabled:opacity-60 transition"
+                            >{{ notifying ? t('push.notify_team_sending') : t('push.notify_team_send') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <SongDetailSheet
             :song="detailSong"
             :editable-service-note="can_write"

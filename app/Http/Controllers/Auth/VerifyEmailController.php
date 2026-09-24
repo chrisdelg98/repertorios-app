@@ -14,7 +14,10 @@ class VerifyEmailController extends Controller
 {
     public function notice(Request $request): Response|RedirectResponse
     {
-        if ($request->user()?->hasVerifiedEmail()) {
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
+
+        if ($user?->hasVerifiedEmail()) {
             return redirect()->route('dashboard');
         }
 
@@ -25,12 +28,15 @@ class VerifyEmailController extends Controller
 
     public function verify(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
             return redirect()->route('dashboard');
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
         }
 
         return redirect()->route('dashboard')->with('status', 'email-verified');
@@ -38,11 +44,14 @@ class VerifyEmailController extends Controller
 
     public function resend(Request $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
             return redirect()->route('dashboard');
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        $user->sendEmailVerificationNotification();
 
         return back()->with('status', 'verification-link-sent');
     }

@@ -61,6 +61,9 @@ export default defineConfig({
                 ],
             },
             workbox: {
+                // Push handling lives in public/push-sw.js so the generated
+                // worker keeps its precaching and auto-update untouched.
+                importScripts: ['/push-sw.js'],
                 clientsClaim: true,
                 skipWaiting: true,
                 cleanupOutdatedCaches: true,

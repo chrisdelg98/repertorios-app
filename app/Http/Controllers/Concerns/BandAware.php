@@ -3,10 +3,26 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Band;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 trait BandAware
 {
+    /**
+     * The logged-in user, typed.
+     *
+     * Auth::user() is declared as returning Authenticatable, so calling model
+     * methods on it leaves static analysis blind. Everything in this trait
+     * resolves the user through here instead.
+     */
+    protected function currentUser(): ?User
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        return $user;
+    }
+
     /**
      * The band every scoped query in the app runs against.
      *
@@ -16,7 +32,7 @@ trait BandAware
      */
     protected function bandId(): ?int
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         if ($user) {
             return $user->active_band_id ? (int) $user->active_band_id : null;
@@ -31,7 +47,9 @@ trait BandAware
      */
     protected function canWrite(): bool
     {
-        return (Auth::check() && Auth::user()->isAdminOf($this->bandId()))
+        $user = $this->currentUser();
+
+        return ($user && $user->isAdminOf($this->bandId()))
             || session('access_level') === 'editor';
     }
 
@@ -41,7 +59,7 @@ trait BandAware
      */
     protected function isCreator(): bool
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
         if (!$user) return false;
 
         $band = Band::find($this->bandId(), ['id', 'creator_id']);
@@ -58,7 +76,9 @@ trait BandAware
 
     protected function requireAdmin(): void
     {
-        if (!Auth::check() || !Auth::user()->isAdminOf($this->bandId())) {
+        $user = $this->currentUser();
+
+        if (!$user || !$user->isAdminOf($this->bandId())) {
             abort(403, 'Admins only.');
         }
     }
@@ -70,8 +90,29 @@ trait BandAware
         }
     }
 
+    /**
+     * Follow a link into a band the user belongs to but has not selected.
+     *
+     * Notifications and shared links point at one specific band; refusing them
+     * because a different one happens to be active is a dead end for someone
+     * who is legitimately a member. Non-members are left alone, so the caller's
+     * own check still rejects them.
+     */
+    protected function switchBandIfMember(?int $bandId): void
+    {
+        $user = $this->currentUser();
+
+        if (!$user || !$bandId || (int) $bandId === $this->bandId()) {
+            return;
+        }
+
+        if ($user->belongsToBand($bandId)) {
+            $user->forceFill(['active_band_id' => $bandId])->save();
+        }
+    }
+
     /** Guard for anything that takes a user id coming from the client. */
-    protected function requireSameBand(\App\Models\User $user): void
+    protected function requireSameBand(User $user): void
     {
         if (!$user->belongsToBand($this->bandId())) {
             abort(403, 'That user is not in this band.');

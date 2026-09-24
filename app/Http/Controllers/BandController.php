@@ -19,6 +19,7 @@ class BandController extends Controller
     /** Switch the active band. Every scoped query follows from this one column. */
     public function switch(Request $request, Band $band): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = $request->user();
 
         if (!$user->switchToBand($band)) {
@@ -33,8 +34,11 @@ class BandController extends Controller
 
     public function create(Request $request): Response
     {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
         return Inertia::render('Bands/Create', [
-            'has_bands' => $request->user()->bands()->exists(),
+            'has_bands' => $user->bands()->exists(),
         ]);
     }
 
@@ -44,6 +48,7 @@ class BandController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = $request->user();
 
         $data = $request->validate([
