@@ -19,30 +19,46 @@ const canWrite = computed(() => !!auth.value?.can_write);
 const isSessionMember = computed(() => auth.value?.access === 'member' && !auth.value?.user);
 
 // --- Notifications prompt ---
-// Asked once, quietly, and only when there is still something to ask: if the
-// browser was already answered either way, nothing shows. Saying "not now"
-// puts it away for good on this device.
-const DISMISS_KEY = 'push_prompt_dismissed';
+// Two ways out, and they mean different things. Closing it (backdrop) is not
+// an answer, so it comes back next time the dashboard loads. Pressing
+// "Not now" IS an answer, and buys silence until tomorrow — long enough not
+// to nag, short enough that someone who changes their mind is not stranded.
+const SNOOZE_KEY = 'push_prompt_snoozed_until';
 const pushSheetOpen = ref(false);
 let pushTimer = null;
 
-function shouldAskAboutPush() {
-    if (!auth.value?.user) return false;                 // guests have no account to notify
-    if (auth.value?.show_welcome) return false;          // never two modals at once
-    if (typeof window === 'undefined') return false;
-    if (!('Notification' in window)) return false;
-    if (Notification.permission !== 'default') return false;
+function today() {
+    return new Date().toISOString().slice(0, 10); // YYYY-MM-DD, local enough
+}
 
+function snoozedToday() {
     try {
-        return !localStorage.getItem(DISMISS_KEY);
+        return localStorage.getItem(SNOOZE_KEY) === today();
     } catch {
-        return false;
+        return false; // private mode: better to ask than to stay silent forever
     }
 }
 
-function dismissPushPrompt() {
+function shouldAskAboutPush() {
+    if (!auth.value?.user) return false;            // guests have no account to notify
+    if (auth.value?.show_welcome) return false;     // never two modals at once
+    if (typeof window === 'undefined') return false;
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'granted') return false;  // already sorted
+    if (Notification.permission === 'denied') return false;   // asking cannot help
+
+    return !snoozedToday();
+}
+
+/** Backdrop: no answer given, so it will ask again next time. */
+function closePushPrompt() {
     pushSheetOpen.value = false;
-    try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* private mode */ }
+}
+
+/** "Not now": an answer. Quiet until tomorrow. */
+function snoozePushPrompt() {
+    pushSheetOpen.value = false;
+    try { localStorage.setItem(SNOOZE_KEY, today()); } catch { /* private mode */ }
 }
 
 onMounted(() => {
@@ -350,7 +366,8 @@ const nextServiceRolesText = computed(() => {
         </div>
         <NotificationsSheet
             :open="pushSheetOpen"
-            @close="dismissPushPrompt"
+            @close="closePushPrompt"
+            @snooze="snoozePushPrompt"
             @enabled="pushSheetOpen = false"
         />
     </AppLayout>

@@ -23,6 +23,13 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             injectRegister: null,
+            // The app lives at / but the build output sits under /build/, and a
+            // worker may only control pages inside its own directory. Rather
+            // than asking the server for a wider scope through a header — which
+            // any cache or proxy in between can drop — the finished worker is
+            // copied to the document root, where '/' is simply where it lives.
+            scope: '/',
+            filename: 'app-sw.js',
             includeAssets: ['favicon.ico', 'icons/*.png'],
             manifest: {
                 name: 'Repertorios App',
@@ -64,6 +71,25 @@ export default defineConfig({
                 // Push handling lives in public/push-sw.js so the generated
                 // worker keeps its precaching and auto-update untouched.
                 importScripts: ['/push-sw.js'],
+                // The worker is served from the root, so nothing inside it can
+                // be relative to /build/ any more: the runtime goes inline
+                // instead of a sibling chunk, and precache URLs get the prefix
+                // they would otherwise have inherited from their location.
+                inlineWorkboxRuntime: true,
+                // Every precached URL must be absolute, because the worker no
+                // longer sits next to the files it caches. This runs last, so
+                // it also catches manifest.webmanifest, which the plugin adds
+                // after modifyURLPrefix has already been applied.
+                manifestTransforms: [
+                    (entries) => ({
+                        manifest: entries.map((entry) => (
+                            entry.url.startsWith('/')
+                                ? entry
+                                : { ...entry, url: `/build/${entry.url}` }
+                        )),
+                        warnings: [],
+                    }),
+                ],
                 clientsClaim: true,
                 skipWaiting: true,
                 cleanupOutdatedCaches: true,

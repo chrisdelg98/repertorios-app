@@ -8,7 +8,7 @@ import NotificationsSheet from '@/Components/NotificationsSheet.vue';
 import { usePush } from '@/Composables/usePush';
 import { useInstall } from '@/Composables/useInstall';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const page = usePage();
 const { isInstalled, isIosSafari, promptInstall } = useInstall();
 
@@ -24,12 +24,38 @@ const { subscribed, busy: pushBusy, isGranted, refresh: refreshPush, unsubscribe
     page.props.push?.public_key ?? null
 );
 
-onMounted(() => { refreshPush(); });
+// Also re-registers this browser if the server lost track of it.
+onMounted(() => { refreshPush(locale.value).then(() => router.reload({ only: ['push_devices'] })); });
 
 const pushOn = computed(() => subscribed.value && isGranted.value);
 
 async function disablePush() {
     if (await unsubscribe()) router.reload({ only: ['push_devices'] });
+}
+
+// --- Test notification ---
+const testState = ref('');   // '' | 'sending' | 'sent' | 'none' | 'failed'
+
+async function sendTestNotification() {
+    testState.value = 'sending';
+
+    try {
+        const response = await fetch('/push/test', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+
+        const result = await response.json();
+        testState.value = result.sent > 0 ? 'sent' : (result.reason ?? 'none');
+    } catch {
+        testState.value = 'failed';
+    }
+
+    setTimeout(() => { testState.value = ''; }, 6000);
 }
 
 async function removeDevice(device) {
@@ -60,8 +86,7 @@ async function onInstallClick() {
         return;
     }
 
-    const accepted = await promptInstall();
-    if (!accepted) installSheetOpen.value = true;
+    await promptInstall();
 }
 
 const donateUrl = computed(() => page.props.donate?.url || null);
@@ -176,7 +201,7 @@ const sections = computed(() => {
 
                         <div class="flex-1 min-w-0 text-left">
                             <p class="font-medium text-slate-900 text-sm">{{ t('push.settings_title') }}</p>
-                            <p class="text-xs font-medium mt-0.5 truncate" :class="pushOn ? 'text-emerald-600' : 'text-slate-600'">
+                            <p class="text-xs font-medium mt-0.5" :class="pushOn ? 'text-emerald-600' : 'text-slate-600'">
                                 {{ pushOn ? t('push.settings_on') : t('push.settings_off') }}
                             </p>
                         </div>
@@ -184,8 +209,32 @@ const sections = computed(() => {
                         <span
                             class="shrink-0 text-2xs font-semibold px-2.5 py-1 rounded-full"
                             :class="pushOn ? 'bg-slate-100 text-slate-600' : 'bg-indigo-600 text-white'"
-                        >{{ pushOn ? t('push.settings_disable') : t('push.enable') }}</span>
+                        >{{ pushOn ? t('push.settings_turn_off') : t('push.settings_turn_on') }}</span>
                     </button>
+
+                    <!-- Check that this device really receives, which a real
+                         notification cannot do: those skip whoever caused them -->
+                    <div v-if="pushOn" class="border-t border-slate-100 px-4 py-3 flex items-center justify-between gap-3">
+                        <p class="text-xs font-medium min-w-0 flex-1" :class="{
+                            'text-emerald-600': testState === 'sent',
+                            'text-amber-700': testState && !['sent', 'sending'].includes(testState),
+                            'text-slate-600': !testState || testState === 'sending',
+                        }">
+                            {{ testState === 'sent'           ? t('push.test_sent')
+                             : testState === 'not_configured' ? t('push.test_not_configured')
+                             : testState === 'no_devices'     ? t('push.test_no_devices')
+                             : testState === 'rejected'       ? t('push.test_rejected')
+                             : testState === 'failed'         ? t('push.test_failed')
+                             : testState === 'none'           ? t('push.test_none')
+                             : t('push.test_hint') }}
+                        </p>
+                        <button
+                            type="button"
+                            @click="sendTestNotification"
+                            :disabled="testState === 'sending'"
+                            class="shrink-0 px-3 py-1.5 text-2xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-60 rounded-lg transition-colors"
+                        >{{ testState === 'sending' ? t('push.test_sending') : t('push.test_button') }}</button>
+                    </div>
 
                     <!-- Other devices of this same person -->
                     <div v-if="devices.length" class="border-t border-slate-100 px-4 py-3">
@@ -274,6 +323,11 @@ const sections = computed(() => {
         </div>
 
         <InstallSheet :open="installSheetOpen" @close="installSheetOpen = false" />
-        <NotificationsSheet :open="pushSheetOpen" @close="pushSheetOpen = false" @enabled="onPushEnabled" />
+        <NotificationsSheet
+            :open="pushSheetOpen"
+            @close="pushSheetOpen = false"
+            @snooze="pushSheetOpen = false"
+            @enabled="onPushEnabled"
+        />
     </AppLayout>
 </template>

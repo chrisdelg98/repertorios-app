@@ -1,3 +1,13 @@
+# Service workers must not be served from cache: a stale one keeps handing out
+# old assets and delays every update by however long the cache lives.
+# (Scope is not an issue here — the worker is served from this directory, so
+# it already controls the whole site.)
+<IfModule mod_headers.c>
+    <FilesMatch "sw\.js$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

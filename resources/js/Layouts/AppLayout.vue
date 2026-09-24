@@ -28,14 +28,16 @@ const showInstall      = computed(() => !isInstalled.value && canRequestInstall.
 const installSheetOpen = ref(false);
 
 async function onInstallClick() {
+    // iOS has no prompt to fire; the steps are the whole flow there.
     if (isIosSafari.value) {
         installSheetOpen.value = true;
         return;
     }
 
-    const accepted = await promptInstall();
-    // No native prompt available (or dismissed without installing) → explain it.
-    if (!accepted) installSheetOpen.value = true;
+    // Elsewhere the button only shows when a real prompt exists, so fire it and
+    // leave it at that: a person who cancels the browser's own dialog does not
+    // need a second screen telling them how to do it by hand.
+    await promptInstall();
 }
 
 const menuOpen = ref(false);

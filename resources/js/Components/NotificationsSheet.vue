@@ -11,14 +11,19 @@ const props = defineProps({
     open: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close', 'enabled']);
+/**
+ * `close` means "get out of the way" — the backdrop, the Escape-style dismiss.
+ * `snooze` is an actual answer: the person pressed "Not now". The caller can
+ * treat the two differently, and does: only the second one buys silence.
+ */
+const emit = defineEmits(['close', 'snooze', 'enabled']);
 
 const { t, locale } = useI18n();
 const page = usePage();
 
 const publicKey = computed(() => page.props.push?.public_key ?? null);
 
-const { isSupported, isDenied, busy, subscribe } = usePush(publicKey.value);
+const { isSupported, isDenied, busy, lastError, subscribe } = usePush(publicKey.value);
 const { isInstalled, isIos } = useInstall();
 
 const installSheetOpen = ref(false);
@@ -62,6 +67,18 @@ async function enable() {
         emit('close');
     }
 }
+
+/** Why the attempt failed, when it did and the panels above do not cover it. */
+const failure = computed(() => {
+    if (!lastError.value) return '';
+    if (isDenied.value) return '';            // the blocked panel already explains it
+
+    const known = ['no_service_worker', 'push_service_unreachable', 'server_unreachable'];
+
+    return known.includes(lastError.value)
+        ? t('push.error_' + lastError.value)
+        : t('push.error_failed');
+});
 </script>
 
 <template>
@@ -157,6 +174,10 @@ async function enable() {
                         <p v-else class="text-xs text-slate-600 leading-relaxed mt-4">
                             {{ t('push.permission_hint') }}
                         </p>
+
+                        <p v-if="failure" class="mt-3 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-xl px-3.5 py-3 leading-relaxed">
+                            {{ failure }}
+                        </p>
                     </div>
 
                     <!-- Footer -->
@@ -175,7 +196,7 @@ async function enable() {
 
                         <button
                             type="button"
-                            @click="emit('close')"
+                            @click="emit('snooze')"
                             class="w-full py-2.5 text-sm font-semibold text-slate-600 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors"
                         >
                             {{ state === 'ready' ? t('push.later') : t('install.got_it') }}

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PushSubscription;
+use App\Services\PushNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -43,6 +44,50 @@ class PushSubscriptionController extends Controller
         );
 
         return response()->json(['id' => $subscription->id], 201);
+    }
+
+    /**
+     * Send a notification to the user's own devices.
+     *
+     * Real notifications deliberately skip whoever caused them, so with a
+     * single account there is otherwise no way to check that a phone is set up
+     * correctly. It also answers the first question when someone reports that
+     * nothing reaches them: is it their device, or is it the sending?
+     */
+    public function test(Request $request, PushNotifier $notifier): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $devices = $user->pushSubscriptions()->count();
+        $band = $user->activeBand;
+
+        // Each failure needs a different fix, so say which one it is rather
+        // than reporting a bare zero and leaving the person to guess.
+        $reason = match (true) {
+            !$notifier->isConfigured() => 'not_configured',  // VAPID keys missing on the server
+            $devices === 0             => 'no_devices',      // this browser never registered
+            !$band                     => 'no_band',
+            default                    => null,
+        };
+
+        if ($reason) {
+            return response()->json(['sent' => 0, 'devices' => $devices, 'reason' => $reason]);
+        }
+
+        $sent = $notifier->toUser($user, $band, [
+            'body_key' => 'push.test',
+            'url'      => '/settings',
+            'tag'      => 'push-test',
+        ]);
+
+        return response()->json([
+            'sent'    => $sent,
+            'devices' => $devices,
+            // Zero here means the push services rejected every device; the
+            // reason per endpoint is in the log.
+            'reason'  => $sent > 0 ? 'ok' : 'rejected',
+        ]);
     }
 
     /** Unsubscribe this browser. */

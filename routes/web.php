@@ -90,6 +90,9 @@ Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('auth.log
 // only — a guest has no account to attach a device to.
 Route::middleware('auth')->group(function () {
     Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::post('/push/test', [PushSubscriptionController::class, 'test'])
+        ->middleware('throttle:6,1')
+        ->name('push.test');
     Route::delete('/push/subscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
     Route::delete('/push/devices/{pushSubscription}', [PushSubscriptionController::class, 'destroyDevice'])->name('push.devices.destroy');
 });

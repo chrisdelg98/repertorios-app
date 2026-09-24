@@ -31,7 +31,7 @@ const notifiedLabel = computed(() => {
 
     const minutes = Math.round((Date.now() - new Date(notifiedAt.value).getTime()) / 60000);
 
-    if (minutes < 1)  return t('push.notify_team_again', { when: t('dashboard.today').toLowerCase() });
+    if (minutes < 1)  return t('push.notify_team_again', { when: t('push.just_now') });
     if (minutes < 60) return t('push.notify_team_again', { when: `${minutes} min` });
 
     const hours = Math.round(minutes / 60);

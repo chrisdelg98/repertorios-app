@@ -5,4 +5,5 @@ return [
     'assigned_norole' => 'Te asignaron al equipo de :service',
     'team_notified'   => 'El repertorio de :service ya está listo',
     'team_songs'      => ':count canción|:count canciones',
+    'test'            => 'Todo listo: las notificaciones funcionan en este dispositivo.',
 ];

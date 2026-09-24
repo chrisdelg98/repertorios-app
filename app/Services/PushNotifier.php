@@ -119,47 +119,62 @@ class PushNotifier
             return 0;
         }
 
-        $webPush = new WebPush([
-            'VAPID' => [
-                'subject'    => config('services.webpush.subject'),
-                'publicKey'  => config('services.webpush.public_key'),
-                'privateKey' => config('services.webpush.private_key'),
-            ],
-        ]);
-
-        foreach ($subscriptions as $subscription) {
-            $forDevice = $payload;
-            $forDevice['body'] = $this->bodyFor($payload, $subscription->locale ?: 'es');
-            unset($forDevice['body_key'], $forDevice['body_params']);
-
-            $webPush->queueNotification(
-                Subscription::create($subscription->toSubscriptionArray()),
-                json_encode($forDevice, JSON_UNESCAPED_UNICODE)
-            );
-        }
-
+        // A notification is never important enough to break the request that
+        // triggered it. Anything thrown along the way — a malformed VAPID pair,
+        // a subscription the library rejects, the push service refusing the
+        // connection — is logged and swallowed.
         $sent = 0;
         $expired = [];
 
-        foreach ($webPush->flush() as $report) {
-            $endpoint = $report->getEndpoint();
-
-            if ($report->isSuccess()) {
-                $sent++;
-                continue;
-            }
-
-            // 404/410 mean the browser threw the subscription away — so do we,
-            // otherwise dead endpoints pile up and slow every later send.
-            if ($report->isSubscriptionExpired()) {
-                $expired[] = $endpoint;
-                continue;
-            }
-
-            Log::warning('Push delivery failed', [
-                'endpoint' => $endpoint,
-                'reason'   => $report->getReason(),
+        try {
+            $webPush = new WebPush([
+                'VAPID' => [
+                    'subject'    => config('services.webpush.subject'),
+                    'publicKey'  => config('services.webpush.public_key'),
+                    'privateKey' => config('services.webpush.private_key'),
+                ],
             ]);
+
+            foreach ($subscriptions as $subscription) {
+                $forDevice = $payload;
+                $forDevice['body'] = $this->bodyFor($payload, $subscription->locale ?: 'es');
+                unset($forDevice['body_key'], $forDevice['body_params']);
+
+                $webPush->queueNotification(
+                    Subscription::create($subscription->toSubscriptionArray()),
+                    json_encode($forDevice, JSON_UNESCAPED_UNICODE)
+                );
+            }
+
+            foreach ($webPush->flush() as $report) {
+                $endpoint = $report->getEndpoint();
+
+                if ($report->isSuccess()) {
+                    $sent++;
+                    continue;
+                }
+
+                // 404/410 mean the browser threw the subscription away — so do
+                // we, otherwise dead endpoints pile up and slow every send.
+                if ($report->isSubscriptionExpired()) {
+                    $expired[] = $endpoint;
+                    continue;
+                }
+
+                Log::warning('Push delivery rejected', [
+                    'endpoint' => $endpoint,
+                    'reason'   => $report->getReason(),
+                    'response' => $report->getResponseContent(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Push send failed', [
+                'class'   => $e::class,
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            return 0;
         }
 
         if ($expired) {
@@ -172,6 +187,12 @@ class PushNotifier
         }
 
         return $sent;
+    }
+
+    /** Whether the VAPID pair is present. Without it nothing can be sent. */
+    public function isConfigured(): bool
+    {
+        return $this->configured();
     }
 
     private function configured(): bool

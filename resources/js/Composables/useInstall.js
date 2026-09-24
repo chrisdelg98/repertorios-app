@@ -68,8 +68,17 @@ export function useInstall() {
         return 'unsupported';
     });
 
+    /**
+     * Whether offering to install leads anywhere.
+     *
+     * Everywhere except iOS this means the browser actually handed us a prompt.
+     * Offering manual steps when it did not is worse than offering nothing: the
+     * usual reason there is no prompt is that the app is ALREADY installed, and
+     * then the steps are busywork for something already done. iOS never fires a
+     * prompt at all, so there the steps are the only path.
+     */
     const canRequestInstall = computed(() =>
-        isInstallable.value || platform.value !== 'unsupported'
+        isInstallable.value || (isIos.value && !isInstalled.value)
     );
 
     /**
