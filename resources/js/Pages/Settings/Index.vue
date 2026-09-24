@@ -20,9 +20,14 @@ const props = defineProps({
 const pushSheetOpen = ref(false);
 const devices = ref([...props.push_devices]);
 
-const { subscribed, busy: pushBusy, isGranted, refresh: refreshPush, unsubscribe } = usePush(
+const { subscribed, busy: pushBusy, isGranted, endpoint, refresh: refreshPush, unsubscribe } = usePush(
     page.props.push?.public_key ?? null
 );
+
+/** The row that belongs to the browser being used right now. */
+function isThisDevice(device) {
+    return !!endpoint.value && endpoint.value.endsWith(device.tail);
+}
 
 // Also re-registers this browser if the server lost track of it.
 onMounted(() => { refreshPush(locale.value).then(() => router.reload({ only: ['push_devices'] })); });
@@ -30,7 +35,12 @@ onMounted(() => { refreshPush(locale.value).then(() => router.reload({ only: ['p
 const pushOn = computed(() => subscribed.value && isGranted.value);
 
 async function disablePush() {
-    if (await unsubscribe()) router.reload({ only: ['push_devices'] });
+    if (await unsubscribe()) {
+        router.reload({
+            only: ['push_devices'],
+            onSuccess: () => { devices.value = [...page.props.push_devices]; },
+        });
+    }
 }
 
 // --- Test notification ---
@@ -59,7 +69,16 @@ async function sendTestNotification() {
 }
 
 async function removeDevice(device) {
-    await fetch(`/push/devices/${device.id}`, {
+    // Removing the browser you are sitting at has to unsubscribe it too.
+    // Deleting only the row leaves the browser subscribed, and the next visit
+    // to this page registers it straight back — which is exactly why "Remove"
+    // used to look like it did nothing.
+    if (isThisDevice(device)) {
+        await disablePush();
+        return;
+    }
+
+    const response = await fetch(`/push/devices/${device.id}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
@@ -68,8 +87,12 @@ async function removeDevice(device) {
         credentials: 'same-origin',
     });
 
+    if (!response.ok) {
+        console.error('[push] could not remove device', response.status);
+        return;
+    }
+
     devices.value = devices.value.filter(d => d.id !== device.id);
-    refreshPush();
 }
 
 function onPushEnabled() {
@@ -247,7 +270,10 @@ const sections = computed(() => {
                                 :key="device.id"
                                 class="flex items-center gap-2 text-xs"
                             >
-                                <span class="flex-1 min-w-0 font-medium text-slate-700 truncate">{{ device.label }}</span>
+                                <span class="flex-1 min-w-0 font-medium text-slate-700 truncate">
+                                    {{ device.label }}
+                                    <span v-if="isThisDevice(device)" class="text-indigo-600">· {{ t('push.settings_this_device') }}</span>
+                                </span>
                                 <button
                                     type="button"
                                     @click="removeDevice(device)"

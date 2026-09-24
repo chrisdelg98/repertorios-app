@@ -256,6 +256,7 @@
         "error_server_unreachable": "The subscription could not be saved. Check your connection and try again.",
         "test_not_configured": "The server has no notification keys (VAPID) configured.",
         "test_no_devices": "This device is not registered. Turn them off and on again.",
-        "test_rejected": "The push service rejected the delivery. Check the server log."
+        "test_rejected": "The push service rejected the delivery. Check the server log.",
+        "settings_this_device": "this one"
     }
 }

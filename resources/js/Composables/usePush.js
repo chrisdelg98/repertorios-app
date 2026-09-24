@@ -19,6 +19,8 @@ const permission = ref(
 );
 
 const subscribed = ref(false);
+/** This browser's own endpoint, so the settings list can point at its row. */
+const endpoint   = ref(null);
 const busy       = ref(false);
 const lastError  = ref(null);
 
@@ -137,10 +139,12 @@ export function usePush(publicKey) {
 
             if (!existing) {
                 subscribed.value = false;
+                endpoint.value = null;
                 return false;
             }
 
             const raw = existing.toJSON();
+            endpoint.value = raw.endpoint;
 
             await withTimeout(post('/push/subscribe', {
                 endpoint: raw.endpoint,
@@ -206,6 +210,7 @@ export function usePush(publicKey) {
             );
 
             const raw = subscription.toJSON();
+            endpoint.value = raw.endpoint;
 
             await withTimeout(post('/push/subscribe', {
                 endpoint: raw.endpoint,
@@ -248,6 +253,7 @@ export function usePush(publicKey) {
             }
 
             subscribed.value = false;
+            endpoint.value = null;
 
             return true;
         } catch (error) {
@@ -261,6 +267,7 @@ export function usePush(publicKey) {
     return {
         permission,
         subscribed,
+        endpoint,
         busy,
         lastError,
         isSupported,

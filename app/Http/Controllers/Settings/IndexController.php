@@ -25,11 +25,14 @@ class IndexController extends Controller
 
         $devices = $user->pushSubscriptions()
             ->orderByDesc('last_used_at')
-            ->get(['id', 'user_agent', 'last_used_at'])
+            ->get(['id', 'endpoint', 'user_agent', 'last_used_at'])
             ->map(fn ($device) => [
                 'id'           => $device->id,
                 'label'        => $device->device_label,
                 'last_used_at' => $device->last_used_at?->toIso8601String(),
+                // Enough of the endpoint for the browser to recognise its own
+                // row, without shipping the whole address to the page.
+                'tail'         => substr($device->endpoint, -32),
             ]);
 
         return Inertia::render('Settings/Index', [

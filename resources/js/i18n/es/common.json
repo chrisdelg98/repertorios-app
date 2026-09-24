@@ -256,6 +256,7 @@
         "error_server_unreachable": "No se pudo guardar la suscripción. Revisa tu conexión e inténtalo de nuevo.",
         "test_not_configured": "El servidor no tiene configuradas las llaves de notificaciones (VAPID).",
         "test_no_devices": "Este dispositivo no quedó registrado. Desactiva y vuelve a activar.",
-        "test_rejected": "El servicio de notificaciones rechazó el envío. Revisa el log del servidor."
+        "test_rejected": "El servicio de notificaciones rechazó el envío. Revisa el log del servidor.",
+        "settings_this_device": "este"
     }
 }

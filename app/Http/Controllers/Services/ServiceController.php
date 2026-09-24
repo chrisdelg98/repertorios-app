@@ -144,7 +144,7 @@ class ServiceController extends Controller
             // So the admin knows whether pressing "notify" reaches anyone at
             // all, instead of sending into the void.
             'notifiable_devices' => $this->canWrite()
-                ? app(PushNotifier::class)->reachableDeviceCount($service->band, Auth::id())
+                ? app(PushNotifier::class)->reachableDeviceCount($service->band)
                 : 0,
             'can_manage_assignments' => (bool) $this->currentUser()?->isAdminOf($this->bandId()),
         ]);
@@ -197,8 +197,10 @@ class ServiceController extends Controller
         abort_unless($service->band_id === $this->bandId(), 403);
 
         $service->loadMissing('band');
-        $senderId = Auth::id();
 
+        // Nobody is excluded, not even whoever pressed the button: an admin who
+        // plays in the service is as much a recipient of the setlist as anyone
+        // else, and seeing the notification arrive is also how they know it went.
         defer(fn () => $notifier->toBand($service->band, [
             'body_key'    => 'push.team_notified',
             'body_params' => [
@@ -206,7 +208,7 @@ class ServiceController extends Controller
             ],
             'url' => '/services/' . $service->id,
             'tag' => 'service-' . $service->id,
-        ], $senderId));
+        ]));
 
         $service->forceFill(['team_notified_at' => now()])->save();
 
