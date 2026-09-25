@@ -127,6 +127,7 @@ class ServiceController extends Controller
                         'bpm'         => $ss->songVersion->bpm,
                         'notes'       => $ss->songVersion->notes,
                         'youtube_url' => $ss->songVersion->youtube_url,
+                        'audio'       => $ss->songVersion->audio,
                         'song' => [
                             'id'     => $ss->songVersion->song->id,
                             'name'   => $ss->songVersion->song->name,

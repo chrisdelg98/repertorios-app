@@ -121,10 +121,13 @@
         "play_all": "Reproducir todo",
         "public_cta": "Ver y escuchar el repertorio completo",
         "empty_title": "Sin video",
-        "no_videos": "Ninguna canción del repertorio tiene enlace de YouTube.",
+        "no_videos": "Ninguna canción del repertorio tiene audio ni enlace de YouTube.",
         "prev": "Anterior",
         "next": "Siguiente",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "play": "Reproducir",
+        "pause": "Pausar",
+        "seek": "Avanzar en la pista"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

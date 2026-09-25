@@ -121,10 +121,13 @@
         "play_all": "Play all",
         "public_cta": "Watch & play the full setlist",
         "empty_title": "No video",
-        "no_videos": "No songs in this setlist have a YouTube link.",
+        "no_videos": "No song in this setlist has a track or a YouTube link.",
         "prev": "Previous",
         "next": "Next",
-        "close": "Close"
+        "close": "Close",
+        "play": "Play",
+        "pause": "Pause",
+        "seek": "Seek"
     },
     "install": {
         "banner_title": "Add to Home Screen",

@@ -4,6 +4,7 @@ import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import MultiSelect from '@/Components/MultiSelect.vue';
+import AudioUploadField from '@/Components/AudioUploadField.vue';
 import Autocomplete from '@/Components/Autocomplete.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 
@@ -155,6 +156,7 @@ function openEdit(song) {
     editForm.name    = song.name;
     editForm.artist  = song.artist ?? '';
     editForm.versions = (song.versions ?? []).map(v => ({
+        audio: v.audio ?? null,
         id:          v.id,
         name:        v.name,
         key:         v.key ?? '',
@@ -783,6 +785,13 @@ function confirmDelete() {
                                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                                         />
                                     </div>
+
+                                    <AudioUploadField
+                                        :version-id="v.id"
+                                        :audio="v.audio"
+                                        @update:audio="v.audio = $event"
+                                    />
+
                                 </div>
                             </div>
                         </div>

@@ -21,6 +21,7 @@ use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ScheduleTemplateController;
+use App\Http\Controllers\Songs\SongAudioController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -139,6 +140,15 @@ Route::middleware('band.access')->group(function () {
     Route::post('/services/{service}/assignments', [ServiceAssignmentController::class, 'store'])->name('service-assignments.store');
     Route::patch('/assignments/{assignment}', [ServiceAssignmentController::class, 'update'])->name('service-assignments.update');
     Route::delete('/assignments/{assignment}', [ServiceAssignmentController::class, 'destroy'])->name('service-assignments.destroy');
+
+    // Rehearsal audio. The file itself never touches this server: the browser
+    // uploads it straight to R2 with a URL signed here.
+    Route::post('/song-versions/{songVersion}/audio/presign', [SongAudioController::class, 'presign'])
+        ->middleware('throttle:30,1')
+        ->name('song-audio.presign');
+    Route::put('/song-versions/{songVersion}/audio', [SongAudioController::class, 'attach'])->name('song-audio.attach');
+    Route::delete('/song-versions/{songVersion}/audio', [SongAudioController::class, 'destroy'])->name('song-audio.destroy');
+    Route::get('/song-versions/{songVersion}/audio/url', [SongAudioController::class, 'play'])->name('song-audio.url');
 
     // Songs library
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');

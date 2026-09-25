@@ -11,6 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Built from config rather than autowired: its constructor takes the
+        // credentials, not services.
+        $this->app->singleton(\App\Services\R2Signer::class, fn () => \App\Services\R2Signer::fromConfig());
+
         //
     }
 

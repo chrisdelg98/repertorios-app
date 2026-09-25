@@ -82,6 +82,7 @@ class ShareController extends Controller
                     'bpm' => $ss->songVersion->bpm,
                     'notes' => $ss->effective_notes,
                     'youtube_url' => $ss->songVersion->youtube_url,
+                    'audio'       => $ss->songVersion->audio,
                 ])->values(),
             ],
             'join' => $link->allow_join && $band ? [

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { parseYouTube, formatStart } from '@/Utils/youtube';
 
@@ -7,17 +7,35 @@ const { t } = useI18n();
 
 const props = defineProps({
     open:  { type: Boolean, default: false },
-    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, notes }
+    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, audio, notes }
 });
 
 const emit = defineEmits(['close']);
 
+/**
+ * A song is playable through one of two sources, and the uploaded track wins.
+ *
+ * It is what the band chose deliberately for rehearsing: no ads, no intro to
+ * skip, and the exact arrangement they play. YouTube stays as the fallback for
+ * everything that has no track yet.
+ */
 const playable = computed(() =>
     props.songs
         .map(s => {
+            if (s.audio?.url) {
+                return { ...s, _source: 'audio', _audioUrl: s.audio.url, _start: 0, _startLabel: '' };
+            }
+
             const parsed = parseYouTube(s.youtube_url);
+
             return parsed
-                ? { ...s, _videoId: parsed.id, _start: parsed.start, _startLabel: formatStart(parsed.start) }
+                ? {
+                    ...s,
+                    _source: 'youtube',
+                    _videoId: parsed.id,
+                    _start: parsed.start,
+                    _startLabel: formatStart(parsed.start),
+                }
                 : null;
         })
         .filter(Boolean)
@@ -54,8 +72,66 @@ function loadYouTubeApi() {
     document.head.appendChild(tag);
 }
 
+// --- Audio engine ---
+// A plain <audio> element, driven from here so the queue behaves the same
+// whichever source the current song uses.
+const audioEl     = ref(null);
+const audioPlaying = ref(false);
+const audioTime    = ref(0);
+const audioLength  = ref(0);
+
+const current = computed(() => playable.value[currentIdx.value] ?? null);
+const isAudio = computed(() => current.value?._source === 'audio');
+
+function formatClock(seconds) {
+    if (!seconds || !isFinite(seconds)) return '0:00';
+
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+
+    return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function toggleAudio() {
+    const el = audioEl.value;
+    if (!el) return;
+
+    el.paused ? el.play().catch(() => {}) : el.pause();
+}
+
+function seekAudio(event) {
+    const el = audioEl.value;
+    if (el && isFinite(el.duration)) el.currentTime = Number(event.target.value);
+}
+
+function onAudioEnded() {
+    audioPlaying.value = false;
+    playNext();
+}
+
+/** Starts the audio for the song that just became current. */
+async function startAudio() {
+    await nextTick();
+
+    const el = audioEl.value;
+    if (!el) return;
+
+    audioTime.value = 0;
+    audioLength.value = 0;
+
+    try {
+        await el.play();
+    } catch {
+        // Autoplay can be refused; the person presses play and it works.
+        audioPlaying.value = false;
+    }
+}
+
 function buildPlayer() {
+    // The YouTube player is only built for a YouTube song; an audio one has no
+    // iframe to attach to.
     if (!apiReady.value || !playerEl.value || !playable.value.length) return;
+    if (playable.value[currentIdx.value]?._source !== 'youtube') return;
     if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
 
     const first = playable.value[currentIdx.value];
@@ -77,8 +153,25 @@ function buildPlayer() {
 
 function loadAt(idx) {
     const song = playable.value[idx];
-    if (!ytPlayer || !song) return;
+    if (!song) return;
+
     currentIdx.value = idx;
+
+    if (song._source === 'audio') {
+        // Stop the video before the track starts, or both play at once.
+        if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
+        startAudio();
+        return;
+    }
+
+    if (audioEl.value) audioEl.value.pause();
+
+    if (!ytPlayer) {
+        // Coming from an audio song, the iframe may not exist yet.
+        buildPlayer();
+        return;
+    }
+
     ytPlayer.loadVideoById({
         videoId: song._videoId,
         startSeconds: song._start || 0,
@@ -101,11 +194,23 @@ function close() {
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         currentIdx.value = 0;
+
+        // The API is loaded even when the first song is a track: the queue can
+        // reach a YouTube song later, and loading it then would stall playback.
         loadYouTubeApi();
-    } else if (ytPlayer) {
+
+        if (playable.value[0]?._source === 'audio') startAudio();
+
+        return;
+    }
+
+    if (ytPlayer) {
         try { ytPlayer.destroy(); } catch {}
         ytPlayer = null;
     }
+
+    if (audioEl.value) audioEl.value.pause();
+    audioPlaying.value = false;
 }, { immediate: true });
 
 // Build player when API ready + DOM mounted (open state)
@@ -120,7 +225,6 @@ onBeforeUnmount(() => {
     if (ytPlayer) { try { ytPlayer.destroy(); } catch {} }
 });
 
-const current = computed(() => playable.value[currentIdx.value]);
 </script>
 
 <template>
@@ -167,10 +271,67 @@ const current = computed(() => playable.value[currentIdx.value]);
 
                 <!-- Player + queue -->
                 <div v-else class="flex-1 flex flex-col lg:flex-row min-h-0">
-                    <!-- Player -->
-                    <div class="lg:flex-1 bg-black flex items-center justify-center">
-                        <div class="w-full aspect-video max-h-full">
+                    <!-- Player. The iframe stays mounted even while a track is
+                         playing: destroying and rebuilding it on every switch
+                         costs a reload of the YouTube API each time. -->
+                    <div class="lg:flex-1 bg-black flex items-center justify-center relative">
+                        <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : ''">
                             <div ref="playerEl" class="w-full h-full" />
+                        </div>
+
+                        <!-- Track player: no video to show, so the song itself is the screen -->
+                        <div v-if="isAudio" class="w-full px-6 py-10 sm:py-16 flex flex-col items-center text-center">
+                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-5">
+                                <svg class="w-11 h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                                </svg>
+                            </div>
+
+                            <p class="text-lg font-bold text-white leading-tight">{{ current?.name }}</p>
+                            <p v-if="current?.artist" class="text-sm font-medium text-slate-300 mt-1">{{ current.artist }}</p>
+
+                            <audio
+                                ref="audioEl"
+                                :src="current?._audioUrl"
+                                preload="auto"
+                                class="hidden"
+                                @play="audioPlaying = true"
+                                @pause="audioPlaying = false"
+                                @timeupdate="audioTime = audioEl?.currentTime ?? 0"
+                                @loadedmetadata="audioLength = audioEl?.duration ?? 0"
+                                @ended="onAudioEnded"
+                            />
+
+                            <div class="w-full max-w-md mt-7">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    :max="audioLength || 0"
+                                    :value="audioTime"
+                                    step="0.5"
+                                    @input="seekAudio"
+                                    class="w-full accent-indigo-500 cursor-pointer"
+                                    :aria-label="t('playlist.seek')"
+                                />
+                                <div class="flex justify-between text-2xs font-medium text-slate-400 tabular-nums mt-1">
+                                    <span>{{ formatClock(audioTime) }}</span>
+                                    <span>{{ formatClock(audioLength) }}</span>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                @click="toggleAudio"
+                                class="mt-5 w-16 h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
+                                :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
+                            >
+                                <svg v-if="audioPlaying" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+                                </svg>
+                                <svg v-else class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 

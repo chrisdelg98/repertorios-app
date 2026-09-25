@@ -466,6 +466,7 @@ function openDetail(ss) {
         song_notes:    ss.song_version.notes ?? '',
         service_notes: ss.notes ?? '',
         youtube_url: ss.song_version.youtube_url,
+        audio:       ss.song_version.audio ?? null,
     };
 }
 
@@ -503,8 +504,13 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     key:         ss.song_version.key,
     notes:       ss.notes || ss.song_version.notes || '',
     youtube_url: ss.song_version.youtube_url,
+    audio:       ss.song_version.audio ?? null,
 })));
-const hasAnyVideo = computed(() => playlistSongs.value.some(s => !!s.youtube_url));
+
+// "Play all" is offered when anything can be played, from either source.
+const hasAnyVideo = computed(() =>
+    playlistSongs.value.some(s => !!s.audio?.url || !!s.youtube_url)
+);
 
 const __page = usePage();
 const isCreator = computed(() => !!__page.props.auth?.is_creator);

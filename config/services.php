@@ -45,6 +45,18 @@ return [
      * and never leaves the server. Changing either invalidates every existing
      * subscription.
      */
+    /*
+     * Cloudflare R2, reached with its S3-compatible API and signed by hand —
+     * see App\Services\R2Signer for why the AWS SDK is not here.
+     * The bucket is private; everything is served through signed URLs.
+     */
+    'r2' => [
+        'key'      => env('R2_ACCESS_KEY_ID'),
+        'secret'   => env('R2_SECRET_ACCESS_KEY'),
+        'bucket'   => env('R2_BUCKET'),
+        'endpoint' => env('R2_ENDPOINT'),
+    ],
+
     'webpush' => [
         'public_key'  => env('VAPID_PUBLIC_KEY'),
         'private_key' => env('VAPID_PRIVATE_KEY'),

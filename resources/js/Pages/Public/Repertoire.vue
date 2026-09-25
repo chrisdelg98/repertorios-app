@@ -31,7 +31,9 @@ function openDetail(song) {
 }
 
 const playlistOpen = ref(false);
-const hasAnyVideo  = computed(() => (props.service?.songs ?? []).some(s => !!s.youtube_url));
+const hasAnyVideo  = computed(() =>
+    (props.service?.songs ?? []).some(s => !!s.audio?.url || !!s.youtube_url)
+);
 const hasAssignments = computed(() => (props.service?.assignments ?? []).length > 0);
 
 function assignmentRoleLabel(assignment) {
