@@ -201,21 +201,6 @@ const current = computed(() => playable.value[currentIdx.value]);
                             <p class="text-xs text-slate-300 ml-auto">{{ currentIdx + 1 }} / {{ playable.length }}</p>
                         </div>
 
-                        <!-- What the team needs to know about the song playing -->
-                        <div
-                            v-if="current && (current.notes || current._start)"
-                            class="mx-3 mb-2 rounded-xl bg-white/10 px-3 py-2.5 shrink-0"
-                        >
-                            <p v-if="current._start" class="text-2xs font-semibold text-indigo-300 uppercase tracking-wide">
-                                {{ t('services.starts_at', { time: current._startLabel }) }}
-                            </p>
-                            <p
-                                v-if="current.notes"
-                                class="text-xs text-white/90 whitespace-pre-wrap"
-                                :class="current._start ? 'mt-1' : ''"
-                            >{{ current.notes }}</p>
-                        </div>
-
                         <!-- Queue list -->
                         <div class="overflow-y-auto flex-1 px-2 py-2 space-y-1">
                             <button
@@ -224,14 +209,14 @@ const current = computed(() => playable.value[currentIdx.value]);
                                 type="button"
                                 @click="loadAt(i)"
                                 :class="[
-                                    'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                                    'w-full flex items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                                     i === currentIdx
                                         ? 'bg-indigo-600/80 text-white'
                                         : 'text-slate-200 hover:bg-white/10',
                                 ]"
                             >
                                 <!-- Number / play indicator -->
-                                <span class="shrink-0 w-6 flex items-center justify-center">
+                                <span class="shrink-0 w-6 flex items-center justify-center pt-0.5">
                                     <svg v-if="i === currentIdx" class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 5v14l11-7z" />
                                     </svg>
@@ -244,6 +229,28 @@ const current = computed(() => playable.value[currentIdx.value]);
                                         <span v-if="s.artist">{{ s.artist }} · </span>{{ s.version
                                         }}<span v-if="s.key"> · {{ s.key }}</span>
                                     </p>
+
+                                    <!-- Whatever the team needs to know about this song, on
+                                         every row rather than only the one playing: the point
+                                         of the queue is to see how the set goes before it
+                                         starts. Set apart with a rule so it reads as an
+                                         annotation and not as more metadata. -->
+                                    <div
+                                        v-if="s.notes || s._startLabel"
+                                        class="mt-1.5 border-l-2 pl-2.5 py-0.5 space-y-0.5"
+                                        :class="i === currentIdx ? 'border-white/50' : 'border-indigo-400/50'"
+                                    >
+                                        <p
+                                            v-if="s._startLabel"
+                                            class="text-2xs font-semibold uppercase tracking-wide"
+                                            :class="i === currentIdx ? 'text-white/80' : 'text-indigo-300'"
+                                        >{{ t('services.starts_at', { time: s._startLabel }) }}</p>
+                                        <p
+                                            v-if="s.notes"
+                                            class="text-xs leading-relaxed whitespace-pre-wrap"
+                                            :class="i === currentIdx ? 'text-white/90' : 'text-slate-300'"
+                                        >{{ s.notes }}</p>
+                                    </div>
                                 </div>
                             </button>
                         </div>
