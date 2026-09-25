@@ -2,7 +2,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    {{-- interactive-widget=resizes-content makes Chrome shrink the layout
+         viewport when the on-screen keyboard appears. Without it, bottom
+         sheets anchored with `fixed bottom-0` stay behind the keyboard,
+         which is where every form in this app lives. iOS ignores it and
+         already behaves this way. --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#4F46E5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

@@ -182,7 +182,8 @@ onBeforeUnmount(() => {
                         </svg>
                         <input
                             ref="searchEl"
-                            v-model="query"
+                            :value="query"
+                            @input="query = $event.target.value"
                             type="text"
                             :placeholder="searchPlaceholder"
                             class="w-full pl-8 pr-2 py-2.5 text-sm bg-transparent focus:outline-none placeholder:text-slate-600"

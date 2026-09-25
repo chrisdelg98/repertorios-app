@@ -102,7 +102,8 @@ watch(() => props.open, (isOpen) => {
             </div>
 
             <input
-                v-model="query"
+                :value="query"
+                @input="query = $event.target.value"
                 type="search"
                 :placeholder="t('assignments.search_placeholder')"
                 class="w-full px-3 py-2.5 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"

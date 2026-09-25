@@ -239,7 +239,8 @@ function confirmDelete() {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                     </svg>
                     <input
-                        v-model="search"
+                        :value="search"
+                        @input="search = $event.target.value"
                         type="text"
                         :placeholder="t('songs.search_placeholder')"
                         class="w-full pl-9 pr-9 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"

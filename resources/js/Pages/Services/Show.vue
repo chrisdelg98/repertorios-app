@@ -803,14 +803,18 @@ function scheduleReorder() {
                         <button @click="closeAddSheet" class="text-slate-600 hover:text-slate-900 text-lg leading-none">✕</button>
                     </div>
 
-                    <!-- Search input — text-base (16px) prevents iOS zoom-on-focus -->
+                    <!-- Search input — text-base (16px) prevents iOS zoom-on-focus.
+                         Bound by hand rather than with v-model: v-model holds back
+                         updates while an IME is composing, and Android's predictive
+                         keyboard composes every word, so the list only refreshed
+                         once you pressed the keyboard's search key. -->
                     <input
-                        v-model="search"
+                        :value="search"
                         type="search"
                         autofocus
                         :placeholder="t('services.song_search_placeholder')"
                         class="w-full px-3 py-2.5 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
-                        @input="selectedVersionId = null"
+                        @input="search = $event.target.value; selectedVersionId = null"
                     />
 
                     <!-- Results -->

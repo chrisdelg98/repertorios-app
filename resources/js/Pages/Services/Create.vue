@@ -233,7 +233,8 @@ function submit() {
 
                     <!-- Search -->
                     <input
-                        v-model="search"
+                        :value="search"
+                        @input="search = $event.target.value"
                         type="search"
                         :placeholder="t('services.type_search')"
                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"

@@ -285,7 +285,8 @@ function roleBadgeClass(m) {
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                             </svg>
                             <input
-                                v-model="roleSearch"
+                                :value="roleSearch"
+                                @input="roleSearch = $event.target.value"
                                 type="text"
                                 :placeholder="t('settings.members.search_role')"
                                 class="w-full pl-9 pr-9 py-2.5 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
