@@ -17,6 +17,7 @@ const props = defineProps({
 
 const auth = computed(() => page.props.auth);
 const canWrite = computed(() => !!auth.value?.can_write);
+const isCreator = computed(() => !!auth.value?.is_creator);
 const isSessionMember = computed(() => auth.value?.access === 'member' && !auth.value?.user);
 
 // --- Notifications prompt ---
@@ -145,8 +146,9 @@ const nextServiceRolesText = computed(() => {
 
             <!-- Greeting -->
             <div>
-                <p class="text-xs font-medium text-slate-600 uppercase tracking-wide">{{ greeting }}</p>
-                <h1 class="text-xl font-bold text-slate-900 mt-1">{{ displayName }}</h1>
+                <h1 class="text-xl font-bold text-slate-900">
+                    <span class="font-medium text-slate-600">{{ greeting }},</span> {{ displayName }}
+                </h1>
             </div>
 
             <!-- Subtle upgrade prompt for session-only members (entered via invite link, no account) -->
@@ -351,17 +353,28 @@ const nextServiceRolesText = computed(() => {
                 <div class="grid grid-cols-2 gap-3">
                     <Link
                         href="/calendar"
-                        class="flex flex-col gap-2 bg-white rounded-xl px-4 py-3.5 border border-slate-200 hover:border-slate-300 active:bg-slate-50 transition"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-indigo-300 transition-colors"
                     >
-                        <span class="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mb-2">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd" />
                             </svg>
-                        </span>
-                        <span>
-                            <span class="block font-semibold text-slate-900 text-sm">{{ t('calendar.title') }}</span>
-                            <span class="block text-xs font-medium text-slate-600 mt-0.5">{{ t('calendar.quick_hint') }}</span>
-                        </span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-900">{{ t('calendar.title') }}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">{{ t('calendar.quick_hint') }}</p>
+                    </Link>
+
+                    <Link
+                        href="/songs"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
+                    >
+                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-900">{{ t('dashboard.browse_library') }}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">{{ t('dashboard.browse_library_hint') }}</p>
                     </Link>
 
                     <!-- New service: clickable for admins, locked for read-only -->
@@ -393,16 +406,17 @@ const nextServiceRolesText = computed(() => {
                     </div>
 
                     <Link
-                        href="/songs"
-                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
+                        v-if="isCreator"
+                        href="/settings/members"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-emerald-300 transition-colors"
                     >
-                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
-                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                        <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center mb-2">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
                             </svg>
                         </div>
-                        <p class="text-sm font-semibold text-slate-900">{{ t('dashboard.browse_library') }}</p>
-                        <p class="text-xs text-slate-600 mt-0.5">{{ t('dashboard.browse_library_hint') }}</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ t('settings.members.title') }}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">{{ t('settings.members.subtitle') }}</p>
                     </Link>
                 </div>
             </div>

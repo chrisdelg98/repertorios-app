@@ -122,6 +122,7 @@ Route::middleware('band.access')->group(function () {
     Route::post('/calendar', [CalendarController::class, 'store'])->name('calendar.store');
     Route::put('/calendar/{entry}', [CalendarController::class, 'update'])->name('calendar.update');
     Route::delete('/calendar/{entry}', [CalendarController::class, 'destroy'])->name('calendar.destroy');
+    Route::delete('/calendar/{entry}/series', [CalendarController::class, 'destroySeries'])->name('calendar.series.destroy');
 
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

@@ -284,6 +284,15 @@
         "next_month": "Mes siguiente",
         "delete": "Eliminar",
         "delete_confirm": "¿Eliminar esta entrada del calendario?",
-        "quick_hint": "Ensayos, reuniones y servicios"
+        "quick_hint": "Ensayos, reuniones y servicios",
+        "repeat": "Repetir cada semana",
+        "repeat_hint": "Todos los {day} a la misma hora",
+        "repeat_hint_generic": "Se repetirá el mismo día de cada semana",
+        "repeat_until": "Hasta",
+        "repeat_count": "Se creará {count} entrada | Se crearán {count} entradas",
+        "part_of_series": "Parte de una serie semanal",
+        "delete_series": "Eliminar esta y las siguientes",
+        "delete_series_confirm": "Se eliminarán esta y todas las siguientes de la serie. Las pasadas se quedan.",
+        "save": "Guardar"
     }
 }

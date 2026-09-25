@@ -284,6 +284,15 @@
         "next_month": "Next month",
         "delete": "Delete",
         "delete_confirm": "Delete this calendar entry?",
-        "quick_hint": "Rehearsals, meetings and services"
+        "quick_hint": "Rehearsals, meetings and services",
+        "repeat": "Repeat every week",
+        "repeat_hint": "Every {day} at the same time",
+        "repeat_hint_generic": "It will repeat on the same weekday",
+        "repeat_until": "Until",
+        "repeat_count": "{count} entry will be created | {count} entries will be created",
+        "part_of_series": "Part of a weekly series",
+        "delete_series": "Remove this one and the ones after",
+        "delete_series_confirm": "This and every later entry in the series will be removed. Past ones stay.",
+        "save": "Save"
     }
 }

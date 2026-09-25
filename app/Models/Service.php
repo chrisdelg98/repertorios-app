@@ -49,7 +49,8 @@ class Service extends Model
     public const DEFAULT_COLOR = 'indigo';
 
     protected $fillable = [
-        'band_id', 'kind', 'date', 'time', 'end_time', 'type', 'color', 'notes', 'team_notified_at',
+        'band_id', 'kind', 'series_id', 'date', 'time', 'end_time', 'type', 'color', 'notes',
+        'team_notified_at',
     ];
 
     protected function casts(): array
@@ -78,6 +79,12 @@ class Service extends Model
     public function getLabelAttribute(): string
     {
         return $this->labelIn(app()->getLocale());
+    }
+
+    /** Part of a repeating run, rather than a one-off. */
+    public function isRecurring(): bool
+    {
+        return filled($this->series_id);
     }
 
     public function isService(): bool

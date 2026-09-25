@@ -7,6 +7,7 @@ use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,7 +39,7 @@ class CalendarController extends Controller
             ->orderBy('date')
             ->orderBy('time')
             ->withCount('serviceSongs')
-            ->get(['id', 'kind', 'date', 'time', 'end_time', 'type', 'color', 'notes'])
+            ->get(['id', 'kind', 'series_id', 'date', 'time', 'end_time', 'type', 'color', 'notes'])
             ->map(fn (Service $entry) => [
                 'id'       => $entry->id,
                 'kind'     => $entry->kind,
@@ -49,6 +50,7 @@ class CalendarController extends Controller
                 'color'    => $entry->color,
                 'notes'    => $entry->notes,
                 'songs'    => $entry->service_songs_count,
+                'series_id' => $entry->series_id,
             ]);
 
         return Inertia::render('Calendar/Index', [
@@ -66,9 +68,76 @@ class CalendarController extends Controller
 
         $data = $this->validated($request);
 
-        Service::create([...$data, 'band_id' => $this->bandId()]);
+        $repeat = $request->validate([
+            'repeat_weekly' => ['nullable', 'boolean'],
+            'repeat_until'  => ['nullable', 'required_if:repeat_weekly,true', 'date', 'after:date'],
+        ]);
+
+        $dates = $this->occurrenceDates(
+            $data['date'],
+            ($repeat['repeat_weekly'] ?? false) ? ($repeat['repeat_until'] ?? null) : null
+        );
+
+        // One row per date. Generating them now rather than deriving them on
+        // read is what lets a single Friday be cancelled or annotated later.
+        $seriesId = count($dates) > 1 ? (string) Str::uuid() : null;
+
+        foreach ($dates as $date) {
+            Service::create([
+                ...$data,
+                'band_id'   => $this->bandId(),
+                'date'      => $date,
+                'series_id' => $seriesId,
+            ]);
+        }
 
         return back()->with('success', true);
+    }
+
+    /**
+     * Removes the rest of a repeating run, from this occurrence onward.
+     *
+     * Past ones are left alone: they are a record of what the band did, and
+     * anyone assigned to them would find their history rewritten.
+     */
+    public function destroySeries(Service $entry): RedirectResponse
+    {
+        $this->requireWrite();
+        $this->authorizeEntry($entry);
+
+        abort_unless($entry->isRecurring(), 404);
+
+        Service::where('band_id', $this->bandId())
+            ->where('series_id', $entry->series_id)
+            ->where('date', '>=', $entry->date->toDateString())
+            ->delete();
+
+        return back()->with('success', true);
+    }
+
+    /**
+     * The dates a new entry covers: just the one, or every seventh day through
+     * the closing date.
+     *
+     * Capped because the form asks for a date and someone will eventually type
+     * a year that is not the one they meant.
+     */
+    private function occurrenceDates(string $start, ?string $until): array
+    {
+        $first = Carbon::parse($start)->startOfDay();
+
+        if (!$until) {
+            return [$first->toDateString()];
+        }
+
+        $last = Carbon::parse($until)->startOfDay();
+        $dates = [];
+
+        for ($date = $first->copy(); $date->lte($last) && count($dates) < 104; $date->addWeek()) {
+            $dates[] = $date->toDateString();
+        }
+
+        return $dates;
     }
 
     public function update(Request $request, Service $entry): RedirectResponse
