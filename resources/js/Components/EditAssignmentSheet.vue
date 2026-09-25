@@ -56,7 +56,7 @@ watch(() => props.assignment, (assignment) => {
         <div v-if="open" class="fixed inset-0 z-40 bg-black/40" @click="emit('close')" />
         <div
             v-if="open && assignment"
-            class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-6 shadow-xl"
+            class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl px-4 pt-4 pb-6 shadow-xl"
         >
             <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
             <div class="flex items-center justify-between mb-3">

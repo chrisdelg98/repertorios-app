@@ -803,7 +803,7 @@ function scheduleReorder() {
         <!-- Add Song Sheet -->
         <Teleport to="body">
             <div v-if="showAddSheet" class="fixed inset-0 z-40 bg-black/40" @click="closeAddSheet" />
-            <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
+            <div v-if="showAddSheet" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl px-4 pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="font-semibold text-slate-900">{{ t('services.add_song') }}</h2>
                         <button @click="closeAddSheet" class="text-slate-600 hover:text-slate-900 text-lg leading-none">✕</button>

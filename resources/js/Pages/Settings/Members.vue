@@ -270,7 +270,7 @@ function roleBadgeClass(m) {
                 <div v-if="editingRolesFor" class="fixed inset-0 z-40 bg-black/40" @click="closeRolesEditor" />
             </Transition>
             <Transition enter-active-class="transition duration-250 ease-out" enter-from-class="translate-y-full" enter-to-class="translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="translate-y-0" leave-to-class="translate-y-full">
-                <div v-if="editingRolesFor" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
+                <div v-if="editingRolesFor" class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl pt-4 pb-8 max-h-[85vh] flex flex-col shadow-xl">
                     <!-- Header -->
                     <div class="px-4">
                         <div class="flex items-center justify-between mb-1">

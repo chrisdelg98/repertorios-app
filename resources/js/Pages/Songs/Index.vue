@@ -443,7 +443,7 @@ function confirmDelete() {
             >
                 <div
                     v-if="showAddForm && can_write"
-                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
                 >
                     <!-- Header (sticky) -->
                     <div class="px-4 pt-3 pb-2 border-b border-slate-100">
@@ -667,7 +667,7 @@ function confirmDelete() {
             >
                 <div
                     v-if="editingSong"
-                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                    class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
                 >
                     <!-- Header (sticky) -->
                     <div class="px-4 pt-3 pb-2 border-b border-slate-100">
