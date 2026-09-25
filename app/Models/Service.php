@@ -16,13 +16,41 @@ class Service extends Model
      * shades live in resources/js/Constants/serviceColors.js so both ends
      * agree and Tailwind can see the class names.
      */
+    /**
+     * What this entry is.
+     *
+     * Only a service belongs under Services — a special one is still a
+     * service, with its setlist and its team. The other three exist on the
+     * calendar and nowhere else.
+     */
+    public const KIND_SERVICE   = 'service';
+    public const KIND_REHEARSAL = 'rehearsal';
+    public const KIND_MEETING   = 'meeting';
+    public const KIND_OTHER     = 'other';
+
+    public const KINDS = [
+        self::KIND_SERVICE,
+        self::KIND_REHEARSAL,
+        self::KIND_MEETING,
+        self::KIND_OTHER,
+    ];
+
+    /** The three that never appear outside the calendar. */
+    public const CALENDAR_ONLY_KINDS = [
+        self::KIND_REHEARSAL,
+        self::KIND_MEETING,
+        self::KIND_OTHER,
+    ];
+
     public const COLORS = [
         'indigo', 'violet', 'sky', 'emerald', 'amber', 'orange', 'rose', 'slate',
     ];
 
     public const DEFAULT_COLOR = 'indigo';
 
-    protected $fillable = ['band_id', 'date', 'time', 'type', 'color', 'notes', 'team_notified_at'];
+    protected $fillable = [
+        'band_id', 'kind', 'date', 'time', 'end_time', 'type', 'color', 'notes', 'team_notified_at',
+    ];
 
     protected function casts(): array
     {
@@ -50,6 +78,23 @@ class Service extends Model
     public function getLabelAttribute(): string
     {
         return $this->labelIn(app()->getLocale());
+    }
+
+    public function isService(): bool
+    {
+        return $this->kind === self::KIND_SERVICE;
+    }
+
+    /** Services only — what the Services screen and its counters mean. */
+    public function scopeServices($query)
+    {
+        return $query->where('kind', self::KIND_SERVICE);
+    }
+
+    /** Everything that is not a service: the calendar's own entries. */
+    public function scopeCalendarOnly($query)
+    {
+        return $query->whereIn('kind', self::CALENDAR_ONLY_KINDS);
     }
 
     public function band(): BelongsTo

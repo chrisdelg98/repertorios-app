@@ -10,7 +10,8 @@
         "setlists": "Setlists",
         "add": "Add",
         "settings": "Settings",
-        "logout": "Logout"
+        "logout": "Logout",
+        "calendar": "Calendar"
     },
     "lang": {
         "en": "English",
@@ -261,5 +262,28 @@
         "test_no_devices": "This device is not registered. Turn them off and on again.",
         "test_rejected": "The push service rejected the delivery. Check the server log.",
         "settings_this_device": "this one"
+    },
+    "calendar": {
+        "title": "Calendar",
+        "add": "Add",
+        "new_entry": "New entry",
+        "edit_entry": "Edit entry",
+        "kind": "Type",
+        "kind_service": "Service",
+        "kind_rehearsal": "Rehearsal",
+        "kind_meeting": "Meeting",
+        "kind_other": "Other",
+        "name": "Name",
+        "name_placeholder": "e.g. Full rehearsal",
+        "starts": "From",
+        "ends": "To",
+        "notes_placeholder": "What will happen, what to bring...",
+        "empty_day": "Nothing on this day. Tap to add.",
+        "empty_day_readonly": "Nothing scheduled on this day.",
+        "previous_month": "Previous month",
+        "next_month": "Next month",
+        "delete": "Delete",
+        "delete_confirm": "Delete this calendar entry?",
+        "quick_hint": "Rehearsals, meetings and services"
     }
 }

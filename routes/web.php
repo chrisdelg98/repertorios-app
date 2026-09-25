@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\UpgradeAccountController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\BandController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Public\JoinController;
@@ -114,6 +115,13 @@ Route::middleware('band.access')->group(function () {
 
     // Welcome overlay — admin dismisses it permanently
     Route::post('/welcome/dismiss', [WelcomeController::class, 'dismiss'])->name('welcome.dismiss');
+
+    // Calendar: everything the band has scheduled. Services are read here but
+    // written under Services; this only creates rehearsals, meetings and the like.
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
+    Route::post('/calendar', [CalendarController::class, 'store'])->name('calendar.store');
+    Route::put('/calendar/{entry}', [CalendarController::class, 'update'])->name('calendar.update');
+    Route::delete('/calendar/{entry}', [CalendarController::class, 'destroy'])->name('calendar.destroy');
 
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

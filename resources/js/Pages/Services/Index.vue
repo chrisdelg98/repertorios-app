@@ -280,16 +280,34 @@ function submitDuplicate() {
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 lg:mb-6">
                 <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('services.title') }}</h1>
-                <Link
-                    v-if="canWrite"
-                    href="/services/create"
-                    class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 text-white text-xs lg:text-sm font-semibold rounded-lg"
-                >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    {{ t('services.create') }}
-                </Link>
+
+                <div class="flex items-center gap-2">
+                    <!-- Services and the calendar are one schedule seen two ways,
+                         so the way across belongs here: the bottom bar on mobile
+                         has no room left. The label hides on narrow phones and
+                         the icon carries it. -->
+                    <Link
+                        href="/calendar"
+                        class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-xs lg:text-sm font-semibold rounded-lg transition-colors"
+                        :aria-label="t('calendar.title')"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="hidden sm:inline">{{ t('calendar.title') }}</span>
+                    </Link>
+
+                    <Link
+                        v-if="canWrite"
+                        href="/services/create"
+                        class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 text-white text-xs lg:text-sm font-semibold rounded-lg"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        {{ t('services.create') }}
+                    </Link>
+                </div>
             </div>
 
             <!-- Filters -->

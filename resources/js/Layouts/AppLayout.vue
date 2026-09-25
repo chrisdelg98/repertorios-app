@@ -67,6 +67,7 @@ const navItems = computed(() => {
     const base = [
         { href: '/dashboard', label: t('nav.home'),     icon: 'home' },
         { href: '/services',  label: t('nav.services'), icon: 'calendar' },
+        { href: '/calendar',  label: t('nav.calendar'), icon: 'grid' },
         { href: '/songs',     label: t('nav.songs'),    icon: 'music' },
     ];
     if (auth.value.user) {
@@ -114,6 +115,9 @@ const navItems = computed(() => {
                     </svg>
                     <svg v-else-if="item.icon === 'calendar'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <svg v-else-if="item.icon === 'grid'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 9h16M9 9v11M14 9v11" />
                     </svg>
                     <svg v-else-if="item.icon === 'music'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />

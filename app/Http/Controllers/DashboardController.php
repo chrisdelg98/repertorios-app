@@ -20,6 +20,7 @@ class DashboardController extends Controller
         $userId = Auth::id();
 
         $upcoming = Service::where('band_id', $bandId)
+            ->services()
             ->where('date', '>=', $today)
             ->orderBy('date')
             ->orderBy('time')
@@ -46,10 +47,27 @@ class DashboardController extends Controller
                     : [],
             ]);
 
+        // Secondary to the next service, never competing with it: if Friday
+        // has a rehearsal, that is what the team needs to see next.
+        $nextEntry = Service::where('band_id', $bandId)
+            ->calendarOnly()
+            ->where('date', '>=', $today)
+            ->orderBy('date')
+            ->orderBy('time')
+            ->first(['id', 'kind', 'date', 'time', 'end_time', 'type']);
+
         return Inertia::render('Dashboard', [
+            'next_entry' => $nextEntry ? [
+                'id'       => $nextEntry->id,
+                'kind'     => $nextEntry->kind,
+                'date'     => $nextEntry->date->toDateString(),
+                'time'     => $nextEntry->time ? substr($nextEntry->time, 0, 5) : null,
+                'end_time' => $nextEntry->end_time ? substr($nextEntry->end_time, 0, 5) : null,
+                'name'     => $nextEntry->type,
+            ] : null,
             'stats' => [
-                'services_total'    => Service::where('band_id', $bandId)->count(),
-                'services_upcoming' => Service::where('band_id', $bandId)
+                'services_total'    => Service::where('band_id', $bandId)->services()->count(),
+                'services_upcoming' => Service::where('band_id', $bandId)->services()
                     ->where('date', '>=', $today)->count(),
                 'songs'             => Song::where('band_id', $bandId)->count(),
             ],

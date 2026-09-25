@@ -12,6 +12,7 @@ const page = usePage();
 const props = defineProps({
     stats: Object,
     upcoming_services: Array,
+    next_entry: { type: Object, default: null },
 });
 
 const auth = computed(() => page.props.auth);
@@ -68,6 +69,14 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => clearTimeout(pushTimer));
+
+function entryDotClass(kind) {
+    return {
+        rehearsal: 'bg-sky-500',
+        meeting: 'bg-amber-500',
+        other: 'bg-slate-400',
+    }[kind] ?? 'bg-slate-400';
+}
 
 const greeting = computed(() => {
     const h = new Date().getHours();
@@ -282,6 +291,25 @@ const nextServiceRolesText = computed(() => {
                 </div>
             </div>
 
+            <!-- Whatever is next that is not a service: a rehearsal on Friday
+                 is what the team needs to see, but it does not outrank Sunday. -->
+            <Link
+                v-if="next_entry"
+                :href="`/calendar?month=${next_entry.date.slice(0, 7)}`"
+                class="flex items-center gap-2.5 mt-2.5 px-3.5 py-2.5 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors"
+            >
+                <span class="w-1.5 h-8 rounded-full shrink-0" :class="entryDotClass(next_entry.kind)" />
+                <span class="flex-1 min-w-0">
+                    <span class="block text-sm font-semibold text-slate-900 truncate leading-tight">{{ next_entry.name }}</span>
+                    <span class="block text-xs font-medium text-slate-600 mt-0.5 truncate">
+                        {{ t('calendar.kind_' + next_entry.kind) }} · {{ formatShortDate(next_entry.date) }}<span v-if="next_entry.time"> · {{ next_entry.time }}</span>
+                    </span>
+                </span>
+                <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </Link>
+
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-3">
                 <Link
@@ -321,6 +349,21 @@ const nextServiceRolesText = computed(() => {
                     {{ t('dashboard.quick_actions') }}
                 </p>
                 <div class="grid grid-cols-2 gap-3">
+                    <Link
+                        href="/calendar"
+                        class="flex flex-col gap-2 bg-white rounded-xl px-4 py-3.5 border border-slate-200 hover:border-slate-300 active:bg-slate-50 transition"
+                    >
+                        <span class="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <span>
+                            <span class="block font-semibold text-slate-900 text-sm">{{ t('calendar.title') }}</span>
+                            <span class="block text-xs font-medium text-slate-600 mt-0.5">{{ t('calendar.quick_hint') }}</span>
+                        </span>
+                    </Link>
+
                     <!-- New service: clickable for admins, locked for read-only -->
                     <Link
                         v-if="canWrite"

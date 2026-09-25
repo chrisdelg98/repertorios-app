@@ -10,7 +10,8 @@
         "setlists": "Repertorios",
         "add": "Agregar",
         "settings": "Ajustes",
-        "logout": "Salir"
+        "logout": "Salir",
+        "calendar": "Calendario"
     },
     "lang": {
         "en": "English",
@@ -261,5 +262,28 @@
         "test_no_devices": "Este dispositivo no quedó registrado. Desactiva y vuelve a activar.",
         "test_rejected": "El servicio de notificaciones rechazó el envío. Revisa el log del servidor.",
         "settings_this_device": "este"
+    },
+    "calendar": {
+        "title": "Calendario",
+        "add": "Agregar",
+        "new_entry": "Nueva entrada",
+        "edit_entry": "Editar entrada",
+        "kind": "Tipo",
+        "kind_service": "Servicio",
+        "kind_rehearsal": "Ensayo",
+        "kind_meeting": "Reunión",
+        "kind_other": "Otro",
+        "name": "Nombre",
+        "name_placeholder": "Ej. Ensayo general",
+        "starts": "Desde",
+        "ends": "Hasta",
+        "notes_placeholder": "Qué se va a hacer, qué llevar...",
+        "empty_day": "Nada este día. Toca para agregar.",
+        "empty_day_readonly": "Nada programado este día.",
+        "previous_month": "Mes anterior",
+        "next_month": "Mes siguiente",
+        "delete": "Eliminar",
+        "delete_confirm": "¿Eliminar esta entrada del calendario?",
+        "quick_hint": "Ensayos, reuniones y servicios"
     }
 }

@@ -26,6 +26,7 @@ class ServiceController extends Controller
     public function index(): Response
     {
         $services = Service::where('band_id', $this->bandId())
+            ->services()
             ->orderByDesc('date')
             ->orderByDesc('time')
             ->withCount('serviceSongs')
