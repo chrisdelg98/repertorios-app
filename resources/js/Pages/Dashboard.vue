@@ -366,9 +366,9 @@ const nextServiceRolesText = computed(() => {
 
                     <Link
                         href="/songs"
-                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-indigo-300 transition-colors"
                     >
-                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mb-2">
                             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                             </svg>
@@ -381,9 +381,9 @@ const nextServiceRolesText = computed(() => {
                     <Link
                         v-if="canWrite"
                         href="/services/create"
-                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-indigo-300 transition-colors"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
                     >
-                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
                             <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
@@ -408,9 +408,9 @@ const nextServiceRolesText = computed(() => {
                     <Link
                         v-if="isCreator"
                         href="/settings/members"
-                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-emerald-300 transition-colors"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
                     >
-                        <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
                             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
                             </svg>
