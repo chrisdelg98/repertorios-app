@@ -121,9 +121,11 @@ export function useAudioUpload() {
         } catch (e) {
             console.error('[audio] upload failed', e);
 
-            error.value = e.status === 422 && e.payload?.errors?.size
-                ? 'too_large'
-                : (e.message ?? 'failed');
+            // The server names the reason when it has one; the message is the
+            // fallback for anything it could not.
+            error.value = e.payload?.message === 'quota_exceeded'
+                ? 'quota_exceeded'
+                : (e.status === 422 && e.payload?.errors?.size ? 'too_large' : (e.message ?? 'failed'));
 
             return null;
         } finally {

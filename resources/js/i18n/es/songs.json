@@ -58,6 +58,7 @@
         "error_not_configured": "El almacenamiento de audio no está configurado en el servidor.",
         "error_failed": "No se pudo subir. Revisa tu conexión e inténtalo de nuevo.",
         "attached": "Audio adjunto",
-        "none": "Sin audio"
+        "none": "Sin audio",
+        "error_quota": "Tu banda no tiene espacio disponible. Elimina alguna pista desde Ajustes → Audios de secuencias."
     }
 }

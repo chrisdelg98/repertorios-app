@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Songs;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Controllers\Controller;
 use App\Models\SongVersion;
+use App\Services\BandAudioQuota;
 use App\Services\R2Signer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,19 +24,14 @@ class SongAudioController extends Controller
 {
     use BandAware;
 
-    /**
-     * The one number that decides how much a band can store. Raising it is a
-     * single edit here plus the matching copy in resources/js/i18n.
-     *
-     * For scale: 5 MB is about a five-minute MP3 at 128 kbps, which is the
-     * usual shape of a rehearsal track.
-     */
-    private const MAX_BYTES = 5 * 1024 * 1024;
-
     /** MP3 only: it is what the band already has, and it plays everywhere. */
     private const ALLOWED_MIME = ['audio/mpeg'];
 
     private const EXTENSIONS = ['audio/mpeg' => 'mp3'];
+
+    public function __construct(private readonly BandAudioQuota $quota)
+    {
+    }
 
     /**
      * Hands back a URL the browser can upload to, and the key it will land on.
@@ -53,8 +49,17 @@ class SongAudioController extends Controller
 
         $data = $request->validate([
             'mime' => ['required', 'string', Rule::in(self::ALLOWED_MIME)],
-            'size' => ['required', 'integer', 'min:1', 'max:' . self::MAX_BYTES],
+            'size' => ['required', 'integer', 'min:1', 'max:' . $this->quota->maxFileBytes()],
         ]);
+
+        // Checked before signing anything: a band that is full should never be
+        // handed a URL it is not allowed to use.
+        if (!$this->quota->accepts($songVersion->band_id, $data['size'])) {
+            return response()->json([
+                'message' => 'quota_exceeded',
+                'quota'   => $this->quota->summary($songVersion->band_id),
+            ], 422);
+        }
 
         $extension = self::EXTENSIONS[$data['mime']] ?? 'bin';
         $key = $this->prefixFor($songVersion) . Str::uuid() . '.' . $extension;
@@ -62,7 +67,6 @@ class SongAudioController extends Controller
         return response()->json([
             'url' => $signer->presignPut($key, $data['mime'], 20),
             'key' => $key,
-            'max_bytes' => self::MAX_BYTES,
         ]);
     }
 
@@ -77,7 +81,7 @@ class SongAudioController extends Controller
         $data = $request->validate([
             'key'  => ['required', 'string', 'max:400'],
             'name' => ['required', 'string', 'max:255'],
-            'size' => ['required', 'integer', 'min:1', 'max:' . self::MAX_BYTES],
+            'size' => ['required', 'integer', 'min:1', 'max:' . $this->quota->maxFileBytes()],
             'mime' => ['required', 'string', Rule::in(self::ALLOWED_MIME)],
         ]);
 
@@ -126,6 +130,7 @@ class SongAudioController extends Controller
     /** A fresh playback URL, for a player that has been open a long while. */
     public function play(SongVersion $songVersion): JsonResponse
     {
+        abort_unless($this->quota->enabled(), 404);
         abort_unless($songVersion->band_id === $this->bandId(), 403);
 
         return response()->json(['url' => $songVersion->audioUrl()]);
@@ -133,6 +138,8 @@ class SongAudioController extends Controller
 
     private function authorizeVersion(SongVersion $songVersion): void
     {
+        abort_unless($this->quota->enabled(), 404);
+
         $this->requireWrite();
 
         abort_unless($songVersion->band_id === $this->bandId(), 403);

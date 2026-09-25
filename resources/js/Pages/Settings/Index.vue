@@ -150,6 +150,13 @@ const sections = computed(() => {
         title: () => t('settings.members.title'),
         subtitle: () => t('settings.members.subtitle'),
     });
+    // Only while the feature is live; the flag hides the whole thing.
+    if (page.props.audio?.enabled && isAdmin.value) list.push({
+        href: '/settings/audio',
+        icon: 'audio',
+        title: () => t('settings.audio.title'),
+        subtitle: () => t('settings.audio.subtitle_short'),
+    });
     // Second path to the same place as the band switcher menu — a chevron next
     // to the band name is not where people look for this the first time.
     list.push({
@@ -186,6 +193,9 @@ const sections = computed(() => {
                         </svg>
                         <svg v-else-if="s.icon === 'members'" class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <svg v-else-if="s.icon === 'audio'" class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                         </svg>
                         <svg v-else-if="s.icon === 'newband'" class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />

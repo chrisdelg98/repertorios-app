@@ -39,6 +39,7 @@ const message = computed(() => {
     // the detail, the person just needs to know it did not land.
     return {
         unsupported_type: t('songs.audio.error_type'),
+        quota_exceeded: t('songs.audio.error_quota'),
         too_large: t('songs.audio.error_size'),
         storage_not_configured: t('songs.audio.error_not_configured'),
     }[error.value] ?? t('songs.audio.error_failed');

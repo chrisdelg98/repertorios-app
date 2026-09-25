@@ -16,6 +16,7 @@ use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
 use App\Http\Controllers\Services\ServiceAssignmentController;
 use App\Http\Controllers\Services\ShareController;
+use App\Http\Controllers\Settings\AudioLibraryController;
 use App\Http\Controllers\Settings\BandSettingsController;
 use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
 use App\Http\Controllers\Settings\MemberController;
@@ -177,6 +178,9 @@ Route::middleware('band.access')->group(function () {
     Route::put('/settings/members/{user}/roles', [MemberController::class, 'assignRoles'])->name('settings.members.roles');
     Route::delete('/settings/members/{user}', [MemberController::class, 'destroy'])->name('settings.members.destroy');
     Route::delete('/settings/visitors', [MemberController::class, 'resetVisitors'])->name('settings.visitors.reset');
+
+    Route::get('/settings/audio', [AudioLibraryController::class, 'index'])->name('settings.audio');
+    Route::delete('/settings/audio/{songVersion}', [AudioLibraryController::class, 'destroy'])->name('settings.audio.destroy');
 
     Route::get('/settings/schedule-templates', [ScheduleTemplateController::class, 'index'])->name('settings.templates');
     Route::post('/settings/schedule-templates', [ScheduleTemplateController::class, 'store'])->name('settings.templates.store');

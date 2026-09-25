@@ -17,6 +17,7 @@ const props = defineProps({
 
 const __page    = usePage();
 const isCreator = computed(() => !!__page.props.auth?.is_creator);
+const audioEnabled = computed(() => !!__page.props.audio?.enabled);
 
 // ── Filters ──────────────────────────────────────────────────────────────────
 const search           = ref('');
@@ -787,6 +788,7 @@ function confirmDelete() {
                                     </div>
 
                                     <AudioUploadField
+                                        v-if="audioEnabled"
                                         :version-id="v.id"
                                         :audio="v.audio"
                                         @update:audio="v.audio = $event"

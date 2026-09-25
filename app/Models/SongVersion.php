@@ -27,7 +27,7 @@ class SongVersion extends Model
 
     public function getAudioAttribute(): ?array
     {
-        if (!$this->hasAudio()) {
+        if (!$this->hasAudio() || !config('audio.enabled')) {
             return null;
         }
 

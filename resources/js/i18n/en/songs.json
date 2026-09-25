@@ -58,6 +58,7 @@
         "error_not_configured": "Audio storage is not configured on the server.",
         "error_failed": "Upload failed. Check your connection and try again.",
         "attached": "Track attached",
-        "none": "No track"
+        "none": "No track",
+        "error_quota": "Your band has no space left. Remove a track from Settings → Rehearsal tracks."
     }
 }

@@ -94,6 +94,11 @@ class HandleInertiaRequests extends Middleware
             'donate' => [
                 'url' => config('services.paypal.donate_url'),
             ],
+            'audio' => [
+                // Off until the feature ships: with this false the upload
+                // field, the settings tile and every track disappear.
+                'enabled' => (bool) config('audio.enabled'),
+            ],
             'push' => [
                 // The public half of the VAPID pair is meant to be seen: the
                 // browser needs it to build a subscription.
