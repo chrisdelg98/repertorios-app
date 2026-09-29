@@ -304,26 +304,31 @@ function destroy() {
                     </div>
                 </form>
 
-                <div class="flex gap-2.5 pt-4 mt-2 border-t border-slate-100">
+                <div class="pt-4 mt-2 border-t border-slate-100 space-y-2">
+                    <!-- Cancel and save share the row as a pair. Delete sits
+                         below on its own: a destructive action next to the
+                         primary one is a mis-tap waiting to happen. -->
+                    <div class="flex gap-2.5">
+                        <button
+                            type="button"
+                            @click="emit('close')"
+                            class="flex-1 py-2.5 text-sm font-semibold text-slate-600 rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
+                        >{{ t('services.form.cancel') }}</button>
+
+                        <button
+                            type="button"
+                            @click="submit"
+                            :disabled="form.processing || !form.type.trim()"
+                            class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
+                        >{{ form.processing ? t('services.form.saving') : t('calendar.save') }}</button>
+                    </div>
+
                     <button
                         v-if="entry && !confirmingDelete"
                         type="button"
                         @click="confirmingDelete = true"
-                        class="px-3 py-2.5 text-sm font-semibold text-red-600 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+                        class="w-full py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >{{ t('calendar.delete') }}</button>
-
-                    <button
-                        type="button"
-                        @click="emit('close')"
-                        class="flex-1 py-2.5 text-sm font-semibold text-slate-600 rounded-lg border border-slate-300"
-                    >{{ t('services.form.cancel') }}</button>
-
-                    <button
-                        type="button"
-                        @click="submit"
-                        :disabled="form.processing || !form.type.trim()"
-                        class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
-                    >{{ form.processing ? t('services.form.saving') : t('calendar.save') }}</button>
                 </div>
             </div>
         </Transition>
