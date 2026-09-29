@@ -183,7 +183,7 @@ function openEdit(entry) {
                         :key="day.key"
                         type="button"
                         @click="selectedDate = day.key"
-                        class="aspect-square rounded-lg flex flex-col items-center justify-center gap-1 transition-colors"
+                        class="aspect-square rounded-lg flex flex-col items-center justify-center gap-1.5 transition-colors"
                         :class="[
                             selectedDate === day.key
                                 ? 'bg-indigo-600 text-white'
@@ -193,16 +193,18 @@ function openEdit(entry) {
                     >
                         <span class="text-xs font-semibold leading-none">{{ day.day }}</span>
 
-                        <!-- Three dots at most: past that the day list is the answer -->
-                        <span v-if="day.entries.length" class="flex gap-0.5 h-1.5">
+                        <!-- Three dots at most, side by side: past that the day
+                             list below is the answer. Ringed on the selected
+                             day so their colours survive the indigo behind. -->
+                        <span v-if="day.entries.length" class="flex gap-1 h-2.5 items-center mt-0.5">
                             <span
                                 v-for="entry in day.entries.slice(0, 3)"
                                 :key="entry.id"
-                                class="w-1.5 h-1.5 rounded-full"
-                                :class="selectedDate === day.key ? 'bg-white/90' : dotClass(entry)"
+                                class="w-2.5 h-2.5 rounded-full"
+                                :class="[dotClass(entry), selectedDate === day.key ? 'ring-1 ring-white/80' : '']"
                             />
                         </span>
-                        <span v-else class="h-1.5" />
+                        <span v-else class="h-2.5 mt-0.5" />
                     </button>
                 </div>
             </div>
