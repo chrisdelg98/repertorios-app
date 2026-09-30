@@ -107,7 +107,7 @@
         "locked_admin_only": "Admins only"
     },
     "public": {
-        "powered_by": "Made with Repertorios",
+        "powered_by": "Repertorios App",
         "no_songs": "No songs in this service",
         "expired_title": "Link expired",
         "expired_body": "This link is no longer valid.",
