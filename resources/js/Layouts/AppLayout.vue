@@ -188,9 +188,14 @@ const navItems = computed(() => {
         <!-- Mobile header (hidden on lg+)                               -->
         <!-- ─────────────────────────────────────────────────────────── -->
         <header class="lg:hidden bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between sticky top-0 z-20">
-            <BandSwitcher compact />
+            <!-- The band name takes whatever is left: it is what tells you
+                 which band you are looking at, and it was being truncated to
+                 make room for two language buttons nobody presses twice. -->
+            <div class="min-w-0 flex-1 mr-2">
+                <BandSwitcher compact />
+            </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 shrink-0">
                 <LanguageSwitcher />
 
                 <div class="relative" data-profile-menu>
