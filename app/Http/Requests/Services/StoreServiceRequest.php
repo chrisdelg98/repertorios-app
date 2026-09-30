@@ -21,6 +21,7 @@ class StoreServiceRequest extends FormRequest
             'type' => ['required', 'string', 'max:20'],
             'color' => ['nullable', Rule::in(Service::COLORS)],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'playlist_url' => ['nullable', 'url', 'max:500'],
         ];
     }
 }

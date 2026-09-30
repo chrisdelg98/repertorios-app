@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { parseYouTube, formatStart } from '@/Utils/youtube';
+import { parseYouTube, formatStart, parsePlaylist } from '@/Utils/youtube';
 
 const { t } = useI18n();
 
 const props = defineProps({
     open:  { type: Boolean, default: false },
     songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, audio, notes }
+    /** A whole YouTube playlist, used when no setlist was built by hand. */
+    playlistUrl: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close']);
@@ -41,10 +43,30 @@ const playable = computed(() =>
         .filter(Boolean)
 );
 
+/**
+ * A pasted YouTube playlist stands in for the setlist when there is none.
+ *
+ * Its contents are not known here — reading them needs the YouTube Data API
+ * and a key — so YouTube runs its own queue and the sidebar steps aside.
+ */
+const playlistId = computed(() => parsePlaylist(props.playlistUrl));
+const usingPlaylist = computed(() => !playable.value.length && !!playlistId.value);
+
 const currentIdx = ref(0);
 let ytPlayer    = null;
 const playerEl  = ref(null);
 const apiReady  = ref(false);
+
+/**
+ * Whether the iframe has answered yet.
+ *
+ * Between opening the overlay and YouTube's player reporting ready there are a
+ * few seconds of plain black, which on a slow phone connection is
+ * indistinguishable from something being broken. So the wait is shown, and so
+ * is a way out when it fails.
+ */
+const playerReady  = ref(false);
+const playerFailed = ref(false);
 
 // --- Lazy-load the YouTube IFrame API exactly once across the SPA ---
 function loadYouTubeApi() {
@@ -130,7 +152,34 @@ async function startAudio() {
 function buildPlayer() {
     // The YouTube player is only built for a YouTube song; an audio one has no
     // iframe to attach to.
-    if (!apiReady.value || !playerEl.value || !playable.value.length) return;
+    if (!apiReady.value || !playerEl.value) return;
+
+    if (usingPlaylist.value) {
+        if (ytPlayer) { try { ytPlayer.destroy(); } catch {} }
+
+        playerReady.value = false;
+        playerFailed.value = false;
+
+        ytPlayer = new window.YT.Player(playerEl.value, {
+            playerVars: {
+                playsinline: 1,
+                rel: 0,
+                modestbranding: 1,
+                listType: 'playlist',
+                list: playlistId.value,
+            },
+            events: {
+                onReady: () => { playerReady.value = true; },
+                // A private or deleted playlist cannot be recovered from here:
+                // the only useful answer is to open it on YouTube.
+                onError: () => { playerFailed.value = true; },
+            },
+        });
+
+        return;
+    }
+
+    if (!playable.value.length) return;
     if (playable.value[currentIdx.value]?._source !== 'youtube') return;
     if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
 
@@ -142,6 +191,7 @@ function buildPlayer() {
         // 1:13 of a longer video should not play the intro every time.
         playerVars: { playsinline: 1, rel: 0, modestbranding: 1, start: first._start || 0 },
         events: {
+            onReady: () => { playerReady.value = true; },
             onStateChange: (e) => {
                 // 0 = ended → advance
                 if (e.data === 0) playNext();
@@ -194,6 +244,8 @@ function close() {
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         currentIdx.value = 0;
+        playerReady.value = false;
+        playerFailed.value = false;
 
         // The API is loaded even when the first song is a track: the queue can
         // reach a YouTube song later, and loading it then would stall playback.
@@ -242,7 +294,16 @@ onBeforeUnmount(() => {
                 <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
                     <div class="min-w-0">
                         <p class="text-2xs font-semibold text-indigo-300 uppercase tracking-widest">{{ t('playlist.title') }}</p>
-                        <p class="text-sm font-bold text-white truncate">
+                        <!-- An external playlist has no track of ours to name,
+                             and "no video" reads as a failure rather than as
+                             what it is. -->
+                        <p v-if="usingPlaylist" class="text-sm font-bold text-white truncate flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-red-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8C5.7 19 12 19 12 19s6.3 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5 3z" />
+                            </svg>
+                            {{ t('playlist.external_title') }}
+                        </p>
+                        <p v-else class="text-sm font-bold text-white truncate">
                             {{ current ? current.name : t('playlist.empty_title') }}
                             <span v-if="current?.artist" class="font-normal text-slate-300"> · {{ current.artist }}</span>
                         </p>
@@ -259,7 +320,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Empty state: no playable videos -->
-                <div v-if="!playable.length" class="flex-1 flex items-center justify-center px-6 text-center">
+                <div v-if="!playable.length && !usingPlaylist" class="flex-1 flex items-center justify-center px-6 text-center">
                     <div>
                         <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
@@ -274,10 +335,41 @@ onBeforeUnmount(() => {
                     <!-- Player. The iframe stays mounted even while a track is
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
-                    <div class="lg:flex-1 bg-black flex items-center justify-center relative">
-                        <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : ''">
+                    <div class="lg:flex-1 bg-black flex flex-col items-center justify-center relative">
+                        <div class="w-full aspect-video max-h-full relative" :class="isAudio ? 'invisible absolute inset-0' : ''">
                             <div ref="playerEl" class="w-full h-full" />
+
+                            <div
+                                v-if="!isAudio && !playerReady"
+                                class="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3 px-6 text-center"
+                            >
+                                <template v-if="playerFailed">
+                                    <svg class="w-9 h-9 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                    <p class="text-sm font-semibold text-slate-200">{{ t('playlist.failed') }}</p>
+                                    <a
+                                        v-if="usingPlaylist"
+                                        :href="playlistUrl"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                                    >
+                                        {{ t('playlist.open_in_youtube') }}
+                                    </a>
+                                </template>
+                                <template v-else>
+                                    <span class="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                                    <p class="text-xs font-medium text-slate-400">
+                                        {{ usingPlaylist ? t('playlist.loading_playlist') : t('playlist.loading') }}
+                                    </p>
+                                </template>
+                            </div>
                         </div>
+
+                        <p v-if="usingPlaylist" class="text-xs font-medium text-slate-400 mt-3 px-4 text-center">
+                            {{ t('playlist.external_hint') }}
+                        </p>
 
                         <!-- Track player: no video to show, so the song itself is the screen -->
                         <div v-if="isAudio" class="w-full px-6 py-10 sm:py-16 flex flex-col items-center text-center">
@@ -335,8 +427,9 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
 
-                    <!-- Queue -->
-                    <div class="lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
+                    <!-- Queue. Hidden for an external playlist: its contents
+                         are YouTube's to know, and its own controls navigate it. -->
+                    <div v-if="!usingPlaylist" class="lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
                         <!-- Controls -->
                         <div class="flex items-center gap-2 px-4 py-2.5 border-b border-white/10 shrink-0">
                             <button

@@ -128,7 +128,13 @@
         "close": "Close",
         "play": "Play",
         "pause": "Pause",
-        "seek": "Seek"
+        "seek": "Seek",
+        "external_title": "YouTube playlist",
+        "external_hint": "The playlist plays from YouTube",
+        "loading": "Loading the video...",
+        "loading_playlist": "Opening the YouTube playlist...",
+        "failed": "The player could not be opened.",
+        "open_in_youtube": "Open on YouTube"
     },
     "install": {
         "banner_title": "Add to Home Screen",

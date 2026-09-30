@@ -103,6 +103,7 @@ class ServiceController extends Controller
                 'type'  => $service->type,
                 'color' => $service->color,
                 'notes' => $service->notes,
+                'playlist_url' => $service->playlist_url,
                 'team_notified_at' => $service->team_notified_at?->toIso8601String(),
                 'assignments' => $service->assignments->map(fn ($assignment) => [
                     'id' => $assignment->id,

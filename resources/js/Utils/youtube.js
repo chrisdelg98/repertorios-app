@@ -67,3 +67,21 @@ export function formatStart(seconds) {
         ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
         : `${m}:${String(s).padStart(2, '0')}`;
 }
+
+/**
+ * The playlist id out of a YouTube link.
+ *
+ * Both a playlist page and an ordinary video watched from within one carry
+ * `list=`, so this accepts either: pasting the link from the address bar while
+ * a playlist plays should work.
+ */
+export function parsePlaylist(url) {
+    if (!url) return null;
+
+    const match = String(url).match(/[?&]list=([\w-]+)/);
+
+    // A watch-later or mix id cannot be embedded, so it is not offered.
+    return match && !['WL', 'LL'].includes(match[1]) && !match[1].startsWith('RD')
+        ? match[1]
+        : null;
+}

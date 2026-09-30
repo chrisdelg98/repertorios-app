@@ -21,6 +21,7 @@ const form = useForm({
     type: props.service?.type ?? 'other',
     // Optional: it already carries the brand colour, nobody has to choose.
     color: props.service?.color ?? DEFAULT_SERVICE_COLOR,
+    playlist_url: props.service?.playlist_url ?? '',
     notes: props.service?.notes ?? '',
 });
 
@@ -202,6 +203,24 @@ function submit() {
                         rows="3"
                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                     />
+                </div>
+
+                <!-- A whole YouTube playlist, for services prepared there
+                     rather than song by song. -->
+                <div class="space-y-1.5">
+                    <label for="playlist" class="block text-xs font-medium text-slate-600">
+                        {{ t('services.form.playlist') }}
+                        <span class="text-slate-500 font-normal">· {{ t('services.color_optional') }}</span>
+                    </label>
+                    <input
+                        id="playlist"
+                        v-model="form.playlist_url"
+                        type="url"
+                        placeholder="https://youtube.com/playlist?list=..."
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <p v-if="form.errors.playlist_url" class="text-xs text-red-600">{{ form.errors.playlist_url }}</p>
+                    <p v-else class="text-xs text-slate-600">{{ t('services.form.playlist_hint') }}</p>
                 </div>
 
                 <div class="flex gap-3 pt-2">

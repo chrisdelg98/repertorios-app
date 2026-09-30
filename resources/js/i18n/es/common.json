@@ -128,7 +128,13 @@
         "close": "Cerrar",
         "play": "Reproducir",
         "pause": "Pausar",
-        "seek": "Avanzar en la pista"
+        "seek": "Avanzar en la pista",
+        "external_title": "Lista de reproducción de YouTube",
+        "external_hint": "La lista se reproduce desde YouTube",
+        "loading": "Cargando el video...",
+        "loading_playlist": "Abriendo la lista de YouTube...",
+        "failed": "No se pudo abrir el reproductor.",
+        "open_in_youtube": "Abrir en YouTube"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

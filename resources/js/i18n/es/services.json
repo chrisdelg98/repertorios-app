@@ -28,7 +28,9 @@
         "notes": "Notas (opcional)",
         "save": "Guardar Servicio",
         "saving": "Guardando…",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "playlist": "Lista de reproducción de YouTube",
+        "playlist_hint": "Si la agregas y el repertorio queda vacío, \"Reproducir todo\" usará esta lista."
     },
     "type_other": "Otro",
     "type_custom": "Personalizado",
@@ -84,5 +86,7 @@
     "note_empty": "Sin notas para esta canción.",
     "note_placeholder": "Ej. entra en el minuto 1:13, repetir el coro dos veces...",
     "note_restore": "Quitar la nota de este servicio y usar la de la canción",
-    "starts_at": "empieza en {time}"
+    "starts_at": "empieza en {time}",
+    "playlist_attached": "Este servicio usa una lista de reproducción de YouTube",
+    "playlist_attached_hint": "Toca Reproducir todo para escucharla"
 }

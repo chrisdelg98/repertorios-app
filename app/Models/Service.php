@@ -49,7 +49,7 @@ class Service extends Model
     public const DEFAULT_COLOR = 'indigo';
 
     protected $fillable = [
-        'band_id', 'kind', 'series_id', 'date', 'time', 'end_time', 'type', 'color', 'notes',
+        'band_id', 'kind', 'series_id', 'date', 'time', 'end_time', 'type', 'color', 'notes', 'playlist_url',
         'team_notified_at',
     ];
 

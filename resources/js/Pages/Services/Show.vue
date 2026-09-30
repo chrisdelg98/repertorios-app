@@ -509,7 +509,8 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
 
 // "Play all" is offered when anything can be played, from either source.
 const hasAnyVideo = computed(() =>
-    playlistSongs.value.some(s => !!s.audio?.url || !!s.youtube_url)
+    !!props.service.playlist_url
+    || playlistSongs.value.some(s => !!s.audio?.url || !!s.youtube_url)
 );
 
 const __page = usePage();
@@ -719,8 +720,25 @@ function scheduleReorder() {
 
             <!-- Songs list -->
             <div class="space-y-2 mb-4">
+                <!-- An empty setlist is not empty when a playlist is attached;
+                     saying "no songs" there hides the thing that will play. -->
                 <div
-                    v-if="!localSongs.length"
+                    v-if="!localSongs.length && service.playlist_url"
+                    class="flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-4 py-4"
+                >
+                    <span class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8C5.7 19 12 19 12 19s6.3 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5 3z" />
+                        </svg>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-900 leading-tight">{{ t('services.playlist_attached') }}</p>
+                        <p class="text-xs font-medium text-slate-600 mt-0.5">{{ t('services.playlist_attached_hint') }}</p>
+                    </div>
+                </div>
+
+                <div
+                    v-else-if="!localSongs.length"
                     class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-600 text-sm"
                 >
                     {{ t('services.no_songs') }}
@@ -1441,6 +1459,11 @@ function scheduleReorder() {
         />
 
         <!-- Playlist overlay -->
-        <PlaylistOverlay :open="playlistOpen" :songs="playlistSongs" @close="playlistOpen = false" />
+        <PlaylistOverlay
+            :open="playlistOpen"
+            :songs="playlistSongs"
+            :playlist-url="service.playlist_url ?? ''"
+            @close="playlistOpen = false"
+        />
     </AppLayout>
 </template>

@@ -28,7 +28,9 @@
         "notes": "Notes (optional)",
         "save": "Save Service",
         "saving": "Saving…",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "playlist": "YouTube playlist",
+        "playlist_hint": "If you add one and the setlist is empty, \"Play all\" uses this playlist."
     },
     "type_other": "Other",
     "type_custom": "Custom",
@@ -84,5 +86,7 @@
     "note_empty": "No notes for this song.",
     "note_placeholder": "e.g. comes in at 1:13, repeat the chorus twice...",
     "note_restore": "Drop this service's note and use the song's",
-    "starts_at": "starts at {time}"
+    "starts_at": "starts at {time}",
+    "playlist_attached": "This service uses a YouTube playlist",
+    "playlist_attached_hint": "Tap Play all to listen to it"
 }
