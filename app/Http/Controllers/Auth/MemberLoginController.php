@@ -14,15 +14,18 @@ class MemberLoginController extends Controller
     {
         $band = Band::where('code', strtoupper($request->code))->firstOrFail();
 
-        $matchesEdit   = $band->edit_pin   && $this->checkPin($request->pin, $band->edit_pin);
-        $matchesAccess = $this->checkPin($request->pin, $band->access_pin);
-
-        if (!$matchesAccess && !$matchesEdit) {
+        if (!$this->checkPin($request->pin, $band->access_pin)) {
             return back()->withErrors(['pin' => 'Incorrect PIN.']);
         }
 
+        // A code and a PIN travel by word of mouth: read aloud at rehearsal,
+        // forwarded, written on a music stand. Whoever ends up holding them
+        // gets to read the band's repertoire and nothing else.
+        //
+        // Writing belongs to admins — people the band named one by one — not
+        // to whoever knows a four-digit number.
         $request->session()->put('band_id', $band->id);
-        $request->session()->put('access_level', $matchesEdit ? 'editor' : 'member');
+        $request->session()->put('access_level', 'member');
         $request->session()->regenerate();
 
         return redirect()->route('dashboard');

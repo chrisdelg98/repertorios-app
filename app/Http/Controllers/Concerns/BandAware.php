@@ -42,15 +42,17 @@ trait BandAware
     }
 
     /**
-     * Can write = admin of the ACTIVE band (creator or promoted)
-     *             + the legacy edit-PIN guest session.
+     * Can write = admin of the ACTIVE band (creator or promoted).
+     *
+     * A session that came in through a code and a PIN, or through an invite
+     * link, reads and nothing more — there is no shared secret anywhere that
+     * hands out write access.
      */
     protected function canWrite(): bool
     {
         $user = $this->currentUser();
 
-        return ($user && $user->isAdminOf($this->bandId()))
-            || session('access_level') === 'editor';
+        return $user && $user->isAdminOf($this->bandId());
     }
 
     /**

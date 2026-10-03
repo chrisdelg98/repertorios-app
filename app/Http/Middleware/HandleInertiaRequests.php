@@ -73,8 +73,7 @@ class HandleInertiaRequests extends Middleware
                 'access' => fn () => $user
                     ? ($user->roleIn($user->active_band_id) ?? 'member')
                     : $request->session()->get('access_level'),
-                'can_write' => fn () => ($user && $user->isAdminOf($user->active_band_id))
-                    || $request->session()->get('access_level') === 'editor',
+                'can_write' => fn () => $user && $user->isAdminOf($user->active_band_id),
                 'is_creator' => function () use ($user) {
                     if (!$user) return false;
                     $band = Band::find($user->active_band_id, ['id', 'creator_id']);

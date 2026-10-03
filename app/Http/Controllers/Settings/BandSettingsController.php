@@ -28,7 +28,6 @@ class BandSettingsController extends Controller
                 'logo_url'     => $band->logo ? asset('storage/' . $band->logo) : null,
                 'code'         => $band->code,
                 'access_pin'   => $band->access_pin,
-                'has_edit_pin' => (bool) $band->edit_pin,
                 'invite_url'   => $band->invite_token
                     ? route('band.join', ['token' => $band->invite_token])
                     : null,

@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Praise Team',
             'code' => 'TEST01',
             'access_pin' => Hash::make('1234'),
-            'edit_pin' => Hash::make('5678'),
         ]);
 
         User::create([
