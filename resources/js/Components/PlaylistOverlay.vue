@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
                     <div class="lg:flex-1 bg-black flex flex-col items-center justify-center relative">
-                        <div class="w-full aspect-video max-h-full relative" :class="isAudio ? 'invisible absolute inset-0' : ''">
+                        <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : 'relative'">
                             <div ref="playerEl" class="w-full h-full" />
 
                             <div
@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
                         </p>
 
                         <!-- Track player: no video to show, so the song itself is the screen -->
-                        <div v-if="isAudio" class="w-full px-6 py-10 sm:py-16 flex flex-col items-center text-center">
+                        <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-10 flex flex-col items-center text-center">
                             <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-5">
                                 <svg class="w-11 h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
