@@ -97,6 +97,12 @@ class HandleInertiaRequests extends Middleware
                 // Off until the feature ships: with this false the upload
                 // field, the settings tile and every track disappear.
                 'enabled' => (bool) config('audio.enabled'),
+
+                // The browser rejects an oversized file before uploading it,
+                // and says so in the hint under the button. Both have to come
+                // from here, or raising AUDIO_MAX_FILE_MB would move the
+                // server's limit while the screen kept quoting the old one.
+                'max_file_mb' => (int) config('audio.max_file_mb'),
             ],
             'push' => [
                 // The public half of the VAPID pair is meant to be seen: the

@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 /**
  * Uploads a rehearsal track straight from the browser to R2.
@@ -12,9 +13,16 @@ import { ref } from 'vue';
  * upload progress — and a 20 MB upload with no progress bar feels broken.
  */
 
-/** Kept in step with SongAudioController: MP3 only, 5 MB. */
+/** MP3 only; the size comes from the server, which is what enforces it. */
 const ACCEPTED = ['audio/mpeg'];
-export const MAX_BYTES = 5 * 1024 * 1024;
+
+export function maxFileMb() {
+    return usePage().props.audio?.max_file_mb ?? 5;
+}
+
+export function maxFileBytes() {
+    return maxFileMb() * 1024 * 1024;
+}
 
 /** Some browsers report an empty or odd type for mp3; the extension settles it. */
 function resolveMime(file) {
@@ -92,7 +100,7 @@ export function useAudioUpload() {
             return null;
         }
 
-        if (file.size > MAX_BYTES) {
+        if (file.size > maxFileBytes()) {
             error.value = 'too_large';
             return null;
         }
