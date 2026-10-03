@@ -61,5 +61,14 @@
         "none": "Sin audio",
         "error_quota": "Tu banda no tiene espacio disponible. Elimina alguna pista desde Ajustes → Audios de secuencias.",
         "saves_immediately": "El audio se guarda al subirlo; no depende del botón Guardar."
+    },
+    "sort": {
+        "name_asc": "Nombre (A-Z)",
+        "name_desc": "Nombre (Z-A)",
+        "added_desc": "Agregadas recientemente",
+        "added_asc": "Las más antiguas primero",
+        "artist_asc": "Artista (A-Z)",
+        "played_most": "Más tocadas",
+        "played_oldest": "Hace más que no se toca"
     }
 }

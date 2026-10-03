@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -87,6 +87,74 @@ const filteredSongs = computed(() => {
         return true;
     });
 });
+
+// ── Sorting ──────────────────────────────────────────────────────────────────
+const SORT_KEY = 'repertorios.songs.sort';
+
+const SORTS = ['name_asc', 'name_desc', 'added_desc', 'added_asc', 'artist_asc', 'played_most', 'played_oldest'];
+
+const sort = ref('name_asc');
+
+try {
+    const saved = localStorage.getItem(SORT_KEY);
+    if (SORTS.includes(saved)) sort.value = saved;
+} catch {
+    // Private windows and blocked site data: A-Z stands.
+}
+
+function setSort(value) {
+    sort.value = value;
+    sortOpen.value = false;
+
+    try {
+        localStorage.setItem(SORT_KEY, value);
+    } catch {
+        // Not worth failing the sort over.
+    }
+}
+
+const sortOpen = ref(false);
+
+function onSortDocClick(e) {
+    if (!e.target.closest('[data-sort]')) sortOpen.value = false;
+}
+
+onMounted(() => document.addEventListener('click', onSortDocClick));
+onBeforeUnmount(() => document.removeEventListener('click', onSortDocClick));
+
+function byText(a, b) {
+    return (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
+}
+
+/** Oldest date first; a song that was never played has no date at all. */
+function byLastPlayed(a, b) {
+    const left = a.last_played_at;
+    const right = b.last_played_at;
+
+    // Never played goes last, and among those the oldest addition first: a
+    // song added yesterday is not what anyone means by forgotten.
+    if (!left && !right) return byText(a.created_at, b.created_at);
+    if (!left) return 1;
+    if (!right) return -1;
+
+    return byText(left, right);
+}
+
+const COMPARATORS = {
+    name_asc:      (a, b) => byText(a.name, b.name),
+    name_desc:     (a, b) => byText(b.name, a.name),
+    added_desc:    (a, b) => byText(b.created_at, a.created_at),
+    added_asc:     (a, b) => byText(a.created_at, b.created_at),
+    artist_asc:    (a, b) => byText(a.artist, b.artist) || byText(a.name, b.name),
+    played_most:   (a, b) => (b.plays_count ?? 0) - (a.plays_count ?? 0) || byText(a.name, b.name),
+    played_oldest: byLastPlayed,
+};
+
+const sortedSongs = computed(() =>
+    // A copy: filteredSongs is derived from the props and sorting in place
+    // would reorder them under Vue.
+    [...filteredSongs.value].sort(COMPARATORS[sort.value] ?? COMPARATORS.name_asc)
+);
 
 const hasActiveFilters = computed(() =>
     !!(search.value
@@ -300,11 +368,70 @@ function confirmDelete() {
                         :clear-label="t('songs.filter_clear')"
                         bold
                     />
+
+                    <!-- Sorting is not a filter: it never hides a song, so it
+                         sits apart, at the end of the row. -->
+                    <div class="relative ml-auto" data-sort>
+                        <button
+                            type="button"
+                            @click.stop="sortOpen = !sortOpen"
+                            class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                        >
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M6 12h12M10 17h4" />
+                            </svg>
+                            {{ t('songs.sort.' + sort) }}
+                            <svg
+                                class="w-3 h-3 text-slate-500 transition-transform"
+                                :class="sortOpen ? 'rotate-180' : ''"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <Transition
+                            enter-active-class="transition duration-150 ease-out"
+                            enter-from-class="opacity-0 scale-95"
+                            enter-to-class="opacity-100 scale-100"
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100 scale-100"
+                            leave-to-class="opacity-0 scale-95"
+                        >
+                            <div
+                                v-if="sortOpen"
+                                class="absolute right-0 top-full mt-1 w-60 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden z-30 py-1"
+                            >
+                                <template v-for="option in SORTS" :key="option">
+                                    <!-- The two that read the band's history
+                                         answer a different question from the
+                                         rest, so they are kept apart. -->
+                                    <div v-if="option === 'played_most'" class="my-1 border-t border-slate-100" />
+
+                                    <button
+                                        type="button"
+                                        @click.stop="setSort(option)"
+                                        class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left hover:bg-slate-50 transition-colors"
+                                        :class="sort === option ? 'text-indigo-600' : 'text-slate-700'"
+                                    >
+                                        <span class="flex-1">{{ t('songs.sort.' + option) }}</span>
+                                        <svg
+                                            v-if="sort === option"
+                                            class="w-3.5 h-3.5 shrink-0"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
 
                 <!-- Results summary -->
                 <div v-if="hasActiveFilters" class="flex items-center justify-between text-xs text-slate-600 pt-1">
-                    <span>{{ t('songs.filter_results', { shown: filteredSongs.length, total: songs.length }) }}</span>
+                    <span>{{ t('songs.filter_results', { shown: sortedSongs.length, total: songs.length }) }}</span>
                     <button
                         @click="clearFilters"
                         class="text-indigo-600 font-semibold hover:text-indigo-700"
@@ -321,7 +448,7 @@ function confirmDelete() {
             </div>
 
             <!-- Empty state: no matches -->
-            <div v-else-if="!filteredSongs.length" class="text-center py-16 text-slate-600">
+            <div v-else-if="!sortedSongs.length" class="text-center py-16 text-slate-600">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
                 </svg>
@@ -335,7 +462,7 @@ function confirmDelete() {
             <!-- Songs list -->
             <div v-else class="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3">
                 <div
-                    v-for="song in filteredSongs"
+                    v-for="song in sortedSongs"
                     :key="song.id"
                     class="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition flex flex-col"
                 >

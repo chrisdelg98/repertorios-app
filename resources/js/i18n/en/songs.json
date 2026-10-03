@@ -61,5 +61,14 @@
         "none": "No track",
         "error_quota": "Your band has no space left. Remove a track from Settings → Rehearsal tracks.",
         "saves_immediately": "The track is saved as soon as it uploads; it does not wait for Save."
+    },
+    "sort": {
+        "name_asc": "Name (A-Z)",
+        "name_desc": "Name (Z-A)",
+        "added_desc": "Recently added",
+        "added_asc": "Oldest first",
+        "artist_asc": "Artist (A-Z)",
+        "played_most": "Most played",
+        "played_oldest": "Longest since played"
     }
 }

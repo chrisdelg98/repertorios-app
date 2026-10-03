@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\BandAware;
 use App\Http\Requests\Songs\StoreSongRequest;
 use App\Http\Requests\Songs\UpdateSongRequest;
+use App\Models\Service;
 use App\Models\Song;
 use App\Models\SongVersion;
 use Illuminate\Http\RedirectResponse;
@@ -19,8 +20,22 @@ class SongController extends Controller
 
     public function index(): Response
     {
+        // How often the song has been played, and when it last was. The
+        // library can be sorted by both, which is what turns it from a list of
+        // names into something you can build a service from: what the band
+        // actually sings, and what it has not sung in months.
         $songs = Song::where('band_id', $this->bandId())
+            ->select('songs.*')
             ->with('versions')
+            ->withCount('serviceSongs as plays_count')
+            ->addSelect(['last_played_at' => Service::query()
+                ->select('services.date')
+                ->join('service_songs', 'service_songs.service_id', '=', 'services.id')
+                ->join('song_versions', 'song_versions.id', '=', 'service_songs.song_version_id')
+                ->whereColumn('song_versions.song_id', 'songs.id')
+                ->orderByDesc('services.date')
+                ->limit(1),
+            ])
             ->orderBy('name')
             ->get();
 
