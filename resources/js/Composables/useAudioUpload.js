@@ -118,14 +118,24 @@ export function useAudioUpload() {
 
             await putToStorage(signed.url, typed, (value) => { progress.value = value; });
 
-            const result = await json(`/song-versions/${songVersionId}/audio`, {
-                key: signed.key,
-                name: file.name,
-                size: file.size,
-                mime,
-            }, 'PUT');
+            // From here the file exists in the bucket. If recording it fails,
+            // nothing would ever point at it again, so it is thrown away
+            // rather than left to be paid for in silence.
+            try {
+                const result = await json(`/song-versions/${songVersionId}/audio`, {
+                    key: signed.key,
+                    name: file.name,
+                    size: file.size,
+                    mime,
+                }, 'PUT');
 
-            return result.audio;
+                return result.audio;
+            } catch (e) {
+                await json(`/song-versions/${songVersionId}/audio/discard`, { key: signed.key })
+                    .catch(() => {}); // Best effort: the original failure is what matters.
+
+                throw e;
+            }
         } catch (e) {
             console.error('[audio] upload failed', e);
 

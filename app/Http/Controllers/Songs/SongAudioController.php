@@ -109,6 +109,38 @@ class SongAudioController extends Controller
         ]);
     }
 
+    /**
+     * Throws away an object that was uploaded but never recorded.
+     *
+     * The browser PUTs to R2 and only then tells this server about it. If that
+     * second call never lands — a dropped connection, a closed tab — the file
+     * sits in the bucket with no row pointing at it: invisible to the band,
+     * invisible to the quota, and paid for all the same. The browser reports
+     * its own failure here so the object goes with it.
+     */
+    public function discard(Request $request, SongVersion $songVersion, R2Signer $signer): JsonResponse
+    {
+        $this->authorizeVersion($songVersion);
+
+        $data = $request->validate([
+            'key' => ['required', 'string', 'max:400'],
+        ]);
+
+        if (!str_starts_with($data['key'], $this->prefixFor($songVersion))) {
+            return response()->json(['message' => 'key_outside_prefix'], 422);
+        }
+
+        // An attached file is not an orphan; removing one is what destroy is
+        // for, and it has to clear the row as well.
+        if ($data['key'] === $songVersion->audio_path) {
+            return response()->json(['message' => 'key_in_use'], 422);
+        }
+
+        $signer->delete($data['key']);
+
+        return response()->json(['discarded' => true]);
+    }
+
     public function destroy(SongVersion $songVersion, R2Signer $signer): JsonResponse
     {
         $this->authorizeVersion($songVersion);

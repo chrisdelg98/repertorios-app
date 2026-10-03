@@ -157,6 +157,7 @@ async function detach() {
                 </button>
 
                 <p class="text-2xs font-medium text-slate-500">{{ t('songs.audio.limits', { max: maxFileMb() }) }}</p>
+                <p class="text-2xs font-medium text-slate-500 mt-1">{{ t('songs.audio.saves_immediately') }}</p>
             </template>
 
             <input

@@ -157,6 +157,7 @@ Route::middleware('band.access')->group(function () {
         ->middleware('throttle:30,1')
         ->name('song-audio.presign');
     Route::put('/song-versions/{songVersion}/audio', [SongAudioController::class, 'attach'])->name('song-audio.attach');
+    Route::post('/song-versions/{songVersion}/audio/discard', [SongAudioController::class, 'discard'])->name('song-audio.discard');
     Route::delete('/song-versions/{songVersion}/audio', [SongAudioController::class, 'destroy'])->name('song-audio.destroy');
     Route::get('/song-versions/{songVersion}/audio/url', [SongAudioController::class, 'play'])->name('song-audio.url');
 

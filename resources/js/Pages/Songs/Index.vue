@@ -177,6 +177,19 @@ function closeEdit() {
     editForm.reset();
 }
 
+/**
+ * The track is attached the moment it finishes uploading, by its own endpoint —
+ * Save only ever covered the fields around it.
+ *
+ * So the page's copy of the songs is refreshed here. Without it, closing the
+ * form and opening it again would re-read the songs as they were when the page
+ * loaded, and report "no audio" over a file that is sitting in the bucket.
+ */
+function onAudioChange(version, audio) {
+    version.audio = audio;
+    router.reload({ only: ['songs'] });
+}
+
 function toggleVersion(id) {
     expandedVersions.value[id] = !expandedVersions.value[id];
 }
@@ -791,7 +804,7 @@ function confirmDelete() {
                                         v-if="audioEnabled"
                                         :version-id="v.id"
                                         :audio="v.audio"
-                                        @update:audio="v.audio = $event"
+                                        @update:audio="onAudioChange(v, $event)"
                                     />
 
                                 </div>

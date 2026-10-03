@@ -59,6 +59,7 @@
         "error_failed": "No se pudo subir. Revisa tu conexión e inténtalo de nuevo.",
         "attached": "Audio adjunto",
         "none": "Sin audio",
-        "error_quota": "Tu banda no tiene espacio disponible. Elimina alguna pista desde Ajustes → Audios de secuencias."
+        "error_quota": "Tu banda no tiene espacio disponible. Elimina alguna pista desde Ajustes → Audios de secuencias.",
+        "saves_immediately": "El audio se guarda al subirlo; no depende del botón Guardar."
     }
 }

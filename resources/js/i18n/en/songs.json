@@ -59,6 +59,7 @@
         "error_failed": "Upload failed. Check your connection and try again.",
         "attached": "Track attached",
         "none": "No track",
-        "error_quota": "Your band has no space left. Remove a track from Settings → Rehearsal tracks."
+        "error_quota": "Your band has no space left. Remove a track from Settings → Rehearsal tracks.",
+        "saves_immediately": "The track is saved as soon as it uploads; it does not wait for Save."
     }
 }
