@@ -136,7 +136,8 @@
         "failed": "The player could not be opened.",
         "open_in_youtube": "Open on YouTube",
         "source_track": "Track",
-        "source_youtube": "YouTube"
+        "source_youtube": "YouTube",
+        "prefer": "Prefer"
     },
     "install": {
         "banner_title": "Add to Home Screen",

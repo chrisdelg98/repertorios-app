@@ -136,7 +136,8 @@
         "failed": "No se pudo abrir el reproductor.",
         "open_in_youtube": "Abrir en YouTube",
         "source_track": "Pista",
-        "source_youtube": "YouTube"
+        "source_youtube": "YouTube",
+        "prefer": "Preferir"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

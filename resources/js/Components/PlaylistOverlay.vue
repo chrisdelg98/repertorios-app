@@ -17,10 +17,8 @@ const emit = defineEmits(['close']);
 /**
  * A song may be playable through both sources, so it keeps both.
  *
- * The uploaded track is what opens: it is what the band chose deliberately for
- * rehearsing — no ads, no intro to skip, and the exact arrangement they play.
- * Where a song has a video too, the choice is offered rather than decided, and
- * it is remembered only for as long as the player is open.
+ * Which one is reached for is settled by `preferred` below, not here: that is
+ * a decision about the evening rather than about any one song.
  */
 const playable = computed(() =>
     props.songs
@@ -36,31 +34,37 @@ const playable = computed(() =>
                 _videoId: parsed?.id ?? null,
                 _start: parsed?.start ?? 0,
                 _startLabel: parsed ? formatStart(parsed.start) : '',
-                _default: audioUrl ? 'audio' : 'youtube',
             };
         })
         .filter(Boolean)
 );
 
 /**
- * What the person picked for a given song, by position in the queue.
+ * Which source to reach for, across the whole setlist.
  *
- * Deliberately not persisted: a track is right for rehearsing and the video is
- * right for learning a part, and which one you want depends on the evening,
- * not on the song.
+ * A preference rather than a choice per song: in an evening you want the
+ * tracks or you want the videos, and saying so once should hold for the rest
+ * of the queue. A song that only has one of the two plays that one, whatever
+ * is preferred — hence the word.
  */
-const chosen = ref({});
+const PREFERENCE_KEY = 'repertorios.playlist.source';
+
+const preferred = ref('audio');
+
+try {
+    const saved = localStorage.getItem(PREFERENCE_KEY);
+    if (saved === 'audio' || saved === 'youtube') preferred.value = saved;
+} catch {
+    // Private windows and blocked site data: the default stands.
+}
 
 function sourceOf(idx) {
     const song = playable.value[idx];
     if (!song) return null;
 
-    const pick = chosen.value[idx];
-
-    if (pick === 'audio' && song._audioUrl) return 'audio';
-    if (pick === 'youtube' && song._videoId) return 'youtube';
-
-    return song._default;
+    return preferred.value === 'audio'
+        ? (song._audioUrl ? 'audio' : 'youtube')
+        : (song._videoId ? 'youtube' : 'audio');
 }
 
 /**
@@ -125,7 +129,16 @@ const audioLength  = ref(0);
 const current = computed(() => playable.value[currentIdx.value] ?? null);
 const currentSource = computed(() => sourceOf(currentIdx.value));
 const isAudio = computed(() => currentSource.value === 'audio');
-const hasBothSources = computed(() => !!(current.value?._audioUrl && current.value?._videoId));
+const currentHasAudio = computed(() => !!current.value?._audioUrl);
+const currentHasVideo = computed(() => !!current.value?._videoId);
+
+/**
+ * The bar only appears when the preference can change something: if no song in
+ * the setlist carries both, there is nothing to prefer.
+ */
+const canPrefer = computed(() =>
+    playable.value.some(song => song._audioUrl && song._videoId)
+);
 
 function formatClock(seconds) {
     if (!seconds || !isFinite(seconds)) return '0:00';
@@ -257,21 +270,35 @@ function loadAt(idx) {
     });
 }
 
-/** Play the same song through the other source. */
-function switchSource(source) {
-    if (source === currentSource.value) return;
+/** Prefer this source from here on, and apply it to what is playing. */
+function prefer(source) {
+    if (source === preferred.value) return;
 
-    // Silence both engines first. Changing the source unmounts whichever one
-    // is on screen, and a detached <audio> goes on playing in most browsers —
-    // you would hear the track under the video with no way to stop it.
-    if (audioEl.value) audioEl.value.pause();
-    if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
+    // The song being played may not have the newly preferred source, in which
+    // case it carries on untouched and only the rest of the queue follows.
+    const song = current.value;
+    const affectsCurrent = !!(source === 'audio' ? song?._audioUrl : song?._videoId);
 
-    chosen.value = { ...chosen.value, [currentIdx.value]: source };
+    if (affectsCurrent) {
+        // Silence both engines before the swap. The one on screen is unmounted
+        // by the re-render, and a detached <audio> goes on playing in most
+        // browsers — the track would run under the video with nothing left to
+        // stop it.
+        if (audioEl.value) audioEl.value.pause();
+        if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
+    }
+
+    preferred.value = source;
+
+    try {
+        localStorage.setItem(PREFERENCE_KEY, source);
+    } catch {
+        // Not worth failing the switch over.
+    }
 
     // The audio element and the iframe swap places in the DOM, so the engines
     // are only touched once that has happened.
-    nextTick(() => loadAt(currentIdx.value));
+    if (affectsCurrent) nextTick(() => loadAt(currentIdx.value));
 }
 
 function playNext() {
@@ -290,7 +317,6 @@ function close() {
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         currentIdx.value = 0;
-        chosen.value = {};
         playerReady.value = false;
         playerFailed.value = false;
 
@@ -382,126 +408,136 @@ onBeforeUnmount(() => {
                     <!-- Player. The iframe stays mounted even while a track is
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
-                    <div class="lg:flex-1 bg-black flex flex-col items-center justify-center relative">
-                        <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : 'relative'">
-                            <div ref="playerEl" class="w-full h-full" />
-
-                            <div
-                                v-if="!isAudio && !playerReady"
-                                class="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3 px-6 text-center"
-                            >
-                                <template v-if="playerFailed">
-                                    <svg class="w-9 h-9 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                    </svg>
-                                    <p class="text-sm font-semibold text-slate-200">{{ t('playlist.failed') }}</p>
-                                    <a
-                                        v-if="usingPlaylist"
-                                        :href="playlistUrl"
-                                        target="_blank"
-                                        rel="noopener"
-                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                                    >
-                                        {{ t('playlist.open_in_youtube') }}
-                                    </a>
-                                </template>
-                                <template v-else>
-                                    <span class="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                                    <p class="text-xs font-medium text-slate-400">
-                                        {{ usingPlaylist ? t('playlist.loading_playlist') : t('playlist.loading') }}
-                                    </p>
-                                </template>
-                            </div>
-                        </div>
-
-                        <p v-if="usingPlaylist" class="text-xs font-medium text-slate-400 mt-3 px-4 text-center">
-                            {{ t('playlist.external_hint') }}
-                        </p>
-
-                        <!-- Both sources exist for this song, so neither is
-                             assumed. Shown above the card: it is a property of
-                             the song, not one more transport control. -->
+                    <div class="lg:flex-1 bg-black flex flex-col min-h-0">
+                        <!-- The source bar keeps its place whatever plays below
+                             it. It states a preference for the whole setlist,
+                             so it does not belong to the current song and must
+                             not move when the media under it changes size. -->
                         <div
-                            v-if="hasBothSources"
-                            class="shrink-0 order-first flex items-center gap-1 p-1 bg-white/10 rounded-xl mb-5"
+                            v-if="canPrefer"
+                            class="shrink-0 flex items-center justify-center gap-2.5 px-4 py-3 border-b border-white/5"
                         >
-                            <button
-                                type="button"
-                                @click="switchSource('audio')"
-                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors"
-                                :class="isAudio ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                                </svg>
-                                {{ t('playlist.source_track') }}
-                            </button>
-                            <button
-                                type="button"
-                                @click="switchSource('youtube')"
-                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors"
-                                :class="!isAudio ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
-                            >
-                                <svg class="w-3.5 h-3.5" :class="!isAudio ? 'text-red-600' : ''" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8C5.7 19 12 19 12 19s6.3 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5 3z" />
-                                </svg>
-                                {{ t('playlist.source_youtube') }}
-                            </button>
+                            <span class="text-2xs font-semibold text-slate-500 uppercase tracking-widest">{{ t('playlist.prefer') }}</span>
+
+                            <div class="flex items-center gap-1 p-1 bg-white/10 rounded-xl">
+                                <button
+                                    type="button"
+                                    @click="prefer('audio')"
+                                    :disabled="!currentHasAudio"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    :class="isAudio ? 'bg-white text-slate-900' : 'text-slate-300 enabled:hover:text-white'"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                                    </svg>
+                                    {{ t('playlist.source_track') }}
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="prefer('youtube')"
+                                    :disabled="!currentHasVideo"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    :class="!isAudio ? 'bg-white text-slate-900' : 'text-slate-300 enabled:hover:text-white'"
+                                >
+                                    <svg class="w-3.5 h-3.5" :class="!isAudio ? 'text-red-600' : ''" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8C5.7 19 12 19 12 19s6.3 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5 3z" />
+                                    </svg>
+                                    {{ t('playlist.source_youtube') }}
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Track player: no video to show, so the song itself is the screen -->
-                        <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-10 flex flex-col items-center text-center">
-                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-5">
-                                <svg class="w-11 h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-                                </svg>
-                            </div>
+                        <!-- The media, centred in whatever height is left. -->
+                        <div class="flex-1 flex flex-col items-center justify-center min-h-0 relative">
+                            <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : 'relative'">
+                                <div ref="playerEl" class="w-full h-full" />
 
-                            <p class="text-lg font-bold text-white leading-tight">{{ current?.name }}</p>
-                            <p v-if="current?.artist" class="text-sm font-medium text-slate-300 mt-1">{{ current.artist }}</p>
-
-                            <audio
-                                ref="audioEl"
-                                :src="current?._audioUrl"
-                                preload="auto"
-                                class="hidden"
-                                @play="audioPlaying = true"
-                                @pause="audioPlaying = false"
-                                @timeupdate="audioTime = audioEl?.currentTime ?? 0"
-                                @loadedmetadata="audioLength = audioEl?.duration ?? 0"
-                                @ended="onAudioEnded"
-                            />
-
-                            <div class="w-full max-w-md mt-7">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    :max="audioLength || 0"
-                                    :value="audioTime"
-                                    step="0.5"
-                                    @input="seekAudio"
-                                    class="w-full accent-indigo-500 cursor-pointer"
-                                    :aria-label="t('playlist.seek')"
-                                />
-                                <div class="flex justify-between text-2xs font-medium text-slate-400 tabular-nums mt-1">
-                                    <span>{{ formatClock(audioTime) }}</span>
-                                    <span>{{ formatClock(audioLength) }}</span>
+                                <div
+                                    v-if="!isAudio && !playerReady"
+                                    class="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3 px-6 text-center"
+                                >
+                                    <template v-if="playerFailed">
+                                        <svg class="w-9 h-9 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                        </svg>
+                                        <p class="text-sm font-semibold text-slate-200">{{ t('playlist.failed') }}</p>
+                                        <a
+                                            v-if="usingPlaylist"
+                                            :href="playlistUrl"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                                        >
+                                            {{ t('playlist.open_in_youtube') }}
+                                        </a>
+                                    </template>
+                                    <template v-else>
+                                        <span class="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                                        <p class="text-xs font-medium text-slate-400">
+                                            {{ usingPlaylist ? t('playlist.loading_playlist') : t('playlist.loading') }}
+                                        </p>
+                                    </template>
                                 </div>
                             </div>
 
-                            <button
-                                type="button"
-                                @click="toggleAudio"
-                                class="mt-5 w-16 h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
-                                :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
-                            >
-                                <svg v-if="audioPlaying" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
-                                </svg>
-                                <svg v-else class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
-                            </button>
+                            <p v-if="usingPlaylist" class="text-xs font-medium text-slate-400 mt-3 px-4 text-center">
+                                {{ t('playlist.external_hint') }}
+                            </p>
+
+                            <!-- Track player: no video to show, so the song itself is the screen -->
+                            <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-10 flex flex-col items-center text-center">
+                                <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-5">
+                                    <svg class="w-11 h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                                    </svg>
+                                </div>
+
+                                <p class="text-lg font-bold text-white leading-tight">{{ current?.name }}</p>
+                                <p v-if="current?.artist" class="text-sm font-medium text-slate-300 mt-1">{{ current.artist }}</p>
+
+                                <audio
+                                    ref="audioEl"
+                                    :src="current?._audioUrl"
+                                    preload="auto"
+                                    class="hidden"
+                                    @play="audioPlaying = true"
+                                    @pause="audioPlaying = false"
+                                    @timeupdate="audioTime = audioEl?.currentTime ?? 0"
+                                    @loadedmetadata="audioLength = audioEl?.duration ?? 0"
+                                    @ended="onAudioEnded"
+                                />
+
+                                <div class="w-full max-w-md mt-7">
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        :max="audioLength || 0"
+                                        :value="audioTime"
+                                        step="0.5"
+                                        @input="seekAudio"
+                                        class="w-full accent-indigo-500 cursor-pointer"
+                                        :aria-label="t('playlist.seek')"
+                                    />
+                                    <div class="flex justify-between text-2xs font-medium text-slate-400 tabular-nums mt-1">
+                                        <span>{{ formatClock(audioTime) }}</span>
+                                        <span>{{ formatClock(audioLength) }}</span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="toggleAudio"
+                                    class="mt-5 w-16 h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
+                                    :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
+                                >
+                                    <svg v-if="audioPlaying" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+                                    </svg>
+                                    <svg v-else class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
