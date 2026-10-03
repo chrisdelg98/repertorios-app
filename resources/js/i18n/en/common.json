@@ -134,7 +134,9 @@
         "loading": "Loading the video...",
         "loading_playlist": "Opening the YouTube playlist...",
         "failed": "The player could not be opened.",
-        "open_in_youtube": "Open on YouTube"
+        "open_in_youtube": "Open on YouTube",
+        "source_track": "Track",
+        "source_youtube": "YouTube"
     },
     "install": {
         "banner_title": "Add to Home Screen",

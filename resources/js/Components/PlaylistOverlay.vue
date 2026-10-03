@@ -15,33 +15,53 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 /**
- * A song is playable through one of two sources, and the uploaded track wins.
+ * A song may be playable through both sources, so it keeps both.
  *
- * It is what the band chose deliberately for rehearsing: no ads, no intro to
- * skip, and the exact arrangement they play. YouTube stays as the fallback for
- * everything that has no track yet.
+ * The uploaded track is what opens: it is what the band chose deliberately for
+ * rehearsing — no ads, no intro to skip, and the exact arrangement they play.
+ * Where a song has a video too, the choice is offered rather than decided, and
+ * it is remembered only for as long as the player is open.
  */
 const playable = computed(() =>
     props.songs
         .map(s => {
-            if (s.audio?.url) {
-                return { ...s, _source: 'audio', _audioUrl: s.audio.url, _start: 0, _startLabel: '' };
-            }
-
             const parsed = parseYouTube(s.youtube_url);
+            const audioUrl = s.audio?.url ?? null;
 
-            return parsed
-                ? {
-                    ...s,
-                    _source: 'youtube',
-                    _videoId: parsed.id,
-                    _start: parsed.start,
-                    _startLabel: formatStart(parsed.start),
-                }
-                : null;
+            if (!audioUrl && !parsed) return null;
+
+            return {
+                ...s,
+                _audioUrl: audioUrl,
+                _videoId: parsed?.id ?? null,
+                _start: parsed?.start ?? 0,
+                _startLabel: parsed ? formatStart(parsed.start) : '',
+                _default: audioUrl ? 'audio' : 'youtube',
+            };
         })
         .filter(Boolean)
 );
+
+/**
+ * What the person picked for a given song, by position in the queue.
+ *
+ * Deliberately not persisted: a track is right for rehearsing and the video is
+ * right for learning a part, and which one you want depends on the evening,
+ * not on the song.
+ */
+const chosen = ref({});
+
+function sourceOf(idx) {
+    const song = playable.value[idx];
+    if (!song) return null;
+
+    const pick = chosen.value[idx];
+
+    if (pick === 'audio' && song._audioUrl) return 'audio';
+    if (pick === 'youtube' && song._videoId) return 'youtube';
+
+    return song._default;
+}
 
 /**
  * A pasted YouTube playlist stands in for the setlist when there is none.
@@ -103,7 +123,9 @@ const audioTime    = ref(0);
 const audioLength  = ref(0);
 
 const current = computed(() => playable.value[currentIdx.value] ?? null);
-const isAudio = computed(() => current.value?._source === 'audio');
+const currentSource = computed(() => sourceOf(currentIdx.value));
+const isAudio = computed(() => currentSource.value === 'audio');
+const hasBothSources = computed(() => !!(current.value?._audioUrl && current.value?._videoId));
 
 function formatClock(seconds) {
     if (!seconds || !isFinite(seconds)) return '0:00';
@@ -180,8 +202,11 @@ function buildPlayer() {
     }
 
     if (!playable.value.length) return;
-    if (playable.value[currentIdx.value]?._source !== 'youtube') return;
+    if (sourceOf(currentIdx.value) !== 'youtube') return;
     if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
+
+    playerReady.value = false;
+    playerFailed.value = false;
 
     const first = playable.value[currentIdx.value];
 
@@ -207,7 +232,7 @@ function loadAt(idx) {
 
     currentIdx.value = idx;
 
-    if (song._source === 'audio') {
+    if (sourceOf(idx) === 'audio') {
         // Stop the video before the track starts, or both play at once.
         if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
         startAudio();
@@ -222,10 +247,31 @@ function loadAt(idx) {
         return;
     }
 
+    // The iframe is already up and showing a frame, so there is nothing to
+    // wait for.
+    playerReady.value = true;
+
     ytPlayer.loadVideoById({
         videoId: song._videoId,
         startSeconds: song._start || 0,
     });
+}
+
+/** Play the same song through the other source. */
+function switchSource(source) {
+    if (source === currentSource.value) return;
+
+    // Silence both engines first. Changing the source unmounts whichever one
+    // is on screen, and a detached <audio> goes on playing in most browsers —
+    // you would hear the track under the video with no way to stop it.
+    if (audioEl.value) audioEl.value.pause();
+    if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
+
+    chosen.value = { ...chosen.value, [currentIdx.value]: source };
+
+    // The audio element and the iframe swap places in the DOM, so the engines
+    // are only touched once that has happened.
+    nextTick(() => loadAt(currentIdx.value));
 }
 
 function playNext() {
@@ -244,6 +290,7 @@ function close() {
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         currentIdx.value = 0;
+        chosen.value = {};
         playerReady.value = false;
         playerFailed.value = false;
 
@@ -251,7 +298,7 @@ watch(() => props.open, (isOpen) => {
         // reach a YouTube song later, and loading it then would stall playback.
         loadYouTubeApi();
 
-        if (playable.value[0]?._source === 'audio') startAudio();
+        if (sourceOf(0) === 'audio') startAudio();
 
         return;
     }
@@ -370,6 +417,37 @@ onBeforeUnmount(() => {
                         <p v-if="usingPlaylist" class="text-xs font-medium text-slate-400 mt-3 px-4 text-center">
                             {{ t('playlist.external_hint') }}
                         </p>
+
+                        <!-- Both sources exist for this song, so neither is
+                             assumed. Shown above the card: it is a property of
+                             the song, not one more transport control. -->
+                        <div
+                            v-if="hasBothSources"
+                            class="shrink-0 order-first flex items-center gap-1 p-1 bg-white/10 rounded-xl mb-5"
+                        >
+                            <button
+                                type="button"
+                                @click="switchSource('audio')"
+                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors"
+                                :class="isAudio ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                                </svg>
+                                {{ t('playlist.source_track') }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="switchSource('youtube')"
+                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors"
+                                :class="!isAudio ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                            >
+                                <svg class="w-3.5 h-3.5" :class="!isAudio ? 'text-red-600' : ''" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.3 5 12 5 12 5s-6.3 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8C5.7 19 12 19 12 19s6.3 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5 3z" />
+                                </svg>
+                                {{ t('playlist.source_youtube') }}
+                            </button>
+                        </div>
 
                         <!-- Track player: no video to show, so the song itself is the screen -->
                         <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-10 flex flex-col items-center text-center">

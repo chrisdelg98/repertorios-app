@@ -134,7 +134,9 @@
         "loading": "Cargando el video...",
         "loading_playlist": "Abriendo la lista de YouTube...",
         "failed": "No se pudo abrir el reproductor.",
-        "open_in_youtube": "Abrir en YouTube"
+        "open_in_youtube": "Abrir en YouTube",
+        "source_track": "Pista",
+        "source_youtube": "YouTube"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",
