@@ -11,7 +11,8 @@
         "add": "Agregar",
         "settings": "Ajustes",
         "logout": "Salir",
-        "calendar": "Calendario"
+        "calendar": "Calendario",
+        "audio": "Audios"
     },
     "lang": {
         "en": "English",

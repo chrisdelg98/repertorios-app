@@ -11,7 +11,8 @@
         "add": "Add",
         "settings": "Settings",
         "logout": "Logout",
-        "calendar": "Calendar"
+        "calendar": "Calendar",
+        "audio": "Audio"
     },
     "lang": {
         "en": "English",

@@ -18,6 +18,7 @@ const props = defineProps({
 const auth = computed(() => page.props.auth);
 const canWrite = computed(() => !!auth.value?.can_write);
 const isCreator = computed(() => !!auth.value?.is_creator);
+const audioEnabled = computed(() => !!page.props.audio?.enabled);
 const isSessionMember = computed(() => auth.value?.access === 'member' && !auth.value?.user);
 
 // --- Notifications prompt ---
@@ -417,6 +418,22 @@ const nextServiceRolesText = computed(() => {
                         </div>
                         <p class="text-sm font-semibold text-slate-900">{{ t('settings.members.title') }}</p>
                         <p class="text-xs text-slate-600 mt-0.5">{{ t('settings.members.subtitle') }}</p>
+                    </Link>
+
+                    <!-- Managing stored tracks belongs with the other two
+                         management tiles, after them. -->
+                    <Link
+                        v-if="audioEnabled && canWrite"
+                        href="/settings/audio"
+                        class="bg-white rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-colors"
+                    >
+                        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center mb-2">
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-900">{{ t('settings.audio.title') }}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">{{ t('settings.audio.subtitle_short') }}</p>
                     </Link>
                 </div>
             </div>
