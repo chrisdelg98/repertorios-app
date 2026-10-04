@@ -202,7 +202,8 @@
             "dupe": "Esa persona ya esta asignada a ese rol",
             "missing_role": "Elige un rol",
             "missing_name": "Escribe el nombre"
-        }
+        },
+        "not_assigned": "Sin rol asignado"
     },
     "share": {
         "include_team_label": "Incluir equipo del servicio",

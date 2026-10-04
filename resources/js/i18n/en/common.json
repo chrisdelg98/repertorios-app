@@ -202,7 +202,8 @@
             "dupe": "That person is already assigned to that role",
             "missing_role": "Choose a role",
             "missing_name": "Enter a name"
-        }
+        },
+        "not_assigned": "No role assigned"
     },
     "share": {
         "include_team_label": "Include service team",
