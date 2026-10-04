@@ -115,15 +115,5 @@
         "4": "Thursday",
         "5": "Friday",
         "6": "Saturday"
-    },
-    "audio": {
-        "title": "Rehearsal tracks",
-        "subtitle": "Manage the tracks your band has uploaded and free space when you need it.",
-        "subtitle_short": "Space used and uploaded tracks",
-        "count": "{count} track uploaded | {count} tracks uploaded",
-        "empty": "Your band has not uploaded any tracks yet.",
-        "full": "You have reached the limit. Remove a track to upload another.",
-        "remove": "Remove",
-        "remove_confirm": "The audio will be removed. The song and its details stay."
     }
 }

@@ -302,11 +302,11 @@ function confirmDelete() {
         <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 lg:mb-6">
-                <h1 class="text-base lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('songs.library') }}</h1>
+                <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('songs.library') }}</h1>
                 <button
                     v-if="can_write"
                     @click="showAddForm = true"
-                    class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 text-white text-xs lg:text-sm font-semibold rounded-lg"
+                    class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs lg:text-sm font-semibold rounded-lg transition-colors"
                 >
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />

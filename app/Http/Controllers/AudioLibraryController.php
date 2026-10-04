@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\BandAware;
-use App\Http\Controllers\Controller;
 use App\Models\SongVersion;
 use App\Services\BandAudioQuota;
 use App\Services\R2Signer;
@@ -48,7 +47,7 @@ class AudioLibraryController extends Controller
                 'updated_at' => $version->updated_at?->toIso8601String(),
             ]);
 
-        return Inertia::render('Settings/AudioLibrary', [
+        return Inertia::render('Audio/Index', [
             'tracks' => $tracks,
             'usage'  => $this->quota->summary($bandId),
         ]);

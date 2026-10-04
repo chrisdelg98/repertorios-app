@@ -152,10 +152,10 @@ const sections = computed(() => {
     });
     // Only while the feature is live; the flag hides the whole thing.
     if (page.props.audio?.enabled && isAdmin.value) list.push({
-        href: '/settings/audio',
+        href: '/audio',
         icon: 'audio',
-        title: () => t('settings.audio.title'),
-        subtitle: () => t('settings.audio.subtitle_short'),
+        title: () => t('audio_library.title'),
+        subtitle: () => t('audio_library.subtitle_short'),
     });
     // Second path to the same place as the band switcher menu — a chevron next
     // to the band name is not where people look for this the first time.
@@ -173,8 +173,8 @@ const sections = computed(() => {
     <Head :title="t('settings.title')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
-            <h1 class="text-lg font-semibold text-slate-900 mb-5">{{ t('settings.title') }}</h1>
+        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
+            <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900 mb-5">{{ t('settings.title') }}</h1>
 
             <div class="space-y-2">
                 <Link

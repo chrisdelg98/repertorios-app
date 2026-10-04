@@ -304,5 +304,21 @@
         "delete_series": "Remove this one and the ones after",
         "delete_series_confirm": "This and every later entry in the series will be removed. Past ones stay.",
         "save": "Save"
+    },
+    "audio_library": {
+        "title": "Rehearsal tracks",
+        "subtitle": "Manage the tracks your band has uploaded and free space when you need it.",
+        "subtitle_short": "Space used and uploaded tracks",
+        "count": "{count} track uploaded | {count} tracks uploaded",
+        "empty": "Your band has not uploaded any tracks yet.",
+        "full": "You have reached the limit. Remove a track to upload another.",
+        "remove": "Remove",
+        "remove_confirm": "The audio will be removed. The song and its details stay.",
+        "sort": {
+            "size_desc": "Largest first",
+            "size_asc": "Smallest first",
+            "added_desc": "Recently uploaded",
+            "name_asc": "Song (A-Z)"
+        }
     }
 }

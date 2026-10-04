@@ -115,15 +115,5 @@
         "4": "Jueves",
         "5": "Viernes",
         "6": "Sábado"
-    },
-    "audio": {
-        "title": "Audios de secuencias",
-        "subtitle": "Gestiona las pistas que ha subido tu banda y libera espacio cuando haga falta.",
-        "subtitle_short": "Espacio usado y pistas subidas",
-        "count": "{count} pista subida | {count} pistas subidas",
-        "empty": "Tu banda todavía no ha subido ninguna pista.",
-        "full": "Alcanzaste el límite. Elimina alguna pista para poder subir otra.",
-        "remove": "Eliminar",
-        "remove_confirm": "Se eliminará el audio. La canción y sus datos se quedan."
     }
 }

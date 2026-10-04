@@ -73,7 +73,7 @@ const navItems = computed(() => {
     // Only where the screen leads somewhere: the library refuses anyone who
     // cannot write, and the flag hides the feature entirely.
     if (page.props.audio?.enabled && auth.value.can_write) {
-        base.push({ href: '/settings/audio', label: t('nav.audio'), icon: 'audio' });
+        base.push({ href: '/audio', label: t('nav.audio'), icon: 'audio' });
     }
 
     if (auth.value.user) {

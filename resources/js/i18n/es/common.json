@@ -304,5 +304,21 @@
         "delete_series": "Eliminar esta y las siguientes",
         "delete_series_confirm": "Se eliminarán esta y todas las siguientes de la serie. Las pasadas se quedan.",
         "save": "Guardar"
+    },
+    "audio_library": {
+        "title": "Audios de secuencias",
+        "subtitle": "Gestiona las pistas que ha subido tu banda y libera espacio cuando haga falta.",
+        "subtitle_short": "Espacio usado y pistas subidas",
+        "count": "{count} pista subida | {count} pistas subidas",
+        "empty": "Tu banda todavía no ha subido ninguna pista.",
+        "full": "Alcanzaste el límite. Elimina alguna pista para poder subir otra.",
+        "remove": "Eliminar",
+        "remove_confirm": "Se eliminará el audio. La canción y sus datos se quedan.",
+        "sort": {
+            "size_desc": "Más pesadas primero",
+            "size_asc": "Más livianas primero",
+            "added_desc": "Subidas recientemente",
+            "name_asc": "Canción (A-Z)"
+        }
     }
 }

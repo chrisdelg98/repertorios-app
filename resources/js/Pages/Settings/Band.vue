@@ -126,7 +126,7 @@ function shareLink() {
     <Head :title="t('settings.band.title')" />
 
     <AppLayout>
-        <div class="px-4 lg:px-8 py-5 lg:py-10 max-w-lg lg:max-w-2xl mx-auto">
+        <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
 
             <!-- Back -->
             <Link href="/settings" class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 mb-4 transition-colors">
