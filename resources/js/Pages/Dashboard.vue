@@ -27,7 +27,7 @@ const page = usePage();
 
 const props = defineProps({
     next_service: { type: Object, default: null },
-    agenda: { type: Array, default: () => [] },
+    agenda: { type: Object, default: () => ({ services: [], entries: [] }) },
     stats: Object,
 });
 
@@ -152,11 +152,15 @@ const myRolesText = computed(() =>
     (props.next_service?.my_roles ?? []).map(roleLabel).filter(Boolean).join(', ')
 );
 
-/**
- * Three at most. Past that this stops being "what is coming" and starts being
- * the calendar, which is one tap away and better at it.
- */
-const agendaShown = computed(() => (props.agenda ?? []).slice(0, 3));
+/** Whether there is anything at all to put under this heading. */
+const hasAgenda = computed(() =>
+    !!(props.agenda?.services?.length || props.agenda?.entries?.length)
+);
+
+/** The rule only earns its place when it has something on both sides. */
+const showAgendaRule = computed(() =>
+    !!(props.agenda?.services?.length && props.agenda?.entries?.length)
+);
 
 /** A service keeps its own colour; everything else reads by kind. */
 function entryAccent(entry) {
@@ -385,7 +389,7 @@ const shortcuts = computed(() => {
             </div>
 
             <!-- One agenda. Services and the rest in the order they happen. -->
-            <div v-if="agendaShown.length">
+            <div v-if="hasAgenda">
                 <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
                     <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                         {{ t('dashboard.upcoming') }}
@@ -395,9 +399,10 @@ const shortcuts = computed(() => {
                     </Link>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="divide-y divide-slate-100">
                     <Link
-                        v-for="entry in agendaShown"
+                        v-for="entry in agenda.services"
                         :key="entry.kind + entry.id"
                         :href="entryHref(entry)"
                         class="flex items-center gap-3 sm:gap-3.5 px-3.5 sm:px-4 py-3.5 hover:bg-slate-50 transition-colors"
@@ -428,6 +433,48 @@ const shortcuts = computed(() => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </Link>
+                    </div>
+
+                    <!-- One hairline between the two kinds. The rows are
+                         divided by slate-100; this sits two steps darker so
+                         the change of subject registers, while staying a
+                         single pixel rather than a bar across the card. -->
+                    <div v-if="showAgendaRule" class="h-px bg-slate-300" />
+
+                    <div class="divide-y divide-slate-100">
+                    <Link
+                        v-for="entry in agenda.entries"
+                        :key="entry.kind + entry.id"
+                        :href="entryHref(entry)"
+                        class="flex items-center gap-3 sm:gap-3.5 px-3.5 sm:px-4 py-3.5 hover:bg-slate-50 transition-colors"
+                    >
+                        <!-- The date as a date, not as a sentence to read. -->
+                        <span class="shrink-0 w-11 text-center">
+                            <span class="block text-2xs font-bold text-slate-500 uppercase leading-none">{{ weekdayShort(entry.date) }}</span>
+                            <span class="block text-lg font-bold text-slate-900 leading-tight tabular-nums">{{ dayNumber(entry.date) }}</span>
+                            <span class="block text-2xs font-semibold text-slate-500 uppercase leading-none">{{ monthShort(entry.date) }}</span>
+                        </span>
+
+                        <span class="w-1 self-stretch rounded-full shrink-0" :class="entryAccent(entry)" />
+
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-semibold text-slate-900 truncate leading-tight capitalize">
+                                {{ typeLabel(entry.name) }}
+                            </span>
+                            <span class="block text-xs font-medium text-slate-600 mt-0.5 truncate">
+                                <template v-if="entry.kind !== 'service'">{{ t('calendar.kind_' + entry.kind) }} · </template>
+                                <template v-if="entry.time">{{ entry.time.slice(0, 5) }}<template v-if="entry.end_time">–{{ entry.end_time.slice(0, 5) }}</template></template>
+                                <template v-if="entry.song_count"> · {{ t('dashboard.songs_count', { count: entry.song_count }) }}</template>
+                            </span>
+                        </span>
+
+                        <span class="hidden sm:block shrink-0 text-2xs font-semibold text-slate-500">{{ daysFromNow(entry.date) }}</span>
+
+                        <svg class="sm:hidden w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </Link>
+                    </div>
                 </div>
             </div>
 

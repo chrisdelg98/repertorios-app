@@ -78,33 +78,53 @@ class DashboardController extends Controller
     }
 
     /**
-     * What is coming, services and the rest in the order they happen.
+     * What is coming, in two groups.
      *
-     * One query rather than two lists: a band lives one week at a time, and
-     * leaving the reader to interleave a rehearsal with a service is work the
-     * screen should have done. The service already shown above is left out of
-     * it — saying the same thing twice in a row reads as a bug.
+     * Services first, because a service is what the whole week is pointed at —
+     * the one in the hero is already shown, so this is the one after it. Then
+     * the calendar's own entries: rehearsals, meetings, anything else.
+     *
+     * Three rows in total. Calendar entries are taken first, up to two, and
+     * services fill whatever is left: on a week with nothing in the calendar
+     * the section still has something to say rather than showing a single row.
      */
     private function agenda(?int $bandId, string $today, ?int $excludeId): array
     {
-        return Service::where('band_id', $bandId)
+        $entries = Service::where('band_id', $bandId)
+            ->calendarOnly()
+            ->where('date', '>=', $today)
+            ->orderBy('date')
+            ->orderBy('time')
+            ->limit(self::AGENDA_LIMIT - 1)
+            ->get(['id', 'kind', 'date', 'time', 'end_time', 'type', 'color']);
+
+        $services = Service::where('band_id', $bandId)
+            ->services()
             ->where('date', '>=', $today)
             ->when($excludeId, fn ($q) => $q->whereKeyNot($excludeId))
             ->orderBy('date')
             ->orderBy('time')
-            ->limit(self::AGENDA_LIMIT)
+            ->limit(max(1, self::AGENDA_LIMIT - $entries->count()))
             ->withCount('serviceSongs')
-            ->get(['id', 'kind', 'date', 'time', 'end_time', 'type', 'color'])
-            ->map(fn (Service $entry) => [
-                'id'         => $entry->id,
-                'kind'       => $entry->kind,
-                'date'       => $entry->date->toDateString(),
-                'time'       => $entry->time ? substr($entry->time, 0, 5) : null,
-                'end_time'   => $entry->end_time ? substr($entry->end_time, 0, 5) : null,
-                'name'       => $entry->type,
-                'color'      => $entry->color,
-                'song_count' => $entry->isService() ? $entry->service_songs_count : null,
-            ])
-            ->all();
+            ->get(['id', 'kind', 'date', 'time', 'end_time', 'type', 'color']);
+
+        return [
+            'services' => $services->map(fn (Service $e) => $this->agendaRow($e))->all(),
+            'entries'  => $entries->map(fn (Service $e) => $this->agendaRow($e))->all(),
+        ];
+    }
+
+    private function agendaRow(Service $entry): array
+    {
+        return [
+            'id'         => $entry->id,
+            'kind'       => $entry->kind,
+            'date'       => $entry->date->toDateString(),
+            'time'       => $entry->time ? substr($entry->time, 0, 5) : null,
+            'end_time'   => $entry->end_time ? substr($entry->end_time, 0, 5) : null,
+            'name'       => $entry->type,
+            'color'      => $entry->color,
+            'song_count' => $entry->isService() ? $entry->service_songs_count : null,
+        ];
     }
 }
