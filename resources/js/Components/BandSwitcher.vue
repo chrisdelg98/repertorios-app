@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import Logo from '@/Components/Logo.vue';
+import { forgetCachedPages } from '@/Composables/useOffline';
 
 const props = defineProps({
     // Mobile header variant: smaller logo, tighter type.
@@ -36,6 +37,11 @@ function switchTo(band) {
         return;
     }
     switching.value = band.id;
+
+    // The cache holds the band being left behind. Kept, it would be served
+    // offline under the new band's name.
+    forgetCachedPages();
+
     router.post(`/bands/${band.id}/switch`, {}, {
         onFinish: () => {
             switching.value = null;

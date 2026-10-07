@@ -4,6 +4,8 @@ import { usePage, router, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 import BandSwitcher from '@/Components/BandSwitcher.vue';
+import OfflineBanner from '@/Components/OfflineBanner.vue';
+import { forgetCachedPages } from '@/Composables/useOffline';
 import WelcomeOverlay from '@/Components/WelcomeOverlay.vue';
 import InstallSheet from '@/Components/InstallSheet.vue';
 import { useInstall } from '@/Composables/useInstall';
@@ -48,6 +50,7 @@ function toggleMenu() {
 
 function logout() {
     menuOpen.value = false;
+    forgetCachedPages();
     router.post('/logout');
 }
 
@@ -279,6 +282,9 @@ const navItems = computed(() => {
         <!-- Main content                                                -->
         <!-- ─────────────────────────────────────────────────────────── -->
         <main class="lg:ml-64 pb-24 lg:pb-12">
+            <!-- Above everything, because it changes how to read everything. -->
+            <OfflineBanner />
+
             <slot />
         </main>
 

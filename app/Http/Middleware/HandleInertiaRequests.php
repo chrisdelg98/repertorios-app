@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Band;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -104,6 +105,17 @@ class HandleInertiaRequests extends Middleware
                 // server's limit while the screen kept quoting the old one.
                 'max_file_mb' => (int) config('audio.max_file_mb'),
             ],
+            /*
+             * When the server answered.
+             *
+             * A page served from the cache carries the timestamp of the visit
+             * that filled it, so the app can tell the two apart without
+             * trusting navigator.onLine — which reports a connection whenever
+             * there is wifi, internet or not. Showing yesterday's setlist as
+             * though it were today's is worse than showing nothing.
+             */
+            'served_at' => Inertia::always(fn () => now()->toIso8601String()),
+
             'push' => [
                 // The public half of the VAPID pair is meant to be seen: the
                 // browser needs it to build a subscription.

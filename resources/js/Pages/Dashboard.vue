@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { serviceColor } from '@/Constants/serviceColors';
 import NotificationsSheet from '@/Components/NotificationsSheet.vue';
+import { cachePage } from '@/Composables/useOffline';
 
 /**
  * The first screen, built around one question.
@@ -80,7 +81,25 @@ function snoozePushPrompt() {
     try { localStorage.setItem(SNOOZE_KEY, today()); } catch { /* private mode */ }
 }
 
+/**
+ * Keep the next service readable with no internet, without anyone deciding to.
+ *
+ * The screen it is needed on is the one nobody can load: a phone on the
+ * console's wifi, five minutes before the service. Asking people to remember a
+ * button the day before is asking them to predict the problem. This runs
+ * whenever the dashboard opens on a working connection, which is most days.
+ */
+function keepNextServiceReadable() {
+    if (!props.next_service?.id) return;
+
+    // Quietly: a failure here means the connection is already poor, which is
+    // not news the person needs in the middle of something else.
+    cachePage(`/services/${props.next_service.id}`).catch(() => {});
+}
+
 onMounted(() => {
+    keepNextServiceReadable();
+
     if (shouldAskAboutPush()) {
         pushTimer = setTimeout(() => { pushSheetOpen.value = true; }, 2500);
     }

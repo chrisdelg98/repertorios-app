@@ -321,5 +321,22 @@
             "added_desc": "Recently uploaded",
             "name_asc": "Song (A-Z)"
         }
+    },
+    "offline": {
+        "title": "No connection",
+        "since": "data from {time}",
+        "menu": "Download service",
+        "menu_saved": "Service downloaded",
+        "sheet_title": "Download this service?",
+        "sheet_body": "Keeps a copy on this device. You can then open the service and read the whole setlist even with no internet, or when the connection drops.",
+        "sheet_saved_title": "Service downloaded",
+        "sheet_saved_body": "A copy has been on this device since {date}. It refreshes by itself whenever you open the service with internet.",
+        "sheet_includes": "Includes the setlist, keys, notes and who is assigned",
+        "sheet_excludes": "Does not include audio tracks or YouTube videos",
+        "save": "Download",
+        "preparing": "Downloading...",
+        "remove": "Delete copy",
+        "removing": "Deleting...",
+        "prepare_failed": "Could not download. Check your connection and try again."
     }
 }

@@ -41,7 +41,7 @@ export default defineConfig({
                 display: 'standalone',
                 orientation: 'portrait',
                 scope: '/',
-                start_url: '/',
+                start_url: '/dashboard',
                 icons: [
                     {
                         src: '/icons/icon-192x192.png?v=2',
@@ -96,6 +96,42 @@ export default defineConfig({
                 navigateFallback: null,
                 globPatterns: ['**/*.{js,css,ico,png,svg}'],
                 runtimeCaching: [
+                    {
+                        /*
+                         * Pages, for a room with wifi and no internet.
+                         *
+                         * That is not the same as being offline: navigator.onLine
+                         * stays true and requests hang until TCP gives up, which
+                         * can be half a minute. Three seconds and we serve what we
+                         * have — on a working connection nobody notices, and in the
+                         * church nobody waits.
+                         *
+                         * The document and the Inertia payload for one URL are
+                         * stored apart on their own, because Inertia answers with
+                         * `Vary: X-Inertia` and the Cache API honours it.
+                         */
+                        urlPattern: ({ url, request, sameOrigin }) =>
+                            sameOrigin
+                            && request.method === 'GET'
+                            && !url.pathname.startsWith('/build/')
+                            && !url.pathname.startsWith('/storage/')
+                            // The health check decides whether there IS a
+                            // network. Cached, it would always say yes.
+                            && url.pathname !== '/up',
+                        handler: 'NetworkFirst',
+                        options: {
+                            cacheName: 'pages-cache',
+                            networkTimeoutSeconds: 3,
+                            expiration: {
+                                maxEntries: 80,
+                                maxAgeSeconds: 60 * 60 * 24 * 30,
+                            },
+                            // Only a real answer is worth keeping: a redirect or
+                            // an error page would be served back as though it
+                            // were the screen someone asked for.
+                            cacheableResponse: { statuses: [200] },
+                        },
+                    },
                     {
                         urlPattern: /^https:\/\/fonts\.bunny\.net\/.*/i,
                         handler: 'CacheFirst',

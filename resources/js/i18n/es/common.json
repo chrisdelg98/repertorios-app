@@ -321,5 +321,22 @@
             "added_desc": "Subidas recientemente",
             "name_asc": "Canción (A-Z)"
         }
+    },
+    "offline": {
+        "title": "Sin conexión",
+        "since": "datos de las {time}",
+        "menu": "Descargar servicio",
+        "menu_saved": "Servicio descargado",
+        "sheet_title": "¿Descargar este servicio?",
+        "sheet_body": "Guarda una copia en este dispositivo. Después puedes abrir el servicio y leer todo el repertorio aunque te quedes sin internet o la conexión falle.",
+        "sheet_saved_title": "Servicio descargado",
+        "sheet_saved_body": "Hay una copia en este dispositivo desde el {date}. Se actualiza sola cada vez que abres el servicio con internet.",
+        "sheet_includes": "Incluye el repertorio, tonos, notas y el equipo asignado",
+        "sheet_excludes": "No incluye las pistas de audio ni los videos de YouTube",
+        "save": "Descargar",
+        "preparing": "Descargando...",
+        "remove": "Borrar copia",
+        "removing": "Borrando...",
+        "prepare_failed": "No se pudo descargar. Revisa tu conexión e inténtalo de nuevo."
     }
 }

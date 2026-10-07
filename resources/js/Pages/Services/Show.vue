@@ -6,6 +6,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
 import { serviceColor } from '@/Constants/serviceColors';
+import { cachePage, pageCachedAt, forgetPage } from '@/Composables/useOffline';
 
 const { t, locale } = useI18n();
 
@@ -39,6 +40,68 @@ const notifiedLabel = computed(() => {
 
     return t('push.notify_team_again', { when: `${Math.round(hours / 24)} d` });
 });
+
+/**
+ * Keeping this service readable with no internet.
+ *
+ * The dashboard already does this silently for whichever service is next, so
+ * most of the time the sheet opens only to say it is already done. This is for
+ * the rest: a service two Sundays out, or a phone that has not opened the app
+ * in a week.
+ */
+const showOfflineSheet = ref(false);
+const savingOffline = ref(false);
+const removingOffline = ref(false);
+const offlineFailed = ref(false);
+const offlineSavedAt = ref(null);
+
+const offlineSavedLabel = computed(() => {
+    if (!offlineSavedAt.value) return '';
+
+    return offlineSavedAt.value.toLocaleString(undefined, {
+        day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+    });
+});
+
+async function refreshOfflineState() {
+    offlineSavedAt.value = await pageCachedAt(window.location.pathname);
+}
+
+async function openOfflineSheet() {
+    actionsMenuOpen.value = false;
+    offlineFailed.value = false;
+
+    await refreshOfflineState();
+    showOfflineSheet.value = true;
+}
+
+async function saveForOffline() {
+    savingOffline.value = true;
+    offlineFailed.value = false;
+
+    // The songs index too: the setlist links into it, and a dead link is the
+    // thing people remember about an offline mode.
+    const ok = await cachePage(window.location.pathname) && await cachePage('/songs');
+
+    await refreshOfflineState();
+
+    savingOffline.value = false;
+    offlineFailed.value = !ok;
+
+    if (ok) setTimeout(() => { showOfflineSheet.value = false; }, 900);
+}
+
+async function removeOffline() {
+    removingOffline.value = true;
+
+    await forgetPage(window.location.pathname);
+    await refreshOfflineState();
+
+    removingOffline.value = false;
+    showOfflineSheet.value = false;
+}
+
+onMounted(refreshOfflineState);
 
 function notifyTeam() {
     notifying.value = true;
@@ -616,8 +679,11 @@ function scheduleReorder() {
                     {{ t('playlist.play_all') }}
                 </button>
 
-                <!-- Kebab menu: preview as guest / duplicate / edit / delete -->
-                <div v-if="can_write" class="relative" data-actions-menu>
+                <!-- Kebab menu. Shown to everyone now: saving a service for
+                     a room with no internet matters most to the musician who
+                     cannot edit anything. Each action below keeps its own
+                     permission. -->
+                <div class="relative" data-actions-menu>
                     <button
                         @click="toggleActionsMenu"
                         class="w-11 h-full flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors"
@@ -639,13 +705,13 @@ function scheduleReorder() {
                     >
                         <div
                             v-if="actionsMenuOpen"
-                            class="absolute right-0 mt-1.5 w-48 z-20 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
+                            class="absolute right-0 mt-1.5 w-52 z-20 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
                         >
                             <button
                                 v-if="showAssignmentsSection"
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; showTeamSheet = true"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-3a3 3 0 00-3-3H10a3 3 0 00-3 3v3m10 0H7m10-10a3 3 0 11-6 0 3 3 0 016 0zm-8 3a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -656,7 +722,7 @@ function scheduleReorder() {
                                 v-if="can_write"
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; showNotifyConfirm = true"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -665,9 +731,23 @@ function scheduleReorder() {
                             </button>
                             <button
                                 type="button"
+                                @click.stop="openOfflineSheet"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                            >
+                                <svg v-if="offlineSavedAt" class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <svg v-else class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                {{ offlineSavedAt ? t('offline.menu_saved') : t('offline.menu') }}
+                            </button>
+                            <button
+                                v-if="can_write"
+                                type="button"
                                 @click.stop="actionsMenuOpen = false; previewAsGuest()"
                                 :disabled="sharing"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors border-t border-slate-100"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -676,9 +756,10 @@ function scheduleReorder() {
                                 {{ t('services.preview_as_guest') }}
                             </button>
                             <button
+                                v-if="can_write"
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; showDuplicateSheet = true"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -686,8 +767,9 @@ function scheduleReorder() {
                                 {{ t('services.duplicate') }}
                             </button>
                             <a
+                                v-if="can_write"
                                 :href="'/services/' + service.id + '/edit'"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -698,7 +780,7 @@ function scheduleReorder() {
                                 v-if="isCreator"
                                 type="button"
                                 @click.stop="actionsMenuOpen = false; deleteService()"
-                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"
                             >
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1395,6 +1477,101 @@ function scheduleReorder() {
                 leave-to-class="opacity-0"
             >
                 <div v-if="showNotifyConfirm" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" @click="showNotifyConfirm = false" />
+            </Transition>
+
+            <!-- Offline sheet -->
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="showOfflineSheet" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" @click="showOfflineSheet = false" />
+            </Transition>
+
+            <Transition
+                enter-active-class="transition duration-250 ease-out"
+                enter-from-class="opacity-0 translate-y-6"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 translate-y-6"
+            >
+                <div
+                    v-if="showOfflineSheet"
+                    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none"
+                >
+                    <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl pointer-events-auto px-5 pt-5 pb-6">
+                        <div
+                            class="w-11 h-11 rounded-xl flex items-center justify-center mb-3"
+                            :class="offlineSavedAt ? 'bg-emerald-50' : 'bg-indigo-50'"
+                        >
+                            <svg v-if="offlineSavedAt" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <svg v-else class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </div>
+
+                        <h3 class="text-base font-bold text-slate-900">
+                            {{ offlineSavedAt ? t('offline.sheet_saved_title') : t('offline.sheet_title') }}
+                        </h3>
+
+                        <p class="text-sm text-slate-600 leading-relaxed mt-1">
+                            {{ offlineSavedAt
+                                ? t('offline.sheet_saved_body', { date: offlineSavedLabel })
+                                : t('offline.sheet_body') }}
+                        </p>
+
+                        <!-- What it does and does not cover, before pressing
+                             rather than after failing to hear a track. -->
+                        <ul class="mt-3 space-y-1.5">
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {{ t('offline.sheet_includes') }}
+                            </li>
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                {{ t('offline.sheet_excludes') }}
+                            </li>
+                        </ul>
+
+                        <p v-if="offlineFailed" class="text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3">
+                            {{ t('offline.prepare_failed') }}
+                        </p>
+
+                        <div class="flex gap-2.5 mt-5">
+                            <button
+                                type="button"
+                                @click="showOfflineSheet = false"
+                                class="flex-1 py-2.5 text-sm font-semibold text-slate-600 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors"
+                            >{{ t('services.form.cancel') }}</button>
+
+                            <button
+                                v-if="offlineSavedAt"
+                                type="button"
+                                @click="removeOffline"
+                                :disabled="removingOffline"
+                                class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl active:scale-[0.98] disabled:opacity-60 transition"
+                            >{{ removingOffline ? t('offline.removing') : t('offline.remove') }}</button>
+
+                            <button
+                                v-else
+                                type="button"
+                                @click="saveForOffline"
+                                :disabled="savingOffline"
+                                class="flex-1 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 active:scale-[0.98] disabled:opacity-60 transition"
+                            >{{ savingOffline ? t('offline.preparing') : t('offline.save') }}</button>
+                        </div>
+                    </div>
+                </div>
             </Transition>
 
             <Transition
