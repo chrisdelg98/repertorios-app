@@ -408,23 +408,23 @@ onBeforeUnmount(() => {
                     <!-- Player. The iframe stays mounted even while a track is
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
-                    <div class="lg:flex-1 bg-black flex flex-col min-h-0">
+                    <div class="shrink-0 lg:flex-1 bg-black flex flex-col min-h-0">
                         <!-- The source bar keeps its place whatever plays below
                              it. It states a preference for the whole setlist,
                              so it does not belong to the current song and must
                              not move when the media under it changes size. -->
                         <div
                             v-if="canPrefer"
-                            class="shrink-0 flex items-center justify-center gap-2.5 px-4 py-3 border-b border-white/5"
+                            class="shrink-0 flex items-center justify-center gap-2 sm:gap-2.5 px-3 py-2.5 border-b border-white/5"
                         >
-                            <span class="text-2xs font-semibold text-slate-500 uppercase tracking-widest">{{ t('playlist.prefer') }}</span>
+                            <span class="hidden sm:inline text-2xs font-semibold text-slate-500 uppercase tracking-widest">{{ t('playlist.prefer') }}</span>
 
                             <div class="flex items-center gap-1 p-1 bg-white/10 rounded-xl">
                                 <button
                                     type="button"
                                     @click="prefer('audio')"
                                     :disabled="!currentHasAudio"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                     :class="isAudio ? 'bg-white text-slate-900' : 'text-slate-300 enabled:hover:text-white'"
                                 >
                                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -436,7 +436,7 @@ onBeforeUnmount(() => {
                                     type="button"
                                     @click="prefer('youtube')"
                                     :disabled="!currentHasVideo"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                     :class="!isAudio ? 'bg-white text-slate-900' : 'text-slate-300 enabled:hover:text-white'"
                                 >
                                     <svg class="w-3.5 h-3.5" :class="!isAudio ? 'text-red-600' : ''" fill="currentColor" viewBox="0 0 24 24">
@@ -485,15 +485,15 @@ onBeforeUnmount(() => {
                             </p>
 
                             <!-- Track player: no video to show, so the song itself is the screen -->
-                            <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-10 flex flex-col items-center text-center">
-                                <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-5">
-                                    <svg class="w-11 h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-5 sm:py-8 flex flex-col items-center text-center">
+                                <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-3 sm:mb-5">
+                                    <svg class="w-8 h-8 sm:w-11 sm:h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                                     </svg>
                                 </div>
 
-                                <p class="text-lg font-bold text-white leading-tight">{{ current?.name }}</p>
-                                <p v-if="current?.artist" class="text-sm font-medium text-slate-300 mt-1">{{ current.artist }}</p>
+                                <p class="text-base sm:text-lg font-bold text-white leading-tight line-clamp-2">{{ current?.name }}</p>
+                                <p v-if="current?.artist" class="text-xs sm:text-sm font-medium text-slate-300 mt-0.5 sm:mt-1 truncate max-w-full">{{ current.artist }}</p>
 
                                 <audio
                                     ref="audioEl"
@@ -507,7 +507,7 @@ onBeforeUnmount(() => {
                                     @ended="onAudioEnded"
                                 />
 
-                                <div class="w-full max-w-md mt-7">
+                                <div class="w-full max-w-md mt-4 sm:mt-7">
                                     <input
                                         type="range"
                                         min="0"
@@ -527,13 +527,13 @@ onBeforeUnmount(() => {
                                 <button
                                     type="button"
                                     @click="toggleAudio"
-                                    class="mt-5 w-16 h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
+                                    class="mt-4 sm:mt-5 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
                                     :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
                                 >
-                                    <svg v-if="audioPlaying" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                                    <svg v-if="audioPlaying" class="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
                                     </svg>
-                                    <svg v-else class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <svg v-else class="w-6 h-6 sm:w-7 sm:h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </button>
@@ -543,7 +543,7 @@ onBeforeUnmount(() => {
 
                     <!-- Queue. Hidden for an external playlist: its contents
                          are YouTube's to know, and its own controls navigate it. -->
-                    <div v-if="!usingPlaylist" class="lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
+                    <div v-if="!usingPlaylist" class="flex-1 lg:flex-none lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
                         <!-- Controls -->
                         <div class="flex items-center gap-2 px-4 py-2.5 border-b border-white/10 shrink-0">
                             <button
