@@ -6,6 +6,8 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import MultiSelect from '@/Components/MultiSelect.vue';
 import ServiceColorSwatches from '@/Components/ServiceColorSwatches.vue';
 import { serviceColor } from '@/Constants/serviceColors';
+import OfflineServiceSheet from '@/Components/OfflineServiceSheet.vue';
+import { cachedPagePaths } from '@/Composables/useOffline';
 
 const { t, locale } = useI18n();
 const page = usePage();
@@ -144,6 +146,31 @@ function clearFilters() {
     selectedYears.value  = [];
     selectedMonths.value = [];
 }
+
+/**
+ * Which services are already on the device.
+ *
+ * Read once for the whole list rather than per row, and refreshed whenever the
+ * sheet reports a change, so the menu entry never offers to download something
+ * that is already there.
+ */
+const offlinePaths = ref(new Set());
+const offlineSheetFor = ref(null);
+
+async function refreshOfflinePaths() {
+    offlinePaths.value = await cachedPagePaths();
+}
+
+function isOffline(service) {
+    return offlinePaths.value.has(`/services/${service.id}`);
+}
+
+function openOfflineSheet(service) {
+    openMenuId.value = null;
+    offlineSheetFor.value = service.id;
+}
+
+onMounted(refreshOfflinePaths);
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
 const openMenuId = ref(null);
@@ -577,6 +604,20 @@ function submitDuplicate() {
                                     </svg>
                                     {{ sharing && sharingId === service.id ? t('services.share_generating') : t('services.share') }}
                                 </button>
+
+                                <button
+                                    type="button"
+                                    @click.stop="openOfflineSheet(service)"
+                                    class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-100"
+                                >
+                                    <svg v-if="isOffline(service)" class="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    <svg v-else class="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                    </svg>
+                                    {{ isOffline(service) ? t('offline.menu_saved') : t('offline.menu') }}
+                                </button>
                                 <button
                                     v-if="canWrite"
                                     type="button"
@@ -852,5 +893,12 @@ function submitDuplicate() {
                 </div>
             </Transition>
         </Teleport>
+    <OfflineServiceSheet
+        :open="offlineSheetFor !== null"
+        :url="offlineSheetFor !== null ? `/services/${offlineSheetFor}` : ''"
+        @close="offlineSheetFor = null"
+        @changed="refreshOfflinePaths"
+    />
+
     </AppLayout>
 </template>

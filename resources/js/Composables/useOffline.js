@@ -199,3 +199,28 @@ export async function forgetPage(url) {
         return false;
     }
 }
+
+/**
+ * Which pages are held in the cache, as a set of paths.
+ *
+ * One read of the cache's keys instead of a lookup per row: a list of fifty
+ * services should not cost fifty round trips to answer a question that is the
+ * same shape for all of them.
+ */
+export async function cachedPagePaths() {
+    const paths = new Set();
+
+    if (typeof caches === 'undefined') return paths;
+
+    try {
+        const cache = await caches.open(PAGE_CACHE);
+
+        for (const request of await cache.keys()) {
+            paths.add(new URL(request.url).pathname);
+        }
+    } catch {
+        // An empty set simply means nothing is labelled as saved.
+    }
+
+    return paths;
+}

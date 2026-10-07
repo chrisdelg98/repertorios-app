@@ -6,7 +6,8 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import SongDetailSheet from '@/Components/SongDetailSheet.vue';
 import PlaylistOverlay from '@/Components/PlaylistOverlay.vue';
 import { serviceColor } from '@/Constants/serviceColors';
-import { cachePage, pageCachedAt, forgetPage } from '@/Composables/useOffline';
+import { pageCachedAt } from '@/Composables/useOffline';
+import OfflineServiceSheet from '@/Components/OfflineServiceSheet.vue';
 
 const { t, locale } = useI18n();
 
@@ -42,63 +43,21 @@ const notifiedLabel = computed(() => {
 });
 
 /**
- * Keeping this service readable with no internet.
+ * Whether a copy of this service is on the device.
  *
- * The dashboard already does this silently for whichever service is next, so
- * most of the time the sheet opens only to say it is already done. This is for
- * the rest: a service two Sundays out, or a phone that has not opened the app
- * in a week.
+ * Only to label the menu entry — the sheet does the saving and the deleting,
+ * and tells us when either happened.
  */
 const showOfflineSheet = ref(false);
-const savingOffline = ref(false);
-const removingOffline = ref(false);
-const offlineFailed = ref(false);
 const offlineSavedAt = ref(null);
-
-const offlineSavedLabel = computed(() => {
-    if (!offlineSavedAt.value) return '';
-
-    return offlineSavedAt.value.toLocaleString(undefined, {
-        day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-    });
-});
 
 async function refreshOfflineState() {
     offlineSavedAt.value = await pageCachedAt(window.location.pathname);
 }
 
-async function openOfflineSheet() {
+function openOfflineSheet() {
     actionsMenuOpen.value = false;
-    offlineFailed.value = false;
-
-    await refreshOfflineState();
     showOfflineSheet.value = true;
-}
-
-async function saveForOffline() {
-    savingOffline.value = true;
-    offlineFailed.value = false;
-
-    // The songs index too: the setlist links into it, and a dead link is the
-    // thing people remember about an offline mode.
-    const ok = await cachePage(window.location.pathname) && await cachePage('/songs');
-
-    await refreshOfflineState();
-
-    savingOffline.value = false;
-    offlineFailed.value = !ok;
-
-    if (ok) setTimeout(() => { showOfflineSheet.value = false; }, 900);
-}
-
-async function removeOffline() {
-    removingOffline.value = true;
-
-    await forgetPage(window.location.pathname);
-    await refreshOfflineState();
-
-    removingOffline.value = false;
-    showOfflineSheet.value = false;
 }
 
 onMounted(refreshOfflineState);
@@ -1479,100 +1438,6 @@ function scheduleReorder() {
                 <div v-if="showNotifyConfirm" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" @click="showNotifyConfirm = false" />
             </Transition>
 
-            <!-- Offline sheet -->
-            <Transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
-                <div v-if="showOfflineSheet" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" @click="showOfflineSheet = false" />
-            </Transition>
-
-            <Transition
-                enter-active-class="transition duration-250 ease-out"
-                enter-from-class="opacity-0 translate-y-6"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition duration-200 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 translate-y-6"
-            >
-                <div
-                    v-if="showOfflineSheet"
-                    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none"
-                >
-                    <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl pointer-events-auto px-5 pt-5 pb-6">
-                        <div
-                            class="w-11 h-11 rounded-xl flex items-center justify-center mb-3"
-                            :class="offlineSavedAt ? 'bg-emerald-50' : 'bg-indigo-50'"
-                        >
-                            <svg v-if="offlineSavedAt" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            <svg v-else class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                        </div>
-
-                        <h3 class="text-base font-bold text-slate-900">
-                            {{ offlineSavedAt ? t('offline.sheet_saved_title') : t('offline.sheet_title') }}
-                        </h3>
-
-                        <p class="text-sm text-slate-600 leading-relaxed mt-1">
-                            {{ offlineSavedAt
-                                ? t('offline.sheet_saved_body', { date: offlineSavedLabel })
-                                : t('offline.sheet_body') }}
-                        </p>
-
-                        <!-- What it does and does not cover, before pressing
-                             rather than after failing to hear a track. -->
-                        <ul class="mt-3 space-y-1.5">
-                            <li class="flex items-start gap-2 text-xs text-slate-600">
-                                <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                                {{ t('offline.sheet_includes') }}
-                            </li>
-                            <li class="flex items-start gap-2 text-xs text-slate-600">
-                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                {{ t('offline.sheet_excludes') }}
-                            </li>
-                        </ul>
-
-                        <p v-if="offlineFailed" class="text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3">
-                            {{ t('offline.prepare_failed') }}
-                        </p>
-
-                        <div class="flex gap-2.5 mt-5">
-                            <button
-                                type="button"
-                                @click="showOfflineSheet = false"
-                                class="flex-1 py-2.5 text-sm font-semibold text-slate-600 rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors"
-                            >{{ t('services.form.cancel') }}</button>
-
-                            <button
-                                v-if="offlineSavedAt"
-                                type="button"
-                                @click="removeOffline"
-                                :disabled="removingOffline"
-                                class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl active:scale-[0.98] disabled:opacity-60 transition"
-                            >{{ removingOffline ? t('offline.removing') : t('offline.remove') }}</button>
-
-                            <button
-                                v-else
-                                type="button"
-                                @click="saveForOffline"
-                                :disabled="savingOffline"
-                                class="flex-1 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 active:scale-[0.98] disabled:opacity-60 transition"
-                            >{{ savingOffline ? t('offline.preparing') : t('offline.save') }}</button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
 
             <Transition
                 enter-active-class="transition duration-250 ease-out"
@@ -1642,5 +1507,11 @@ function scheduleReorder() {
             :playlist-url="service.playlist_url ?? ''"
             @close="playlistOpen = false"
         />
+    <OfflineServiceSheet
+        :open="showOfflineSheet"
+        :url="`/services/${service.id}`"
+        @close="showOfflineSheet = false"
+        @changed="refreshOfflineState"
+    />
     </AppLayout>
 </template>
