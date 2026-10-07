@@ -25,7 +25,7 @@ function formatDate(dateStr) {
     if (!dateStr) return '';
     const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
     const date = new Date(datePart + 'T00:00:00');
-    return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 // ── Filters ──────────────────────────────────────────────────────────────────
@@ -69,6 +69,42 @@ const availableMonthCodes = computed(() => {
 });
 
 const availableMonthLabels = computed(() => availableMonthCodes.value.map(monthName));
+
+/**
+ * The date arrives as a full ISO string here, because this screen serializes
+ * the model rather than picking fields out of it. Taking the first ten
+ * characters works for both shapes, and reading it as local midnight keeps a
+ * service on the day it was set, not the day UTC says it is.
+ */
+function asDate(dateStr) {
+    if (!dateStr) return null;
+
+    return new Date(String(dateStr).slice(0, 10) + 'T00:00:00');
+}
+
+function weekdayShort(dateStr) {
+    const date = asDate(dateStr);
+    if (!date || Number.isNaN(date.getTime())) return '';
+
+    return date
+        .toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { weekday: 'short' })
+        .replace('.', '')
+        .slice(0, 3);
+}
+
+function dayNumber(dateStr) {
+    const date = asDate(dateStr);
+    return (!date || Number.isNaN(date.getTime())) ? '' : date.getDate();
+}
+
+function monthShort(dateStr) {
+    const date = asDate(dateStr);
+    if (!date || Number.isNaN(date.getTime())) return '';
+
+    return date
+        .toLocaleDateString(locale.value === 'es' ? 'es' : 'en', { month: 'short' })
+        .replace('.', '');
+}
 
 const filteredServices = computed(() => {
     const q = search.value.trim().toLowerCase();
@@ -443,24 +479,26 @@ function submitDuplicate() {
                         :href="'/services/' + service.id"
                         class="flex-1 flex items-center gap-3 px-3 py-3 text-left min-w-0 rounded-l-xl active:bg-slate-50 transition-colors"
                     >
-                        <!-- Calendar anchor — solid glyph so the accent colour reads -->
-                        <div
-                            class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-                            :class="[serviceColor(service.color).tile, serviceColor(service.color).tileHover]"
-                        >
-                            <svg class="w-5 h-5" :class="serviceColor(service.color).icon" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
+                        <!-- The date as a date.
+                             The calendar glyph that used to sit here told you
+                             nothing the row was not about to say anyway, while
+                             the day itself was buried in a sentence. The
+                             service's colour moves to the bar beside it, where
+                             it reads straight down a long list. -->
+                        <span class="shrink-0 w-11 text-center">
+                            <span class="block text-2xs font-bold text-slate-500 uppercase leading-none">{{ weekdayShort(service.date) }}</span>
+                            <span class="block text-lg font-bold text-slate-900 leading-tight tabular-nums">{{ dayNumber(service.date) }}</span>
+                            <span class="block text-2xs font-semibold text-slate-500 uppercase leading-none">{{ monthShort(service.date) }}</span>
+                        </span>
 
-                        <!-- Info -->
-                        <div class="flex-1 min-w-0">
-                            <p class="font-semibold text-slate-900 text-sm capitalize truncate">{{ typeLabel(service.type) }}</p>
-                            <p class="text-xs font-medium text-slate-600 mt-0.5 truncate">
-                                {{ formatDate(service.date) }}
-                                <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
-                            </p>
-                        </div>
+                        <span class="w-1 self-stretch rounded-full shrink-0" :class="serviceColor(service.color).swatch" />
+
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-semibold text-slate-900 text-sm capitalize truncate leading-tight">{{ typeLabel(service.type) }}</span>
+                            <span v-if="service.time" class="block text-xs font-medium text-slate-600 mt-0.5 truncate">
+                                {{ service.time.slice(0, 5) }}
+                            </span>
+                        </span>
 
                         <!-- Songs count badge -->
                         <div class="flex items-center gap-1 text-xs font-semibold text-slate-600 bg-slate-100 group-hover:bg-slate-200 rounded-md px-2 py-1 shrink-0 transition-colors">
