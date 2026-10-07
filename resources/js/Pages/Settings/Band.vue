@@ -139,7 +139,7 @@ function shareLink() {
             <h1 class="text-lg font-semibold text-slate-900 mb-5">{{ t('settings.band.title') }}</h1>
 
             <!-- Logo -->
-            <div class="bg-white rounded-xl border border-slate-200 px-4 py-4 mb-4 flex items-center gap-4">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mb-4 flex items-center gap-4">
                 <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
                     :class="logoPreview ? 'bg-white border border-slate-200' : 'bg-gradient-to-br from-indigo-500 to-violet-600'"
                 >
@@ -164,7 +164,7 @@ function shareLink() {
             </div>
 
             <!-- Name form -->
-            <div class="bg-white rounded-xl border border-slate-200 px-4 py-4 mb-4 space-y-3">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mb-4 space-y-3">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">{{ t('settings.band.name_label') }}</label>
                     <input
@@ -184,7 +184,7 @@ function shareLink() {
             </div>
 
             <!-- Member access card -->
-            <div class="bg-white rounded-xl border border-slate-200 px-4 py-4 space-y-4">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 space-y-4">
                 <!-- Header -->
                 <div class="flex items-start justify-between gap-2">
                     <div>

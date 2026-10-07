@@ -137,7 +137,7 @@ function roleBadgeClass(m) {
                 <div
                     v-for="member in members"
                     :key="member.id"
-                    class="bg-white rounded-xl border border-slate-200 px-4 py-3"
+                    class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3"
                 >
                     <!-- Top row: avatar + name + role badges + actions -->
                     <div class="flex items-center gap-3">
@@ -212,7 +212,7 @@ function roleBadgeClass(m) {
             </div>
 
             <!-- Visitor stats -->
-            <div class="bg-white rounded-xl border border-slate-200 px-4 py-4 mb-4">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mb-4">
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-slate-900">{{ t('settings.members.visitors_title') }}</p>

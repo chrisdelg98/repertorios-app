@@ -765,7 +765,7 @@ function scheduleReorder() {
                      saying "no songs" there hides the thing that will play. -->
                 <div
                     v-if="!localSongs.length && service.playlist_url"
-                    class="flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-4 py-4"
+                    class="flex items-center gap-3 bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4"
                 >
                     <span class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
@@ -780,7 +780,7 @@ function scheduleReorder() {
 
                 <div
                     v-else-if="!localSongs.length"
-                    class="text-center py-10 bg-white rounded-xl border border-slate-200 text-slate-600 text-sm"
+                    class="text-center py-10 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-600 text-sm"
                 >
                     {{ t('services.no_songs') }}
                 </div>
@@ -788,7 +788,7 @@ function scheduleReorder() {
                 <div
                     v-for="(ss, i) in localSongs"
                     :key="ss.id"
-                    class="flex items-center gap-2.5 bg-white rounded-xl px-3 py-3 border border-slate-200"
+                    class="flex items-center gap-2.5 bg-white rounded-xl px-3 py-3 border border-slate-200 shadow-sm"
                 >
                     <!-- Reorder buttons -->
                     <div v-if="can_write && localSongs.length > 1" class="flex flex-col gap-0.5 shrink-0">

@@ -132,7 +132,7 @@ function remove(track) {
             <p class="text-sm text-slate-600 mt-1 leading-relaxed">{{ t('audio_library.subtitle') }}</p>
 
             <!-- How much room is left, before the list rather than after it -->
-            <div class="mt-5 bg-white rounded-xl border border-slate-200 px-4 py-3.5">
+            <div class="mt-5 bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3.5">
                 <div class="flex items-baseline justify-between gap-2 mb-2">
                     <p class="text-sm font-semibold text-slate-900">
                         {{ usedLabel }}
@@ -258,7 +258,7 @@ function remove(track) {
                 <div
                     v-for="track in sortedTracks"
                     :key="track.id"
-                    class="bg-white rounded-xl border border-slate-200 px-4 py-3"
+                    class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3"
                 >
                     <div class="flex items-start gap-3">
                         <span class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
@@ -308,14 +308,14 @@ function remove(track) {
                 </div>
             </div>
 
-            <div v-if="tracks.length && !sortedTracks.length" class="mt-4 text-center py-12 bg-white rounded-xl border border-slate-200">
+            <div v-if="tracks.length && !sortedTracks.length" class="mt-4 text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
                 <p class="text-sm text-slate-600">{{ t('songs.filter_no_results') }}</p>
                 <button @click="clearFilters" class="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-700">
                     {{ t('songs.filter_clear') }}
                 </button>
             </div>
 
-            <div v-else-if="!tracks.length" class="mt-4 text-center py-12 bg-white rounded-xl border border-slate-200">
+            <div v-else-if="!tracks.length" class="mt-4 text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
                 <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
                 </svg>

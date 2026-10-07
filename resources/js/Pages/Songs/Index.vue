@@ -467,7 +467,7 @@ function confirmDelete() {
                 <div
                     v-for="song in sortedSongs"
                     :key="song.id"
-                    class="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition flex flex-col"
+                    class="group bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md transition flex flex-col"
                 >
                     <!-- Header: title + artist (uses full width on lg+) -->
                     <div class="px-4 pt-3.5 pb-2 lg:pt-4 lg:pb-3 flex items-start gap-3">

@@ -142,7 +142,7 @@ function openEdit(entry) {
             </div>
 
             <!-- Month -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-3 lg:p-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 lg:p-4">
                 <div class="flex items-center justify-between mb-3">
                     <button
                         type="button"
@@ -221,7 +221,7 @@ function openEdit(entry) {
                         :key="entry.id"
                         type="button"
                         @click="openEdit(entry)"
-                        class="w-full flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-3 py-3 text-left hover:border-slate-300 transition-colors"
+                        class="w-full flex items-center gap-3 bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-3 text-left hover:border-slate-300 hover:shadow-md transition"
                     >
                         <span class="w-1.5 h-10 rounded-full shrink-0" :class="dotClass(entry)" />
 

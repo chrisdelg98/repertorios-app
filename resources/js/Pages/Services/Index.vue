@@ -499,7 +499,7 @@ function submitDuplicate() {
                 <div
                     v-for="service in filteredServices"
                     :key="service.id"
-                    class="group flex items-stretch rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition"
+                    class="group flex items-stretch rounded-xl border border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md transition"
                 >
                     <!-- Card content (tappable) -->
                     <Link

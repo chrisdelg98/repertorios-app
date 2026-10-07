@@ -181,7 +181,7 @@ const sections = computed(() => {
                     v-for="s in sections"
                     :key="s.href"
                     :href="s.href"
-                    class="flex items-center gap-4 bg-white rounded-xl px-4 py-3.5 border border-slate-200 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+                    class="flex items-center gap-4 bg-white rounded-xl px-4 py-3.5 border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50 active:bg-slate-100 transition-colors"
                 >
                     <!-- Icon -->
                     <div class="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center shrink-0">
@@ -216,7 +216,7 @@ const sections = computed(() => {
                 </Link>
 
                 <!-- Notifications -->
-                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <button
                         type="button"
                         @click="pushOn ? disablePush() : (pushSheetOpen = true)"
