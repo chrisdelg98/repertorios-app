@@ -79,7 +79,23 @@ const filteredServices = computed(() => {
         if (selectedYears.value.length && !selectedYears.value.includes(yearOf(s.date))) return false;
         if (selectedMonths.value.length && !selectedMonths.value.includes(monthName(monthOf(s.date)))) return false;
         return true;
-    });
+    })
+        /*
+         * Nearest first when looking forward, most recent first otherwise.
+         *
+         * The server hands these over newest first, which is right for a
+         * history and backwards for a plan: the next service ended up at the
+         * bottom, under every date further away than it.
+         *
+         * `.filter()` already returned a new array, so sorting it in place
+         * leaves the props untouched.
+         */
+        .sort((a, b) => {
+            const left = `${a.date} ${a.time ?? ''}`;
+            const right = `${b.date} ${b.time ?? ''}`;
+
+            return showAll.value ? right.localeCompare(left) : left.localeCompare(right);
+        });
 });
 
 const hasActiveFilters = computed(() =>
