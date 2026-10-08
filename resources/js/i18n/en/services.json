@@ -30,7 +30,14 @@
         "saving": "Saving…",
         "cancel": "Cancel",
         "playlist": "YouTube playlist",
-        "playlist_hint": "If you add one and the setlist is empty, \"Play all\" uses this playlist."
+        "playlist_hint": "If you add one and the setlist is empty, \"Play all\" uses this playlist.",
+        "gatherings": "Gatherings that day",
+        "gatherings_hint": "Mark which gatherings use this repertoire. Leave it empty if there is only one.",
+        "optional": "optional",
+        "gatherings_none": "Not specified",
+        "gathering_one": "Gathering {n}",
+        "gathering_many": "Gatherings {list} and {last}",
+        "gatherings_clear": "Clear selection"
     },
     "type_other": "Other",
     "type_custom": "Custom",

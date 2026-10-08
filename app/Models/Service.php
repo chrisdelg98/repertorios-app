@@ -50,13 +50,17 @@ class Service extends Model
 
     protected $fillable = [
         'band_id', 'kind', 'series_id', 'date', 'time', 'end_time', 'type', 'color', 'notes', 'playlist_url',
+        'gatherings',
         'team_notified_at',
     ];
 
     protected function casts(): array
     {
-        return ['date' => 'date', 'team_notified_at' => 'datetime'];
+        return ['date' => 'date', 'team_notified_at' => 'datetime', 'gatherings' => 'array'];
     }
+
+    /** The most gatherings one day can hold, which is already generous. */
+    public const MAX_GATHERINGS = 6;
 
     /**
      * How this service reads inside a notification or a message, in a given

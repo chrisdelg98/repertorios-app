@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -21,9 +21,51 @@ const form = useForm({
     type: props.service?.type ?? 'other',
     // Optional: it already carries the brand colour, nobody has to choose.
     color: props.service?.color ?? DEFAULT_SERVICE_COLOR,
+    gatherings: props.service?.gatherings ?? [],
     playlist_url: props.service?.playlist_url ?? '',
     notes: props.service?.notes ?? '',
 });
+
+/**
+ * The day's gatherings, as ordinals.
+ *
+ * Six is already generous — a church running more than that will survive
+ * without the seventh — and six toggles fit a phone in one row, which a
+ * dropdown of six would not beat.
+ */
+const GATHERINGS = [1, 2, 3, 4, 5, 6];
+
+const gatheringsOpen = ref(false);
+
+/** What the field says while closed: the choice, not the count. */
+const gatheringsSummary = computed(() => {
+    const picked = [...form.gatherings].sort((a, b) => a - b);
+
+    if (!picked.length) return t('services.form.gatherings_none');
+    if (picked.length === 1) return t('services.form.gathering_one', { n: picked[0] });
+
+    const last = picked.pop();
+
+    return t('services.form.gathering_many', {
+        list: picked.join(', '),
+        last,
+    });
+});
+
+function onGatheringsDocClick(e) {
+    if (!e.target.closest('[data-gatherings]')) gatheringsOpen.value = false;
+}
+
+onMounted(() => document.addEventListener('click', onGatheringsDocClick));
+onBeforeUnmount(() => document.removeEventListener('click', onGatheringsDocClick));
+
+function toggleGathering(n) {
+    const picked = form.gatherings.includes(n);
+
+    form.gatherings = picked
+        ? form.gatherings.filter(g => g !== n)
+        : [...form.gatherings, n].sort((a, b) => a - b);
+}
 
 function today() {
     return new Date().toISOString().slice(0, 10);
@@ -183,6 +225,83 @@ function submit() {
                         type="time"
                         class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
+                </div>
+
+                <!-- Which gatherings this repertoire is used in.
+                     Below the time because it answers the same question the
+                     time only half answers: a Sunday holds several, and one
+                     clock reading cannot name them all. Ordinals rather than
+                     times, since that is how a band says it and it survives a
+                     schedule that moves by a quarter of an hour. -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-medium text-slate-600">
+                        {{ t('services.form.gatherings') }}
+                        <span class="text-slate-500 font-normal">· {{ t('services.form.optional') }}</span>
+                    </label>
+
+                    <div class="relative" data-gatherings>
+                        <button
+                            type="button"
+                            @click.stop="gatheringsOpen = !gatheringsOpen"
+                            class="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-left rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            :class="form.gatherings.length ? 'text-slate-900' : 'text-slate-500'"
+                            :aria-expanded="gatheringsOpen"
+                        >
+                            <span class="truncate">{{ gatheringsSummary }}</span>
+                            <svg
+                                class="w-4 h-4 shrink-0 text-slate-500 transition-transform"
+                                :class="gatheringsOpen ? 'rotate-180' : ''"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <Transition
+                            enter-active-class="transition duration-150 ease-out"
+                            enter-from-class="opacity-0 scale-95"
+                            enter-to-class="opacity-100 scale-100"
+                            leave-active-class="transition duration-100 ease-in"
+                            leave-from-class="opacity-100 scale-100"
+                            leave-to-class="opacity-0 scale-95"
+                        >
+                            <div
+                                v-if="gatheringsOpen"
+                                class="absolute left-0 right-0 top-full mt-1 z-20 origin-top bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden py-1"
+                            >
+                                <button
+                                    v-for="n in GATHERINGS"
+                                    :key="n"
+                                    type="button"
+                                    @click.stop="toggleGathering(n)"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
+                                    :class="form.gatherings.includes(n) ? 'text-indigo-600 font-semibold' : 'text-slate-700'"
+                                >
+                                    <span
+                                        class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors"
+                                        :class="form.gatherings.includes(n)
+                                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                                            : 'bg-white border-slate-300'"
+                                    >
+                                        <svg v-if="form.gatherings.includes(n)" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                    {{ t('services.form.gathering_one', { n }) }}
+                                </button>
+
+                                <button
+                                    v-if="form.gatherings.length"
+                                    type="button"
+                                    @click.stop="form.gatherings = []"
+                                    class="w-full px-3 py-2.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 border-t border-slate-100 transition-colors"
+                                >{{ t('services.form.gatherings_clear') }}</button>
+                            </div>
+                        </Transition>
+                    </div>
+
+                    <p v-if="form.errors.gatherings" class="text-xs text-red-600">{{ form.errors.gatherings }}</p>
+                    <p v-else class="text-xs text-slate-600">{{ t('services.form.gatherings_hint') }}</p>
                 </div>
 
                 <!-- Colour — optional accent, defaults to the brand indigo -->

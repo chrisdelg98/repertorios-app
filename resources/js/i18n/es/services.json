@@ -30,7 +30,14 @@
         "saving": "Guardando…",
         "cancel": "Cancelar",
         "playlist": "Lista de reproducción de YouTube",
-        "playlist_hint": "Si la agregas y el repertorio queda vacío, \"Reproducir todo\" usará esta lista."
+        "playlist_hint": "Si la agregas y el repertorio queda vacío, \"Reproducir todo\" usará esta lista.",
+        "gatherings": "Cultos del día",
+        "gatherings_hint": "Marca en qué cultos se usa este repertorio. Déjalo vacío si ese día sólo hay uno.",
+        "optional": "opcional",
+        "gatherings_none": "Sin especificar",
+        "gathering_one": "Culto {n}",
+        "gathering_many": "Cultos {list} y {last}",
+        "gatherings_clear": "Quitar selección"
     },
     "type_other": "Otro",
     "type_custom": "Personalizado",

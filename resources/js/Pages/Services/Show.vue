@@ -608,6 +608,20 @@ function scheduleReorder() {
                     {{ formatDate(service.date) }}
                     <span v-if="service.time"> · {{ service.time.slice(0, 5) }}</span>
                 </p>
+
+                <!-- Which gatherings this repertoire covers. On its own line
+                     and only when it was filled in, so a band with one a
+                     Sunday never learns the feature exists. -->
+                <div v-if="service.gatherings?.length" class="flex items-center gap-1.5 mt-2.5">
+                    <span class="text-2xs font-semibold text-white/70 uppercase tracking-widest">
+                        {{ t('services.form.gatherings') }}
+                    </span>
+                    <span
+                        v-for="n in service.gatherings"
+                        :key="n"
+                        class="w-6 h-6 rounded-md bg-white/20 backdrop-blur-sm text-white text-xs font-bold flex items-center justify-center tabular-nums"
+                    >{{ n }}</span>
+                </div>
                 <p v-if="service.notes" class="mt-3 pt-3 border-t border-white/20 text-sm text-white/90">
                     {{ service.notes }}
                 </p>

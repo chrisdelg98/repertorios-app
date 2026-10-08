@@ -100,6 +100,7 @@ class ServiceController extends Controller
                 'id'    => $service->id,
                 'date'  => $service->date->toDateString(),
                 'time'  => $service->time,
+                'gatherings' => $service->gatherings,
                 'type'  => $service->type,
                 'color' => $service->color,
                 'notes' => $service->notes,
