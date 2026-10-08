@@ -360,14 +360,14 @@ function submitDuplicate() {
             <div class="flex items-center justify-between mb-4 lg:mb-6">
                 <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('services.title') }}</h1>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-stretch gap-2">
                     <!-- Services and the calendar are one schedule seen two ways,
                          so the way across belongs here: the bottom bar on mobile
                          has no room left. The label hides on narrow phones and
                          the icon carries it. -->
                     <Link
                         href="/calendar"
-                        class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-xs lg:text-sm font-semibold rounded-lg transition-colors"
+                        class="flex items-center justify-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 text-xs lg:text-sm font-semibold rounded-lg shadow-sm transition-colors"
                         :aria-label="t('calendar.title')"
                     >
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
