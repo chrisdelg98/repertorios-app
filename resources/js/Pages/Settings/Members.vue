@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
@@ -74,6 +74,32 @@ function saveRoles() {
     });
 }
 
+/**
+ * Promoting and removing move into a menu.
+ *
+ * They are rare — a band is set up once and then edited now and again — but
+ * they were taking a third of every row, on every row, pushing the email into
+ * an ellipsis on a phone. The thing done often is assigning instruments, and
+ * that gets the whole width instead.
+ */
+const openMenuId = ref(null);
+
+function toggleMemberMenu(id) {
+    openMenuId.value = openMenuId.value === id ? null : id;
+}
+
+function onMembersDocClick(e) {
+    if (!e.target.closest('[data-member-menu]')) openMenuId.value = null;
+}
+
+onMounted(() => document.addEventListener('click', onMembersDocClick));
+onBeforeUnmount(() => document.removeEventListener('click', onMembersDocClick));
+
+/** Whether there is anything in the menu for this person at all. */
+function hasActions(member) {
+    return !member.is_you && !member.is_creator;
+}
+
 const confirmRemoveId = ref(null);
 const acting          = ref(false);
 
@@ -139,72 +165,124 @@ function roleBadgeClass(m) {
                     :key="member.id"
                     class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3"
                 >
-                    <!-- Top row: avatar + name + role badges + actions -->
-                    <div class="flex items-center gap-3">
+                    <!-- Who they are. The email gets the room the action
+                         buttons used to take, which on a phone is the
+                         difference between reading it and guessing it. -->
+                    <div class="flex items-start gap-3">
                         <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600 shrink-0">
                             {{ member.name.charAt(0).toUpperCase() }}
                         </div>
+
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <p class="text-sm font-medium text-slate-900 truncate">{{ member.name }}</p>
+                                <p class="text-sm font-semibold text-slate-900 truncate">{{ member.name }}</p>
                                 <span :class="['text-2xs font-semibold px-1.5 py-0.5 rounded-md shrink-0', roleBadgeClass(member)]">{{ roleLabel(member) }}</span>
                                 <span v-if="member.is_you" class="text-2xs font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md shrink-0">{{ t('settings.members.you') }}</span>
                             </div>
-                            <p class="text-xs font-medium text-slate-600 truncate">{{ member.email }}</p>
+                            <p class="text-xs font-medium text-slate-600 truncate mt-0.5">{{ member.email }}</p>
                         </div>
 
-                        <!-- Actions: only creator (you) acts on others -->
-                        <template v-if="!member.is_you && !member.is_creator">
+                        <div v-if="hasActions(member)" class="relative shrink-0" data-member-menu>
                             <button
-                                v-if="member.role === 'member'"
-                                @click="promote(member.id)"
-                                class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
-                                :title="t('settings.members.promote')"
+                                type="button"
+                                @click.stop="toggleMemberMenu(member.id)"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                                :aria-label="t('services.actions')"
+                                :aria-expanded="openMenuId === member.id"
                             >
-                                {{ t('settings.members.promote') }}
-                            </button>
-                            <button
-                                v-else
-                                @click="demote(member.id)"
-                                class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                                :title="t('settings.members.demote')"
-                            >
-                                {{ t('settings.members.demote') }}
-                            </button>
-                            <button
-                                @click="askRemove(member.id)"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors shrink-0"
-                                :title="t('settings.members.remove')"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                 </svg>
                             </button>
-                        </template>
+
+                            <Transition
+                                enter-active-class="transition duration-150 ease-out"
+                                enter-from-class="opacity-0 scale-95"
+                                enter-to-class="opacity-100 scale-100"
+                                leave-active-class="transition duration-100 ease-in"
+                                leave-from-class="opacity-100 scale-100"
+                                leave-to-class="opacity-0 scale-95"
+                            >
+                                <div
+                                    v-if="openMenuId === member.id"
+                                    class="absolute right-0 top-full mt-1 w-52 z-20 origin-top-right bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden py-1"
+                                >
+                                    <button
+                                        v-if="member.role === 'member'"
+                                        type="button"
+                                        @click.stop="openMenuId = null; promote(member.id)"
+                                        class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                    >
+                                        <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                        {{ t('settings.members.promote') }}
+                                    </button>
+                                    <button
+                                        v-else
+                                        type="button"
+                                        @click.stop="openMenuId = null; demote(member.id)"
+                                        class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                    >
+                                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H6" />
+                                        </svg>
+                                        {{ t('settings.members.demote') }}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click.stop="openMenuId = null; askRemove(member.id)"
+                                        class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"
+                                    >
+                                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        {{ t('settings.members.remove') }}
+                                    </button>
+                                </div>
+                            </Transition>
+                        </div>
                     </div>
 
-                    <!-- Band roles row -->
-                    <div class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 flex-wrap">
-                        <!-- Display current roles as pills -->
-                        <template v-if="member.role_ids?.length">
+                    <!-- What they play, with the same edit button the song
+                         library uses. A row-wide hit area was a different
+                         pattern from everywhere else in the app, and an icon
+                         button is already a target you can hit. -->
+                    <div
+                        v-if="auth.access === 'admin'"
+                        class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2"
+                    >
+                        <div v-if="member.role_ids?.length" class="flex-1 flex items-center gap-1.5 flex-wrap">
                             <span
                                 v-for="rid in member.role_ids"
                                 :key="rid"
                                 class="text-xs font-medium text-violet-700 bg-violet-50 border border-violet-100 rounded-md px-2 py-0.5"
-                            >
-                                {{ roleNameById[rid] }}
-                            </span>
-                        </template>
-                        <span v-else class="text-xs text-slate-500 italic">{{ t('settings.members.no_band_roles') }}</span>
+                            >{{ roleNameById[rid] }}</span>
+                        </div>
+                        <p v-else class="flex-1 text-xs text-slate-500 italic">{{ t('settings.members.no_band_roles') }}</p>
 
-                        <!-- Edit roles button: any admin (creator + delegated) can edit, including themselves -->
                         <button
-                            v-if="auth.access === 'admin'"
+                            type="button"
                             @click="openRolesEditor(member)"
-                            class="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                            class="w-9 h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors shrink-0"
+                            :aria-label="member.role_ids?.length ? t('settings.members.edit_roles') : t('settings.members.add_roles')"
+                            :title="member.role_ids?.length ? t('settings.members.edit_roles') : t('settings.members.add_roles')"
                         >
-                            {{ member.role_ids?.length ? t('settings.members.edit_roles') : t('settings.members.add_roles') }}
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                            </svg>
                         </button>
+                    </div>
+
+                    <!-- Read-only eyes still see what each person plays. -->
+                    <div v-else class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
+                        <span
+                            v-for="rid in member.role_ids ?? []"
+                            :key="rid"
+                            class="text-xs font-medium text-violet-700 bg-violet-50 border border-violet-100 rounded-md px-2 py-0.5"
+                        >{{ roleNameById[rid] }}</span>
+                        <span v-if="!member.role_ids?.length" class="text-xs text-slate-500 italic">{{ t('settings.members.no_band_roles') }}</span>
                     </div>
                 </div>
 
