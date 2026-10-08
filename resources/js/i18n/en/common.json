@@ -201,9 +201,14 @@
         "errors": {
             "dupe": "That person is already assigned to that role",
             "missing_role": "Choose a role",
-            "missing_name": "Enter a name"
+            "missing_name": "Enter a name",
+            "generic": "Could not add. Try again."
         },
-        "not_assigned": "No role assigned"
+        "not_assigned": "No role assigned",
+        "select_all": "Select everyone",
+        "select_none": "Clear selection",
+        "add_count": "Add {count} | Add {count} | Add {count}",
+        "everyone_added": "Everyone on the team is already on this service."
     },
     "share": {
         "include_team_label": "Include service team",

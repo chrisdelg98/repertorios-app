@@ -11,11 +11,99 @@ use App\Services\PushNotifier;
 use App\Models\ServiceAssignment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ServiceAssignmentController extends Controller
 {
     use BandAware;
+
+    /**
+     * Assign several people at once.
+     *
+     * Adding a band of ten one request at a time is slow and, worse, can stop
+     * halfway: six are on the service, four are not, and nothing on screen
+     * says which failed. One call either takes the lot or takes none.
+     *
+     * Anyone already holding the same role on this service is skipped rather
+     * than refused — ticking a box for someone who is already there means
+     * "they should be on it", and they are.
+     */
+    public function storeMany(Request $request, Service $service): JsonResponse
+    {
+        $this->requireAdmin();
+        abort_unless($service->band_id === $this->bandId(), 403);
+
+        $data = $request->validate([
+            'rows'                   => ['required', 'array', 'min:1', 'max:60'],
+            'rows.*.user_id'         => ['required', 'integer', 'exists:users,id'],
+            'rows.*.band_role_type_id' => ['required', 'integer', 'exists:band_role_types,id'],
+        ]);
+
+        $members = User::whereIn('id', collect($data['rows'])->pluck('user_id')->unique())
+            ->get()
+            ->filter(fn (User $user) => $user->belongsToBand((int) $service->band_id))
+            ->keyBy('id');
+
+        $taken = $service->assignments()
+            ->get(['user_id', 'band_role_type_id'])
+            ->map(fn ($a) => $a->user_id . ':' . $a->band_role_type_id)
+            ->flip();
+
+        $position = (int) $service->assignments()->max('position');
+        $created = [];
+        $notify = [];
+
+        DB::transaction(function () use ($data, $members, $taken, $service, &$position, &$created, &$notify) {
+            foreach ($data['rows'] as $row) {
+                $user = $members->get((int) $row['user_id']);
+                $roleId = (int) $row['band_role_type_id'];
+
+                if (!$user || $taken->has($user->id . ':' . $roleId)) {
+                    continue;
+                }
+
+                $assignment = $service->assignments()->create([
+                    'band_role_type_id' => $roleId,
+                    'user_id'           => $user->id,
+                    'manual_name'       => null,
+                    'position'          => ++$position,
+                ]);
+
+                $assignment->load(['role', 'user']);
+                $created[] = $assignment;
+
+                if ($user->id !== Auth::id()) {
+                    $notify[] = [$user, $assignment];
+                }
+            }
+        });
+
+        // One notification each, after the response: the admin's screen should
+        // never wait on the push service.
+        if ($notify) {
+            $service->loadMissing('band');
+
+            foreach ($notify as [$user, $assignment]) {
+                $role = $assignment->role;
+
+                defer(fn () => app(PushNotifier::class)->toUser($user, $service->band, [
+                    'body_key'    => $role ? 'push.assigned' : 'push.assigned_norole',
+                    'body_params' => [
+                        'role'    => $role?->name_es ?? '',
+                        'service' => fn (string $locale) => $service->labelIn($locale),
+                    ],
+                    'url' => '/services/' . $service->id,
+                    'tag' => 'assignment-' . $assignment->id,
+                ]));
+            }
+        }
+
+        return response()->json([
+            'assignments' => array_map(fn ($a) => $this->serializeAssignment($a), $created),
+        ], 201);
+    }
 
     public function store(StoreServiceAssignmentRequest $request, Service $service): JsonResponse
     {

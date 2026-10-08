@@ -84,10 +84,7 @@ const editingAssignmentId = ref(null);
 const editAssignmentName = ref('');
 const editAssignmentRoleId = ref(null);
 
-const TEAM_MAX_MEMBER_SUGGESTIONS = 4;
 const teamComposerOpen = ref(false);
-const teamQuery = ref('');
-const teamSelectedMemberId = ref(null);
 const teamSelectedRoleId = ref(null);
 const teamManualOpen = ref(false);
 const teamManualName = ref('');
@@ -98,22 +95,12 @@ const showAssignmentsSection = computed(() =>
     canManageAssignments.value || localAssignments.value.length > 0
 );
 
-const teamSelectedMember = computed(() =>
-    props.team_members.find((member) => member.id === teamSelectedMemberId.value) ?? null
-);
 
 const editingAssignment = computed(() =>
     localAssignments.value.find((assignment) => assignment.id === editingAssignmentId.value) ?? null
 );
 const isEditingManual = computed(() => !!editingAssignment.value?.is_manual);
 
-const teamFilteredMembers = computed(() => {
-    const q = teamQuery.value.trim().toLowerCase();
-    if (!q) return [];
-    return props.team_members
-        .filter((member) => member.name.toLowerCase().includes(q))
-        .slice(0, TEAM_MAX_MEMBER_SUGGESTIONS);
-});
 
 function roleLabel(roleLike) {
     if (!roleLike) return '';
@@ -248,46 +235,119 @@ function openTeamComposer() {
     assignmentError.value = '';
 }
 
+/**
+ * Picking the team as a checklist.
+ *
+ * Searching for people one at a time was the wrong shape for the job: a band
+ * knows who plays this Sunday, and typing nine names to say so is nine chances
+ * to mistype. Everyone not yet on the service is listed, each already carrying
+ * the instrument they are down for in the band, so the usual case is tick
+ * everyone and press once.
+ */
+const picked = ref({});   // user id -> role id
+
+const availableMembers = computed(() =>
+    (props.team_members ?? []).filter(member =>
+        !localAssignments.value.some(a => a.user_id === member.id)
+    )
+);
+
+function defaultRoleFor(member) {
+    return member.roles?.[0]?.id ?? null;
+}
+
+function isPicked(id) {
+    return Object.prototype.hasOwnProperty.call(picked.value, id);
+}
+
+function togglePick(member) {
+    const next = { ...picked.value };
+
+    if (isPicked(member.id)) {
+        delete next[member.id];
+    } else {
+        next[member.id] = defaultRoleFor(member);
+    }
+
+    picked.value = next;
+}
+
+function setPickedRole(id, roleId) {
+    picked.value = { ...picked.value, [id]: roleId ? Number(roleId) : null };
+}
+
+const allPicked = computed(() =>
+    availableMembers.value.length > 0
+    && availableMembers.value.every(m => isPicked(m.id))
+);
+
+function toggleAll() {
+    if (allPicked.value) {
+        picked.value = {};
+        return;
+    }
+
+    const next = {};
+    availableMembers.value.forEach(m => { next[m.id] = defaultRoleFor(m); });
+    picked.value = next;
+}
+
+/** Nobody is added without an instrument, so a blank one blocks the button. */
+const pickedRows = computed(() =>
+    Object.entries(picked.value).map(([userId, roleId]) => ({
+        user_id: Number(userId),
+        band_role_type_id: roleId,
+    }))
+);
+
+const pickedIncomplete = computed(() => pickedRows.value.some(r => !r.band_role_type_id));
+
+async function submitPicked() {
+    if (!pickedRows.value.length || pickedIncomplete.value) return;
+
+    assignmentsProcessing.value = true;
+    assignmentError.value = '';
+
+    try {
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        const res = await fetch(`/services/${props.service.id}/assignments/bulk`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ rows: pickedRows.value }),
+        });
+
+        if (!res.ok) {
+            assignmentError.value = t('assignments.errors.generic');
+            return;
+        }
+
+        const payload = await res.json();
+        localAssignments.value = [...localAssignments.value, ...(payload.assignments ?? [])];
+
+        picked.value = {};
+        teamComposerOpen.value = false;
+    } catch {
+        assignmentError.value = t('assignments.errors.generic');
+    } finally {
+        assignmentsProcessing.value = false;
+    }
+}
+
 function resetTeamComposer() {
-    teamQuery.value = '';
-    teamSelectedMemberId.value = null;
+    picked.value = {};
     teamSelectedRoleId.value = null;
     teamManualOpen.value = false;
     teamManualName.value = '';
     teamManualRoleId.value = null;
 }
 
-function onTeamQueryInput() {
-    teamSelectedMemberId.value = null;
-    teamSelectedRoleId.value = null;
-}
 
-function selectTeamMember(member) {
-    teamSelectedMemberId.value = member.id;
-    teamQuery.value = member.name;
-    teamSelectedRoleId.value = member.roles?.[0]?.id ?? null;
-    teamManualOpen.value = false;
-}
 
-function isUserRoleAssigned(userId, roleId) {
-    if (!roleId) return false;
-    const normalizedRoleId = Number(roleId);
-    return localAssignments.value.some((assignment) =>
-        assignment.user_id === userId && assignment.band_role_type_id === normalizedRoleId
-    );
-}
 
-async function submitRegisteredAssignment() {
-    if (!teamSelectedMemberId.value || !teamSelectedRoleId.value) {
-        assignmentError.value = t('assignments.errors.missing_role');
-        return;
-    }
-    const success = await saveAssignment({
-        user_id: teamSelectedMemberId.value,
-        band_role_type_id: Number(teamSelectedRoleId.value),
-    });
-    if (success) resetTeamComposer();
-}
 
 async function submitManualAssignment() {
     if (!teamManualName.value.trim()) {
@@ -1101,62 +1161,91 @@ function scheduleReorder() {
                             </button>
                         </div>
 
-                        <div class="relative">
-                            <input
-                                v-model="teamQuery"
-                                type="search"
-                                :placeholder="t('assignments.search_placeholder')"
-                                class="w-full px-3 py-2.5 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                @input="onTeamQueryInput"
-                            />
-
-                            <div
-                                v-if="!teamSelectedMember && teamFilteredMembers.length"
-                                class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-52 overflow-y-auto"
+                        <!-- Everyone not on the service yet, as a checklist.
+                             A band knows who plays this Sunday; typing nine
+                             names to say so was nine chances to mistype. The
+                             instrument comes pre-filled from what each person
+                             is down for in the band, so the usual case is tick
+                             everyone and press once. -->
+                        <div v-if="availableMembers.length">
+                            <button
+                                type="button"
+                                @click="toggleAll"
+                                class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left hover:bg-slate-50 transition-colors"
                             >
-                                <button
-                                    v-for="member in teamFilteredMembers"
+                                <span
+                                    class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors"
+                                    :class="allPicked ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300'"
+                                >
+                                    <svg v-if="allPicked" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </span>
+                                <span class="text-xs font-semibold text-slate-700">
+                                    {{ allPicked ? t('assignments.select_none') : t('assignments.select_all') }}
+                                </span>
+                            </button>
+
+                            <div class="max-h-72 overflow-y-auto mt-1 -mx-1 px-1">
+                                <div
+                                    v-for="member in availableMembers"
                                     :key="member.id"
-                                    type="button"
-                                    @click="selectTeamMember(member)"
-                                    class="w-full text-left px-3 py-2.5 border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                                    class="flex items-center gap-2.5 py-1.5 border-t border-slate-100 first:border-t-0"
                                 >
-                                    <p class="text-sm font-medium text-slate-900">{{ member.name }}</p>
-                                    <p v-if="member.roles?.length" class="text-xs font-medium text-slate-600 mt-0.5">
-                                        {{ t('assignments.role_suggested', { role: roleLabel(member.roles[0]) }) }}
-                                    </p>
-                                </button>
-                            </div>
-                        </div>
+                                    <button
+                                        type="button"
+                                        @click="togglePick(member)"
+                                        class="flex items-center gap-2.5 flex-1 min-w-0 text-left py-1 rounded-lg"
+                                    >
+                                        <span
+                                            class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors"
+                                            :class="isPicked(member.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-300'"
+                                        >
+                                            <svg v-if="isPicked(member.id)" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </span>
+                                        <span class="text-sm font-medium text-slate-900 truncate">{{ member.name }}</span>
+                                    </button>
 
-                        <div v-if="teamSelectedMember" class="mt-2.5 space-y-2.5">
-                            <p class="text-xs text-slate-600">
-                                {{ t('assignments.confirm_role_title', { name: teamSelectedMember.name }) }}
-                            </p>
-                            <select
-                                v-model="teamSelectedRoleId"
-                                class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option :value="null">{{ t('assignments.role_placeholder') }}</option>
-                                <option
-                                    v-for="role in role_types"
-                                    :key="role.id"
-                                    :value="role.id"
-                                    :disabled="isUserRoleAssigned(teamSelectedMember.id, role.id)"
-                                >
-                                    {{ roleLabel(role) }}
-                                </option>
-                            </select>
+                                    <!-- The instrument only matters once they
+                                         are ticked, so it stays quiet until
+                                         then and shouts when it is missing. -->
+                                    <select
+                                        v-if="isPicked(member.id)"
+                                        :value="picked[member.id] ?? ''"
+                                        @change="setPickedRole(member.id, $event.target.value)"
+                                        class="shrink-0 w-32 sm:w-40 px-2 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        :class="picked[member.id] ? 'border-slate-300 text-slate-900' : 'border-red-300 text-red-600'"
+                                    >
+                                        <option value="">{{ t('assignments.role_placeholder') }}</option>
+                                        <option v-for="role in role_types" :key="role.id" :value="role.id">{{ roleLabel(role) }}</option>
+                                    </select>
+                                    <span v-else class="shrink-0 w-32 sm:w-40 text-xs text-slate-400 truncate text-right pr-2">
+                                        {{ member.roles?.length ? roleLabel(member.roles[0]) : '' }}
+                                    </span>
+                                </div>
+                            </div>
 
                             <button
                                 type="button"
-                                @click="submitRegisteredAssignment"
-                                :disabled="assignmentsProcessing || !teamSelectedRoleId || isUserRoleAssigned(teamSelectedMember.id, teamSelectedRoleId)"
-                                class="w-full py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-40"
+                                @click="submitPicked"
+                                :disabled="assignmentsProcessing || !pickedRows.length || pickedIncomplete"
+                                class="w-full mt-3 py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-40 transition-colors"
                             >
-                                {{ t('assignments.add_button') }}
+                                {{ pickedRows.length
+                                    ? t('assignments.add_count', pickedRows.length, { count: pickedRows.length })
+                                    : t('assignments.add_button') }}
                             </button>
+
+                            <p v-if="pickedIncomplete" class="text-xs text-red-600 mt-1.5">
+                                {{ t('assignments.errors.missing_role') }}
+                            </p>
                         </div>
+
+                        <p v-else class="text-xs text-slate-500 text-center py-4">
+                            {{ t('assignments.everyone_added') }}
+                        </p>
 
                         <div class="flex items-center gap-3 my-3">
                             <div class="flex-1 h-px bg-slate-200" />

@@ -148,6 +148,7 @@ Route::middleware('band.access')->group(function () {
 
     // Service assignments
     Route::post('/services/{service}/assignments', [ServiceAssignmentController::class, 'store'])->name('service-assignments.store');
+    Route::post('/services/{service}/assignments/bulk', [ServiceAssignmentController::class, 'storeMany'])->name('service-assignments.bulk');
     Route::patch('/assignments/{assignment}', [ServiceAssignmentController::class, 'update'])->name('service-assignments.update');
     Route::delete('/assignments/{assignment}', [ServiceAssignmentController::class, 'destroy'])->name('service-assignments.destroy');
 

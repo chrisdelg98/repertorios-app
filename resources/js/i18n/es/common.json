@@ -201,9 +201,14 @@
         "errors": {
             "dupe": "Esa persona ya esta asignada a ese rol",
             "missing_role": "Elige un rol",
-            "missing_name": "Escribe el nombre"
+            "missing_name": "Escribe el nombre",
+            "generic": "No se pudo agregar. Inténtalo de nuevo."
         },
-        "not_assigned": "Sin rol asignado"
+        "not_assigned": "Sin rol asignado",
+        "select_all": "Seleccionar todos",
+        "select_none": "Quitar selección",
+        "add_count": "Agregar {count} | Agregar {count} | Agregar {count}",
+        "everyone_added": "Todo el equipo ya está asignado a este servicio."
     },
     "share": {
         "include_team_label": "Incluir equipo del servicio",
