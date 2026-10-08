@@ -302,13 +302,19 @@ function confirmDelete() {
         <div class="px-4 lg:px-8 py-5 lg:py-10 lg:max-w-3xl lg:mx-auto">
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 lg:mb-6">
-                <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">{{ t('songs.library') }}</h1>
+                <!-- "Biblioteca de Canciones" needs two lines on a 360px
+                     screen, and the second one pushes into the button beside
+                     it. On this screen the shorter name says the same thing. -->
+                <h1 class="text-lg lg:text-2xl font-semibold lg:font-bold text-slate-900">
+                    <span class="sm:hidden">{{ t('songs.library_short') }}</span>
+                    <span class="hidden sm:inline">{{ t('songs.library') }}</span>
+                </h1>
                 <button
                     v-if="can_write"
                     @click="showAddForm = true"
-                    class="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs lg:text-sm font-semibold rounded-lg transition-colors"
+                    class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3 lg:px-4 py-1.5 lg:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs lg:text-sm font-semibold rounded-lg transition-colors"
                 >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                     {{ t('songs.create') }}
@@ -342,8 +348,14 @@ function confirmDelete() {
                 </div>
 
                 <!-- Filter dropdowns -->
-                <div class="flex flex-wrap items-center gap-2">
+                <!-- Three equal columns on a phone rather than letting each
+                     filter size itself: left alone they wrap at the width of
+                     whatever happens to be selected, so the same screen shows
+                     two rows one minute and three the next. The sort takes the
+                     whole row below, since its label is the longest of all. -->
+                <div class="grid grid-cols-3 gap-2 lg:flex lg:flex-wrap lg:items-center">
                     <MultiSelect
+                        full
                         v-if="availableArtists.length"
                         v-model="selectedArtists"
                         :label="t('songs.filter_artists')"
@@ -354,6 +366,7 @@ function confirmDelete() {
                         searchable
                     />
                     <MultiSelect
+                        full
                         v-if="availableVersions.length"
                         v-model="selectedVersions"
                         :label="t('songs.filter_versions')"
@@ -361,6 +374,7 @@ function confirmDelete() {
                         :clear-label="t('songs.filter_clear')"
                     />
                     <MultiSelect
+                        full
                         v-if="availableKeys.length"
                         v-model="selectedKeys"
                         :label="t('songs.filter_keys')"
@@ -374,16 +388,16 @@ function confirmDelete() {
                     <!-- Pushed right only where the row has room to spare. On
                          a phone it wraps, and a button floating at the far edge
                          of its own line reads as a stray. -->
-                    <div class="relative lg:ml-auto" data-sort>
+                    <div class="relative col-span-3 lg:col-span-1 lg:ml-auto" data-sort>
                         <button
                             type="button"
                             @click.stop="sortOpen = !sortOpen"
-                            class="inline-flex items-center gap-2 px-3.5 py-2 min-h-10 text-xs font-semibold text-slate-700 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                            class="w-full lg:w-auto inline-flex items-center justify-between lg:justify-start gap-2 px-3.5 py-2 min-h-10 text-xs font-semibold text-slate-700 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
                         >
                             <svg class="w-3.5 h-3.5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M6 12h12M10 17h4" />
                             </svg>
-                            <span class="truncate max-w-[160px]">{{ t('songs.sort.' + sort) }}</span>
+                            <span class="truncate flex-1 lg:flex-none text-left lg:max-w-[160px]">{{ t('songs.sort.' + sort) }}</span>
                             <svg
                                 class="w-3 h-3 text-slate-500 transition-transform"
                                 :class="sortOpen ? 'rotate-180' : ''"

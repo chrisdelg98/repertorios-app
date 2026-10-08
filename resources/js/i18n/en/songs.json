@@ -70,5 +70,6 @@
         "artist_asc": "Artist (A-Z)",
         "played_most": "Most played",
         "played_oldest": "Longest since played"
-    }
+    },
+    "library_short": "Library"
 }

@@ -70,5 +70,6 @@
         "artist_asc": "Artista (A-Z)",
         "played_most": "Más tocadas",
         "played_oldest": "Hace más que no se toca"
-    }
+    },
+    "library_short": "Biblioteca"
 }

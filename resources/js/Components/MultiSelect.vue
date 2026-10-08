@@ -11,6 +11,15 @@ const props = defineProps({
     noResultsLabel:   { type: String, default: 'No matches' },
     searchable:       { type: Boolean, default: false },
     bold:             { type: Boolean, default: false },
+    /**
+     * Fill the width given to it on a narrow screen, hug its label from `lg`.
+     *
+     * A row of filters on a phone reads best as equal columns; left to size
+     * themselves they wrap at the width of whatever happens to be selected.
+     * On a wide screen the opposite is true — three full-width rows waste the
+     * space that was the point of the screen.
+     */
+    full:             { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -141,16 +150,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div ref="rootEl" class="relative">
+    <div ref="rootEl" class="relative" :class="full ? 'w-full min-w-0 lg:w-auto' : ''">
         <button
             type="button"
             @click="toggle"
-            class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border transition-colors min-h-10"
-            :class="count > 0
-                ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                : 'bg-white border-slate-300 text-slate-700 hover:border-slate-400'"
+            class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border transition-colors min-h-10"
+            :class="[
+                count > 0
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                    : 'bg-white border-slate-300 text-slate-700 hover:border-slate-400',
+                full ? 'w-full justify-between lg:w-auto lg:inline-flex lg:justify-start' : 'inline-flex',
+            ]"
         >
-            <span class="truncate max-w-[160px]">{{ triggerLabel }}</span>
+            <span class="truncate" :class="full ? 'min-w-0 lg:max-w-[160px]' : 'max-w-[160px]'">{{ triggerLabel }}</span>
             <svg
                 class="w-3.5 h-3.5 transition-transform shrink-0"
                 :class="open ? 'rotate-180' : ''"
