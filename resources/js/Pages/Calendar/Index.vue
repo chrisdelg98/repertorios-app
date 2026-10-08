@@ -221,9 +221,9 @@ function openEdit(entry) {
                         :key="entry.id"
                         type="button"
                         @click="openEdit(entry)"
-                        class="w-full flex items-center gap-3 bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-3 text-left hover:border-slate-300 hover:shadow-md transition"
+                        class="w-full flex items-start gap-3 bg-white rounded-xl border border-slate-200 shadow-sm px-3 py-3 text-left hover:border-slate-300 hover:shadow-md transition"
                     >
-                        <span class="w-1.5 h-10 rounded-full shrink-0" :class="dotClass(entry)" />
+                        <span class="w-1.5 self-stretch min-h-10 rounded-full shrink-0" :class="dotClass(entry)" />
 
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-semibold text-slate-900 truncate leading-tight">{{ entry.name }}</p>
@@ -232,9 +232,20 @@ function openEdit(entry) {
                                 <span v-if="entry.time"> · {{ entry.time }}<span v-if="entry.end_time">–{{ entry.end_time }}</span></span>
                                 <span v-if="entry.kind === 'service' && entry.songs"> · {{ t('dashboard.songs_count', entry.songs, { count: entry.songs }) }}</span>
                             </p>
+
+                            <!-- Whatever was written about this one, here
+                                 rather than one tap away. A rehearsal that
+                                 says "bring the capo" is useless on a screen
+                                 nobody opens before leaving the house. Set
+                                 apart with a rule so it reads as an
+                                 annotation, the way the player does it. -->
+                            <p
+                                v-if="entry.notes"
+                                class="mt-1.5 border-l-2 border-indigo-200 pl-2.5 text-xs text-slate-600 leading-relaxed whitespace-pre-wrap line-clamp-3"
+                            >{{ entry.notes }}</p>
                         </div>
 
-                        <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <svg class="w-4 h-4 text-slate-300 shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
