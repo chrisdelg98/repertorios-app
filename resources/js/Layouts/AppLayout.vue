@@ -316,10 +316,16 @@ const navItems = computed(() => {
                 </Link>
 
                 <!-- Add (center FAB) — write access only -->
-                <div v-if="auth.can_write" class="flex-1 flex justify-center">
+                <!-- Centred in the bar, not hung from its floor.
+                     `items-end` on the row and a negative top margin left the
+                     circle flush with the bottom edge while every label kept
+                     ten pixels under it, so it read as sagging. Forty-eight in
+                     a sixty-four pixel bar leaves the same eight above and
+                     below. -->
+                <div v-if="auth.can_write" class="flex-1 flex justify-center self-center">
                     <Link
                         href="/services/create"
-                        class="w-14 h-14 -mt-6 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-300/50 active:scale-95 transition-transform"
+                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-300/50 active:scale-95 transition-transform"
                         :aria-label="t('nav.add')"
                     >
                         <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
