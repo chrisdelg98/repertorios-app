@@ -10,6 +10,7 @@ class AdminAction extends Model
 {
     public const SIGNED_IN = 'panel.opened';
     public const QUOTA_CHANGED = 'band.quota_changed';
+    public const OWNER_TRANSFERRED = 'band.owner_transferred';
 
     protected $fillable = ['user_id', 'action', 'band_id', 'context'];
 

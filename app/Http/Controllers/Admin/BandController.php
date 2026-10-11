@@ -142,6 +142,50 @@ class BandController extends Controller
         return back()->with('success', true);
     }
 
+    /**
+     * Hand a band to someone else in it.
+     *
+     * The only thing here that cannot be worked around from outside: a
+     * creator is the sole account that can manage or delete a band, and
+     * nothing moves that. When one abandons the band or loses the account,
+     * everybody left is stuck with a band nobody can administer.
+     *
+     * Only to an existing member — handing a band to a stranger would be a
+     * way of taking it, not of rescuing it — and the new owner is made an
+     * admin, because an owner who cannot write is no rescue either.
+     */
+    public function transferOwner(Request $request, Band $band): RedirectResponse
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $user = User::findOrFail((int) $data['user_id']);
+
+        if (!$user->belongsToBand($band->id)) {
+            return back()->withErrors(['user_id' => 'Esa persona no pertenece a la banda.']);
+        }
+
+        if ((int) $band->creator_id === $user->id) {
+            return back();
+        }
+
+        $previous = $band->creator_id;
+
+        DB::transaction(function () use ($band, $user) {
+            $band->update(['creator_id' => $user->id]);
+            $user->bands()->updateExistingPivot($band->id, ['role' => 'admin']);
+        });
+
+        AdminAction::record(AdminAction::OWNER_TRANSFERRED, $band->id, [
+            'from'    => $previous,
+            'to'      => $user->id,
+            'to_name' => $user->name,
+        ]);
+
+        return back()->with('success', true);
+    }
+
     /** The shape every band takes on both screens. */
     private function row(Band $band): array
     {
@@ -153,6 +197,7 @@ class BandController extends Controller
             'name'    => $band->name,
             'code'    => $band->code,
             'creator' => $band->creator?->name,
+            'creator_id' => $band->creator_id,
             'members' => $band->members_count,
 
             'storage_bytes' => $used,

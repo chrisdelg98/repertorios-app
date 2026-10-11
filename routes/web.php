@@ -20,6 +20,7 @@ use App\Http\Controllers\Services\ShareController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BandController as AdminBandController;
 use App\Http\Controllers\Admin\StorageController as AdminStorageController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AudioLibraryController;
 use App\Http\Controllers\Settings\BandSettingsController;
 use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
@@ -74,6 +75,10 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
 
     // The scan is a POST because it costs several calls to Cloudflare, and a
     // GET is something browsers and crawlers feel free to repeat.
+    Route::put('/bands/{band}/owner', [AdminBandController::class, 'transferOwner'])->name('bands.owner');
+
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+
     Route::get('/storage', [AdminStorageController::class, 'index'])->name('storage');
     Route::post('/storage', [AdminStorageController::class, 'scan'])->name('storage.scan');
 });

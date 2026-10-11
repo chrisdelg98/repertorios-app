@@ -41,8 +41,38 @@ function useDefault() {
 
 const actionLabel = {
     'band.quota_changed': 'Cambió la cuota',
+    'band.owner_transferred': 'Transfirió la propiedad',
     'panel.opened': 'Abrió el panel',
 };
+
+/**
+ * Handing the band to someone else in it.
+ *
+ * Behind a confirmation because it is the one thing in this panel that takes
+ * something away from somebody: the previous creator keeps their place in the
+ * band and loses the right to manage it.
+ */
+const transferring = ref(false);
+
+const ownerForm = useForm({ user_id: null });
+
+// By id, never by name: two people called Daniel in one band would otherwise
+// hide the wrong one from the list.
+const candidates = computed(() =>
+    props.members.filter(member => member.id !== props.band.creator_id)
+);
+
+function transfer() {
+    if (!ownerForm.user_id) return;
+
+    ownerForm.put(`/admin/bands/${props.band.id}/owner`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            transferring.value = false;
+            ownerForm.reset();
+        },
+    });
+}
 </script>
 
 <template>
@@ -158,6 +188,65 @@ const actionLabel = {
             </div>
         </section>
 
+        <!-- The one control that takes something away. A creator is the only
+             account that can manage or delete a band, and nothing else moves
+             it — so when one disappears, this is the only way out. -->
+        <section class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mt-4">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-900">Propiedad</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Creada por <span class="font-medium text-slate-700">{{ band.creator ?? 'cuenta eliminada' }}</span>
+                    </p>
+                </div>
+                <button
+                    v-if="!transferring && candidates.length"
+                    type="button"
+                    @click="transferring = true"
+                    class="shrink-0 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 transition-colors"
+                >Transferir</button>
+            </div>
+
+            <div v-if="transferring" class="mt-4 pt-4 border-t border-slate-100">
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">Nuevo propietario</label>
+
+                <select
+                    v-model="ownerForm.user_id"
+                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                    <option :value="null">Elige a alguien de la banda…</option>
+                    <option v-for="member in candidates" :key="member.id" :value="member.id">
+                        {{ member.name }} · {{ member.email }}
+                    </option>
+                </select>
+
+                <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2.5 leading-relaxed">
+                    El propietario actual seguirá en la banda pero dejará de poder administrarla o eliminarla.
+                    La persona elegida pasa a ser administradora. Queda registrado en el historial.
+                </p>
+
+                <p v-if="ownerForm.errors.user_id" class="text-xs text-red-600 mt-1.5">{{ ownerForm.errors.user_id }}</p>
+
+                <div class="flex items-center gap-2 mt-3">
+                    <button
+                        type="button"
+                        @click="transfer"
+                        :disabled="ownerForm.processing || !ownerForm.user_id"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg disabled:opacity-40 transition-colors"
+                    >Transferir propiedad</button>
+                    <button
+                        type="button"
+                        @click="transferring = false; ownerForm.reset()"
+                        class="text-xs font-semibold text-slate-600 hover:text-slate-900"
+                    >Cancelar</button>
+                </div>
+            </div>
+
+            <p v-else-if="!candidates.length" class="text-xs text-slate-500 mt-2">
+                No hay nadie más en la banda a quien transferirla.
+            </p>
+        </section>
+
         <section v-if="history.length" class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mt-4">
             <h2 class="text-sm font-semibold text-slate-900">Historial de administración</h2>
 
@@ -165,7 +254,10 @@ const actionLabel = {
                 <div v-for="entry in history" :key="entry.id" class="py-2.5">
                     <p class="text-sm text-slate-900">
                         {{ actionLabel[entry.action] ?? entry.action }}
-                        <span v-if="entry.context?.to !== undefined" class="text-slate-500">
+                        <span v-if="entry.action === 'band.owner_transferred'" class="text-slate-500">
+                            · a {{ entry.context?.to_name ?? 'otra cuenta' }}
+                        </span>
+                        <span v-else-if="entry.context?.to !== undefined" class="text-slate-500">
                             · {{ entry.context.from ?? 'por defecto' }} → {{ entry.context.to ?? 'por defecto' }} MB
                         </span>
                     </p>

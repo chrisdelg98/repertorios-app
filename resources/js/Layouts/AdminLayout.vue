@@ -22,6 +22,7 @@ function isActive(href) {
 const tabs = [
     { href: '/admin', label: 'Resumen' },
     { href: '/admin/bands', label: 'Bandas' },
+    { href: '/admin/users', label: 'Personas' },
     { href: '/admin/storage', label: 'Almacenamiento' },
 ];
 </script>
