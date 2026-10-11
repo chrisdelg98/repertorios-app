@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Signs requests to Cloudflare R2 with AWS Signature Version 4.
@@ -86,6 +87,88 @@ class R2Signer
         return $response->successful() || $response->status() === 404;
     }
 
+    /**
+     * One page of what is actually in the bucket.
+     *
+     * The database knows about every upload it was told about; this knows
+     * what is really there. Where they disagree, somebody is paying for a
+     * file nobody can reach.
+     *
+     * Returns at most a thousand keys with a token for the next page, which
+     * is S3's limit and not a choice made here.
+     *
+     * @return array{objects: list<array{key: string, size: int, modified: ?string}>, next: ?string}
+     */
+    public function listObjects(string $prefix = '', ?string $token = null): array
+    {
+        $empty = ['objects' => [], 'next' => null];
+
+        if (!$this->isConfigured()) {
+            return $empty;
+        }
+
+        $query = ['list-type' => '2', 'max-keys' => '1000'];
+
+        if ($prefix !== '') {
+            $query['prefix'] = $prefix;
+        }
+
+        if ($token) {
+            $query['continuation-token'] = $token;
+        }
+
+        // The signature covers the query string, so it has to be sorted the
+        // same way here and in the URL that is actually sent.
+        ksort($query);
+
+        $response = Http::withHeaders(
+            $this->authorizationHeaders('GET', '', $query)
+        )->get($this->endpoint . '/' . $this->bucket . '?' . $this->canonicalQuery($query));
+
+        if (!$response->successful()) {
+            Log::warning('R2 list failed', ['status' => $response->status()]);
+
+            return $empty;
+        }
+
+        return $this->parseListing($response->body());
+    }
+
+    /**
+     * S3 answers in XML, and its error documents are XML too.
+     *
+     * Parsed with entity loading left off: the body comes from outside, and
+     * an XML parser that follows external entities is a way to read this
+     * server's own files.
+     */
+    private function parseListing(string $body): array
+    {
+        $previous = libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($body, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+        libxml_use_internal_errors($previous);
+
+        if ($xml === false) {
+            return ['objects' => [], 'next' => null];
+        }
+
+        $objects = [];
+
+        foreach ($xml->Contents ?? [] as $item) {
+            $objects[] = [
+                'key'      => (string) $item->Key,
+                'size'     => (int) $item->Size,
+                'modified' => (string) $item->LastModified ?: null,
+            ];
+        }
+
+        return [
+            'objects' => $objects,
+            'next' => ((string) ($xml->IsTruncated ?? 'false')) === 'true'
+                ? ((string) ($xml->NextContinuationToken ?? '')) ?: null
+                : null,
+        ];
+    }
+
     // ── Signing ──────────────────────────────────────────────────────────
 
     /**
@@ -126,8 +209,13 @@ class R2Signer
         return $this->objectUrl($key) . '?' . $this->canonicalQuery($query) . '&X-Amz-Signature=' . $signature;
     }
 
-    /** Header-based signing, for requests this server makes itself. */
-    private function authorizationHeaders(string $method, string $key): array
+    /**
+     * Header-based signing, for requests this server makes itself.
+     *
+     * An empty key means the bucket itself, which is what listing asks for;
+     * the query has to be signed too, or S3 rejects it.
+     */
+    private function authorizationHeaders(string $method, string $key, array $query = []): array
     {
         $now = gmdate('Ymd\THis\Z');
         $date = substr($now, 0, 8);
@@ -145,7 +233,7 @@ class R2Signer
         $canonicalRequest = implode("\n", [
             $method,
             $this->canonicalUri($key),
-            '',
+            $query ? $this->canonicalQuery($query) : '',
             $this->canonicalHeaders($headers),
             $signedHeaderNames,
             self::UNSIGNED_PAYLOAD,
@@ -185,6 +273,12 @@ class R2Signer
 
     private function canonicalUri(string $key): string
     {
+        // No key means the bucket itself. It must not end in a slash, because
+        // the URL actually sent does not, and the two have to match exactly.
+        if ($key === '') {
+            return '/' . $this->bucket;
+        }
+
         // Each path segment is encoded, but the slashes between them are not.
         $segments = array_map(rawurlencode(...), explode('/', ltrim($key, '/')));
 

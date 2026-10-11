@@ -117,7 +117,12 @@ export default defineConfig({
                             && !url.pathname.startsWith('/storage/')
                             // The health check decides whether there IS a
                             // network. Cached, it would always say yes.
-                            && url.pathname !== '/up',
+                            && url.pathname !== '/up'
+                            // The platform panel reads every band on the
+                            // service. Cached, an administrator's phone would
+                            // keep copies of all of it, and a page meant to
+                            // show today's numbers would show last week's.
+                            && !url.pathname.startsWith('/admin'),
                         handler: 'NetworkFirst',
                         options: {
                             cacheName: 'pages-cache',

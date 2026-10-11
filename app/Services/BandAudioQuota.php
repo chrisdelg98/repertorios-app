@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Band;
 use App\Models\SongVersion;
 
 /**
@@ -18,9 +19,21 @@ class BandAudioQuota
         return (bool) config('audio.enabled');
     }
 
-    public function quotaBytes(): int
+    /**
+     * What this band may store.
+     *
+     * A band carries its own figure only when someone deliberately gave it
+     * one. Null means "whatever the default is", so raising
+     * AUDIO_BAND_QUOTA_MB reaches every band that never needed a special
+     * arrangement without a single row being touched.
+     */
+    public function quotaBytes(?int $bandId = null): int
     {
-        return (int) config('audio.band_quota_mb') * 1024 * 1024;
+        $megabytes = $bandId
+            ? Band::whereKey($bandId)->value('audio_quota_mb')
+            : null;
+
+        return (int) ($megabytes ?? config('audio.band_quota_mb')) * 1024 * 1024;
     }
 
     public function graceBytes(): int
@@ -54,15 +67,16 @@ class BandAudioQuota
 
         $used = $this->usedBytes($bandId);
 
-        return $used < $this->quotaBytes()
-            && ($used + $size) <= ($this->quotaBytes() + $this->graceBytes());
+        $quota = $this->quotaBytes($bandId);
+
+        return $used < $quota && ($used + $size) <= ($quota + $this->graceBytes());
     }
 
     /** What the settings screen shows, in one call. */
     public function summary(int $bandId): array
     {
         $used = $this->usedBytes($bandId);
-        $quota = $this->quotaBytes();
+        $quota = $this->quotaBytes($bandId);
 
         return [
             'used_bytes'  => $used,

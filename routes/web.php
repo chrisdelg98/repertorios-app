@@ -17,6 +17,9 @@ use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Services\ServiceSongController;
 use App\Http\Controllers\Services\ServiceAssignmentController;
 use App\Http\Controllers\Services\ShareController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\BandController as AdminBandController;
+use App\Http\Controllers\Admin\StorageController as AdminStorageController;
 use App\Http\Controllers\AudioLibraryController;
 use App\Http\Controllers\Settings\BandSettingsController;
 use App\Http\Controllers\Settings\IndexController as SettingsIndexController;
@@ -52,6 +55,28 @@ Route::get('/', function (Request $request) {
         'phpVersion' => PHP_VERSION,
     ]);
 })->name('home');
+
+/*
+ * The platform panel.
+ *
+ * Read-only but for one control, and never band-scoped: these controllers do
+ * not use BandAware, because the rest of the app filters by the band you are
+ * standing in and this looks across all of them.
+ *
+ * Reachable by URL only — there is no link to it anywhere in the app, and the
+ * middleware answers 404 rather than 403 so its existence is not advertised.
+ */
+Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', AdminDashboardController::class)->name('index');
+    Route::get('/bands', [AdminBandController::class, 'index'])->name('bands');
+    Route::get('/bands/{band}', [AdminBandController::class, 'show'])->name('bands.show');
+    Route::put('/bands/{band}/quota', [AdminBandController::class, 'updateQuota'])->name('bands.quota');
+
+    // The scan is a POST because it costs several calls to Cloudflare, and a
+    // GET is something browsers and crawlers feel free to repeat.
+    Route::get('/storage', [AdminStorageController::class, 'index'])->name('storage');
+    Route::post('/storage', [AdminStorageController::class, 'scan'])->name('storage.scan');
+});
 
 // Auth
 Route::get('/login', [AdminLoginController::class, 'show'])->name('auth.login');

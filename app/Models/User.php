@@ -132,11 +132,24 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @return array<string, string>
      */
+    /**
+     * Authority over the platform, which is not authority over a band.
+     *
+     * Granted from the console only, so there is no form anywhere that can be
+     * tricked into handing it out.
+     */
+    public function isPlatformAdmin(): bool
+    {
+        return (bool) $this->is_platform_admin;
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at'    => 'datetime',
             'welcome_dismissed_at' => 'datetime',
+            'last_seen_at'         => 'datetime',
+            'is_platform_admin'    => 'boolean',
             'password'             => 'hashed',
         ];
     }

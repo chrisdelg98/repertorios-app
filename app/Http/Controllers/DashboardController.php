@@ -71,7 +71,7 @@ class DashboardController extends Controller
                     ? round($quota->usedBytes($bandId) / 1048576, 1)
                     : null,
                 'audio_quota_mb' => $quota->enabled()
-                    ? (int) round($quota->quotaBytes() / 1048576)
+                    ? (int) round($quota->quotaBytes($bandId) / 1048576)
                     : null,
             ],
         ]);
