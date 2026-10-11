@@ -484,16 +484,28 @@ onBeforeUnmount(() => {
                                 {{ t('playlist.external_hint') }}
                             </p>
 
-                            <!-- Track player: no video to show, so the song itself is the screen -->
-                            <div v-if="isAudio" class="w-full max-w-lg mx-auto px-6 py-5 sm:py-8 flex flex-col items-center text-center">
-                                <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/40 mb-3 sm:mb-5">
-                                    <svg class="w-8 h-8 sm:w-11 sm:h-11 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                            <!-- Track player.
+                                 There is no video to look at, so the screen has
+                                 to carry the song by itself. A single soft glow
+                                 behind the artwork gives the black somewhere to
+                                 come from without becoming something to look at,
+                                 and the tile shrinks: at ninety-six pixels it was
+                                 the loudest thing on a screen whose subject is a
+                                 title and a progress bar. -->
+                            <div v-if="isAudio" class="relative w-full max-w-sm sm:max-w-md mx-auto px-6 py-6 sm:py-10 flex flex-col items-center text-center">
+                                <div
+                                    class="pointer-events-none absolute inset-x-0 -top-8 h-64 opacity-60"
+                                    style="background: radial-gradient(60% 55% at 50% 40%, rgba(99,102,241,0.30), rgba(99,102,241,0) 70%)"
+                                />
+
+                                <div class="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-950/60 ring-1 ring-white/15 mb-4 sm:mb-6">
+                                    <svg class="w-7 h-7 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19.952 1.651a.75.75 0 0 1 .298.599V16.303a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.403-4.909l2.311-.66a1.5 1.5 0 0 0 1.088-1.442V6.994l-9 2.572v9.737a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.402-4.909l2.31-.66a1.5 1.5 0 0 0 1.088-1.442V5.25a.75.75 0 0 1 .544-.721l10.5-3a.75.75 0 0 1 .658.122Z" />
                                     </svg>
                                 </div>
 
-                                <p class="text-base sm:text-lg font-bold text-white leading-tight line-clamp-2">{{ current?.name }}</p>
-                                <p v-if="current?.artist" class="text-xs sm:text-sm font-medium text-slate-300 mt-0.5 sm:mt-1 truncate max-w-full">{{ current.artist }}</p>
+                                <p class="relative text-base sm:text-xl font-bold text-white leading-tight line-clamp-2 tracking-tight">{{ current?.name }}</p>
+                                <p v-if="current?.artist" class="relative text-xs sm:text-sm font-medium text-slate-400 mt-1 truncate max-w-full">{{ current.artist }}</p>
 
                                 <audio
                                     ref="audioEl"
@@ -507,7 +519,7 @@ onBeforeUnmount(() => {
                                     @ended="onAudioEnded"
                                 />
 
-                                <div class="w-full max-w-md mt-4 sm:mt-7">
+                                <div class="relative w-full mt-5 sm:mt-8">
                                     <input
                                         type="range"
                                         min="0"
@@ -527,7 +539,7 @@ onBeforeUnmount(() => {
                                 <button
                                     type="button"
                                     @click="toggleAudio"
-                                    class="mt-4 sm:mt-5 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-95 transition"
+                                    class="relative mt-5 sm:mt-7 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-xl shadow-black/40 hover:scale-105 active:scale-95 transition"
                                     :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
                                 >
                                     <svg v-if="audioPlaying" class="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
