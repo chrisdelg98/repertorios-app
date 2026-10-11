@@ -6,6 +6,9 @@ import { formatBytes, formatSince } from '@/Utils/adminFormat';
 
 const props = defineProps({
     totals: Object,
+    presence: Object,
+    averages: Object,
+    adoption: Object,
     growth: { type: Array, default: () => [] },
     dormant: { type: Array, default: () => [] },
     top_storage: { type: Array, default: () => [] },
@@ -21,6 +24,14 @@ const cards = computed(() => [
 ]);
 
 /** The tallest month sets the scale; everything else is read against it. */
+const adoptionRows = computed(() => [
+    { key: 'audio', label: 'Suben audio' },
+    { key: 'calendar', label: 'Usan el calendario' },
+    { key: 'push', label: 'Reciben notificaciones' },
+    { key: 'shared', label: 'Comparten repertorios' },
+    { key: 'multi_band', label: 'Personas en más de una banda' },
+].map(row => ({ ...row, ...props.adoption[row.key] })));
+
 const peak = computed(() =>
     Math.max(1, ...props.growth.map(m => Math.max(m.bands, m.users)))
 );
@@ -37,6 +48,52 @@ function monthLabel(key) {
     <Head title="Panel · Resumen" />
 
     <AdminLayout>
+        <!-- Who is here. The only figure on this page about this minute
+             rather than about the whole history. -->
+        <section class="bg-slate-900 rounded-xl px-4 py-4 mb-4">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="relative flex w-2 h-2">
+                    <span v-if="presence.online" class="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                    <span class="relative inline-flex w-2 h-2 rounded-full" :class="presence.online ? 'bg-emerald-400' : 'bg-slate-600'" />
+                </span>
+                <h2 class="text-xs font-bold text-slate-200 uppercase tracking-widest">Actividad</h2>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                <div>
+                    <p class="text-2xl font-semibold text-white tabular-nums leading-none">
+                        {{ presence.online === null ? '—' : presence.online }}
+                    </p>
+                    <p class="text-2xs font-medium text-slate-300 mt-1">
+                        {{ presence.online === null ? 'sesiones fuera de la base' : 'conectados ahora' }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-2xl font-semibold text-white tabular-nums leading-none">{{ presence.today }}</p>
+                    <p class="text-2xs font-medium text-slate-300 mt-1">entraron hoy</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-semibold text-white tabular-nums leading-none">{{ presence.week }}</p>
+                    <p class="text-2xs font-medium text-slate-300 mt-1">últimos 7 días</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-semibold text-white tabular-nums leading-none">{{ presence.month }}</p>
+                    <p class="text-2xs font-medium text-slate-300 mt-1">últimos 30 días</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-semibold text-slate-300 tabular-nums leading-none">{{ presence.never }}</p>
+                    <p class="text-2xs font-medium text-slate-300 mt-1">sin registro</p>
+                </div>
+            </div>
+
+            <!-- Said plainly, because a number that started counting last
+                 Tuesday looks like a collapse if you assume it always ran. -->
+            <p class="text-2xs text-slate-400 mt-3 leading-relaxed">
+                «Conectados» sale de las sesiones de los últimos 5 minutos. El resto se mide desde que
+                se instaló este panel, así que las bandas que no han vuelto desde entonces cuentan como «sin registro».
+            </p>
+        </section>
+
         <div class="grid grid-cols-2 lg:grid-cols-6 gap-2.5 lg:gap-3">
             <div
                 v-for="card in cards"
@@ -57,6 +114,61 @@ function monthLabel(key) {
         </p>
 
         <div class="grid lg:grid-cols-2 gap-4 mt-5">
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4">
+                <h2 class="text-sm font-semibold text-slate-900">La banda promedio</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Repartido entre todas las bandas, incluidas las vacías</p>
+
+                <div class="mt-3 divide-y divide-slate-100">
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Miembros</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ averages.members_per_band }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Canciones</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ averages.songs_per_band }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Servicios</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ averages.services_per_band }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Almacenamiento</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ formatBytes(averages.bytes_per_band) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Canciones por servicio</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ averages.songs_per_service }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-slate-600">Versiones por canción</span>
+                        <span class="text-sm font-semibold text-slate-900 tabular-nums">{{ averages.versions_per_song }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What gets used, which is the only honest answer to what is
+                 worth building more of. -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4">
+                <h2 class="text-sm font-semibold text-slate-900">Qué se usa</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Proporción de bandas que llegó a cada función</p>
+
+                <div class="mt-3 space-y-3">
+                    <div v-for="row in adoptionRows" :key="row.key">
+                        <div class="flex items-baseline justify-between gap-2">
+                            <span class="text-sm text-slate-600 truncate">{{ row.label }}</span>
+                            <span class="text-sm font-semibold text-slate-900 tabular-nums shrink-0">
+                                {{ row.bands }}<span class="text-xs font-normal text-slate-500"> · {{ row.percent }}%</span>
+                            </span>
+                        </div>
+                        <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
+                            <div class="h-full bg-indigo-500 rounded-full" :style="{ width: row.percent + '%' }" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 mt-4">
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4">
                 <h2 class="text-sm font-semibold text-slate-900">Altas por mes</h2>
                 <p class="text-xs text-slate-500 mt-0.5">Últimos 12 meses</p>

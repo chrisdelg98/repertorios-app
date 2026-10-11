@@ -50,7 +50,9 @@ const tabs = [
                     :key="tab.href"
                     :href="tab.href"
                     class="px-3 py-2 text-xs font-semibold rounded-t-lg transition-colors"
-                    :class="isActive(tab.href) ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-white'"
+                    :class="isActive(tab.href)
+                        ? 'bg-slate-100 text-slate-900'
+                        : 'text-slate-300 hover:text-white hover:bg-white/10'"
                 >{{ tab.label }}</Link>
             </div>
         </header>
