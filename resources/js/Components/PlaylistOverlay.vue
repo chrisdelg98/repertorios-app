@@ -448,7 +448,27 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- The media, centred in whatever height is left. -->
-                        <div class="flex-1 flex flex-col items-center justify-center min-h-0 relative">
+                        <div class="flex-1 flex flex-col items-center justify-center min-h-0 relative overflow-hidden">
+                            <!-- The black, lit rather than patterned.
+                                 Apple does this with light and nothing else: a
+                                 wide, almost-not-there wash from above, a
+                                 cooler one answering from below, and a slow
+                                 darkening at the corners so the centre is the
+                                 brightest place without anything being drawn
+                                 there. No texture — a pattern is something to
+                                 look at, and nothing here should compete with
+                                 a title and a progress bar.
+
+                                 Only while a track is playing; over a video it
+                                 would be a film on the lens. -->
+                            <div
+                                v-if="isAudio"
+                                class="pointer-events-none absolute inset-0"
+                                style="background:
+                                    radial-gradient(120% 80% at 50% -20%, rgba(129,140,248,0.16), rgba(129,140,248,0) 55%),
+                                    radial-gradient(100% 70% at 50% 120%, rgba(167,139,250,0.10), rgba(167,139,250,0) 55%),
+                                    radial-gradient(130% 90% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)"
+                            />
                             <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : 'relative'">
                                 <div ref="playerEl" class="w-full h-full" />
 
@@ -493,11 +513,6 @@ onBeforeUnmount(() => {
                                  the loudest thing on a screen whose subject is a
                                  title and a progress bar. -->
                             <div v-if="isAudio" class="relative w-full max-w-sm sm:max-w-md mx-auto px-6 py-6 sm:py-10 flex flex-col items-center text-center">
-                                <div
-                                    class="pointer-events-none absolute inset-x-0 -top-8 h-64 opacity-60"
-                                    style="background: radial-gradient(60% 55% at 50% 40%, rgba(99,102,241,0.30), rgba(99,102,241,0) 70%)"
-                                />
-
                                 <div class="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-950/60 ring-1 ring-white/15 mb-4 sm:mb-6">
                                     <svg class="w-7 h-7 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M19.952 1.651a.75.75 0 0 1 .298.599V16.303a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.403-4.909l2.311-.66a1.5 1.5 0 0 0 1.088-1.442V6.994l-9 2.572v9.737a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.402-4.909l2.31-.66a1.5 1.5 0 0 0 1.088-1.442V5.25a.75.75 0 0 1 .544-.721l10.5-3a.75.75 0 0 1 .658.122Z" />
