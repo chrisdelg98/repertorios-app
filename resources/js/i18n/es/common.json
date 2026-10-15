@@ -138,7 +138,13 @@
         "open_in_youtube": "Abrir en YouTube",
         "source_track": "Pista",
         "source_youtube": "YouTube",
-        "prefer": "Preferir"
+        "prefer": "Preferir",
+        "shortcuts_title": "Atajos de teclado",
+        "shortcut_seek": "Retroceder / adelantar 5 s",
+        "shortcut_volume": "Subir / bajar volumen",
+        "shortcut_track": "Canción siguiente / anterior",
+        "shortcut_mute": "Silenciar",
+        "shortcuts_note": "Funcionan sin hacer clic en el reproductor. Con un video de YouTube, si tocas el video primero, YouTube se queda con las teclas: haz clic fuera para recuperarlas."
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

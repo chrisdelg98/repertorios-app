@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { parseYouTube, formatStart, parsePlaylist } from '@/Utils/youtube';
 
@@ -309,6 +309,126 @@ function playPrev() {
     if (currentIdx.value > 0) loadAt(currentIdx.value - 1);
 }
 
+const helpOpen = ref(false);
+
+const shortcutRows = computed(() => [
+    { label: t('playlist.play') + ' / ' + t('playlist.pause'), keys: ['Espacio', 'K'] },
+    { label: t('playlist.shortcut_seek'), keys: ['←', '→'] },
+    { label: t('playlist.shortcut_volume'), keys: ['↑', '↓'] },
+    { label: t('playlist.shortcut_track'), keys: ['N', 'P'] },
+    { label: t('playlist.shortcut_mute'), keys: ['M'] },
+    { label: t('playlist.close'), keys: ['Esc'] },
+]);
+
+/**
+ * Whether the keys are worth mentioning at all.
+ *
+ * A phone with no keyboard attached should never be told about shortcuts, and
+ * a tablet with one should. Pointer coarseness is the closest the browser
+ * comes to answering that.
+ */
+const hasKeyboard = ref(true);
+
+/** Nudge either engine, whichever is carrying the sound. */
+function seekBy(seconds) {
+    if (isAudio.value) {
+        const el = audioEl.value;
+        if (el && isFinite(el.duration)) {
+            el.currentTime = Math.min(el.duration, Math.max(0, el.currentTime + seconds));
+        }
+        return;
+    }
+
+    try {
+        ytPlayer?.seekTo(Math.max(0, ytPlayer.getCurrentTime() + seconds), true);
+    } catch {}
+}
+
+function changeVolume(delta) {
+    if (isAudio.value) {
+        const el = audioEl.value;
+        if (el) el.volume = Math.min(1, Math.max(0, el.volume + delta));
+        return;
+    }
+
+    try {
+        ytPlayer?.setVolume(Math.min(100, Math.max(0, ytPlayer.getVolume() + delta * 100)));
+    } catch {}
+}
+
+function togglePlayback() {
+    if (isAudio.value) {
+        toggleAudio();
+        return;
+    }
+
+    try {
+        ytPlayer?.getPlayerState() === 1 ? ytPlayer.pauseVideo() : ytPlayer?.playVideo();
+    } catch {}
+}
+
+function toggleMute() {
+    if (isAudio.value) {
+        const el = audioEl.value;
+        if (el) el.muted = !el.muted;
+        return;
+    }
+
+    try {
+        ytPlayer?.isMuted() ? ytPlayer.unMute() : ytPlayer?.mute();
+    } catch {}
+}
+
+/**
+ * The keys work without clicking anything first.
+ *
+ * Listening on the document rather than on a focusable wrapper: asking someone
+ * to click the player before space works is the thing that makes people decide
+ * shortcuts are broken. The one place it cannot reach is inside the YouTube
+ * iframe, which keeps its own keys once it has focus.
+ */
+function onKeydown(e) {
+    if (!props.open) return;
+
+    const tag = e.target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const handled = {
+        Space:      () => togglePlayback(),
+        ArrowRight: () => (e.shiftKey ? playNext() : seekBy(5)),
+        ArrowLeft:  () => (e.shiftKey ? playPrev() : seekBy(-5)),
+        ArrowUp:    () => changeVolume(0.1),
+        ArrowDown:  () => changeVolume(-0.1),
+        KeyN:       () => playNext(),
+        KeyP:       () => playPrev(),
+        KeyM:       () => toggleMute(),
+        KeyK:       () => togglePlayback(),
+        Escape:     () => (helpOpen.value ? (helpOpen.value = false) : close()),
+        Slash:      () => (helpOpen.value = !helpOpen.value),
+    }[e.code];
+
+    if (!handled) return;
+
+    // Space scrolls the page and the arrows move it sideways; both would
+    // fight whatever the key was meant to do.
+    e.preventDefault();
+    handled();
+}
+
+onMounted(() => {
+    document.addEventListener('keydown', onKeydown);
+
+    try {
+        hasKeyboard.value = !window.matchMedia('(pointer: coarse)').matches
+            || window.matchMedia('(any-hover: hover)').matches;
+    } catch {
+        hasKeyboard.value = true;
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
+
 function close() {
     emit('close');
 }
@@ -382,6 +502,19 @@ onBeforeUnmount(() => {
                         </p>
                     </div>
                     <button
+                        v-if="hasKeyboard"
+                        type="button"
+                        @click="helpOpen = true"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-auto mr-1"
+                        :aria-label="t('playlist.shortcuts_title')"
+                        :title="t('playlist.shortcuts_title')"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                        </svg>
+                    </button>
+
+                    <button
                         @click="close"
                         class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                         :aria-label="t('playlist.close')"
@@ -391,6 +524,52 @@ onBeforeUnmount(() => {
                         </svg>
                     </button>
                 </div>
+
+                <!-- What the keys do. Only reachable where there are keys. -->
+                <Transition
+                    enter-active-class="transition duration-150 ease-out"
+                    enter-from-class="opacity-0"
+                    enter-to-class="opacity-100"
+                    leave-active-class="transition duration-100 ease-in"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
+                >
+                    <div
+                        v-if="helpOpen"
+                        class="absolute inset-0 z-20 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6"
+                        @click="helpOpen = false"
+                    >
+                        <div class="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-sm p-5 shadow-2xl" @click.stop>
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <h3 class="text-sm font-bold text-white">{{ t('playlist.shortcuts_title') }}</h3>
+                                <button
+                                    type="button"
+                                    @click="helpOpen = false"
+                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <dl class="space-y-2.5">
+                                <div v-for="row in shortcutRows" :key="row.label" class="flex items-center justify-between gap-4">
+                                    <dt class="text-xs text-slate-300">{{ row.label }}</dt>
+                                    <dd class="flex items-center gap-1 shrink-0">
+                                        <kbd
+                                            v-for="key in row.keys"
+                                            :key="key"
+                                            class="px-1.5 py-0.5 text-2xs font-semibold text-slate-200 bg-white/10 border border-white/15 rounded"
+                                        >{{ key }}</kbd>
+                                    </dd>
+                                </div>
+                            </dl>
+
+                            <p class="text-2xs text-slate-500 mt-4 leading-relaxed">{{ t('playlist.shortcuts_note') }}</p>
+                        </div>
+                    </div>
+                </Transition>
 
                 <!-- Empty state: no playable videos -->
                 <div v-if="!playable.length && !usingPlaylist" class="flex-1 flex items-center justify-center px-6 text-center">
@@ -551,10 +730,23 @@ onBeforeUnmount(() => {
                                     </div>
                                 </div>
 
+                                <div class="relative mt-5 sm:mt-7 flex items-center justify-center gap-5 sm:gap-7">
+                                <button
+                                    type="button"
+                                    @click="playPrev"
+                                    :disabled="currentIdx === 0"
+                                    class="w-11 h-11 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-25 disabled:hover:bg-transparent transition"
+                                    :aria-label="t('playlist.prev')"
+                                >
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M6 4h2v16H6V4zm12 0v16l-10-8 10-8z" />
+                                    </svg>
+                                </button>
+
                                 <button
                                     type="button"
                                     @click="toggleAudio"
-                                    class="relative mt-5 sm:mt-7 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-xl shadow-black/40 hover:scale-105 active:scale-95 transition"
+                                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-xl shadow-black/40 hover:scale-105 active:scale-95 transition"
                                     :aria-label="audioPlaying ? t('playlist.pause') : t('playlist.play')"
                                 >
                                     <svg v-if="audioPlaying" class="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -564,6 +756,19 @@ onBeforeUnmount(() => {
                                         <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </button>
+
+                                <button
+                                    type="button"
+                                    @click="playNext"
+                                    :disabled="currentIdx >= playable.length - 1"
+                                    class="w-11 h-11 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 disabled:opacity-25 disabled:hover:bg-transparent transition"
+                                    :aria-label="t('playlist.next')"
+                                >
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
+                                    </svg>
+                                </button>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -138,7 +138,13 @@
         "open_in_youtube": "Open on YouTube",
         "source_track": "Track",
         "source_youtube": "YouTube",
-        "prefer": "Prefer"
+        "prefer": "Prefer",
+        "shortcuts_title": "Keyboard shortcuts",
+        "shortcut_seek": "Back / forward 5s",
+        "shortcut_volume": "Volume up / down",
+        "shortcut_track": "Next / previous song",
+        "shortcut_mute": "Mute",
+        "shortcuts_note": "They work without clicking the player first. With a YouTube video, clicking the video hands the keys to YouTube: click outside it to get them back."
     },
     "install": {
         "banner_title": "Add to Home Screen",
