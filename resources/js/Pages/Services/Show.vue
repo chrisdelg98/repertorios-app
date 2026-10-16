@@ -549,6 +549,7 @@ function openDetail(ss) {
         service_notes: ss.notes ?? '',
         youtube_url: ss.song_version.youtube_url,
         audio:       ss.song_version.audio ?? null,
+        lyrics:      ss.song_version.song.lyrics ?? [],
     };
 }
 
@@ -587,12 +588,13 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     notes:       ss.notes || ss.song_version.notes || '',
     youtube_url: ss.song_version.youtube_url,
     audio:       ss.song_version.audio ?? null,
+    lyrics:      ss.song_version.song.lyrics ?? [],
 })));
 
 // "Play all" is offered when anything can be played, from either source.
 const hasAnyVideo = computed(() =>
     !!props.service.playlist_url
-    || playlistSongs.value.some(s => !!s.audio?.url || !!s.youtube_url)
+    || playlistSongs.value.some(s => !!s.audio?.url || !!s.youtube_url || s.lyrics?.length)
 );
 
 const __page = usePage();

@@ -2,12 +2,13 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { parseYouTube, formatStart, parsePlaylist } from '@/Utils/youtube';
+import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
 
 const { t } = useI18n();
 
 const props = defineProps({
     open:  { type: Boolean, default: false },
-    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, audio, notes }
+    songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, audio, notes, lyrics }
     /** A whole YouTube playlist, used when no setlist was built by hand. */
     playlistUrl: { type: String, default: '' },
 });
@@ -25,11 +26,17 @@ const playable = computed(() =>
         .map(s => {
             const parsed = parseYouTube(s.youtube_url);
             const audioUrl = s.audio?.url ?? null;
+            const lyrics = Array.isArray(s.lyrics) ? s.lyrics : [];
 
-            if (!audioUrl && !parsed) return null;
+            // Words are enough on their own. This screen is where a service is
+            // run from, and a song nobody has a track or a video for is still
+            // a song that gets sung — leaving it out of the queue meant the
+            // running order on screen was not the running order being played.
+            if (!audioUrl && !parsed && !lyrics.length) return null;
 
             return {
                 ...s,
+                _lyrics: lyrics,
                 _audioUrl: audioUrl,
                 _videoId: parsed?.id ?? null,
                 _start: parsed?.start ?? 0,
@@ -61,6 +68,10 @@ try {
 function sourceOf(idx) {
     const song = playable.value[idx];
     if (!song) return null;
+
+    // Nothing to play: the song is here for its words. Neither engine is
+    // touched for it, so the iframe is not asked to load an empty video id.
+    if (!song._audioUrl && !song._videoId) return 'none';
 
     return preferred.value === 'audio'
         ? (song._audioUrl ? 'audio' : 'youtube')
@@ -139,6 +150,48 @@ const currentHasVideo = computed(() => !!current.value?._videoId);
 const canPrefer = computed(() =>
     playable.value.some(song => song._audioUrl && song._videoId)
 );
+
+/* ── The words ─────────────────────────────────────────────────────────── */
+
+/**
+ * One side panel, two things in it.
+ *
+ * The queue and the words want the same place on screen — beside the media on
+ * a desktop, under it on a phone — and nobody needs both at once: you check
+ * the running order between songs and read the words during one. So they share
+ * the space behind a pair of tabs instead of splitting it and leaving each
+ * half too narrow to use.
+ */
+const panelTab = ref('queue');
+
+const lyricsPanel = ref(null);
+
+const currentLyrics = computed(() => current.value?._lyrics ?? []);
+const currentHasLyrics = computed(() => currentLyrics.value.length > 0);
+const anyLyrics = computed(() => playable.value.some(song => song._lyrics?.length));
+
+/** Whether anything is actually playing, as opposed to only being read. */
+const hasMedia = computed(() => currentSource.value === 'audio' || currentSource.value === 'youtube');
+
+function showLyrics() {
+    panelTab.value = 'lyrics';
+}
+
+function toggleLyrics() {
+    if (!anyLyrics.value) return;
+
+    panelTab.value = panelTab.value === 'lyrics' ? 'queue' : 'lyrics';
+}
+
+/**
+ * Reaching a song with nothing to play opens its words by itself.
+ *
+ * The alternative is a queue sitting next to an empty stage, with the one
+ * thing the song has to offer a tap away and no sign that it is there.
+ */
+watch([currentIdx, currentSource], () => {
+    if (!hasMedia.value && currentHasLyrics.value) panelTab.value = 'lyrics';
+});
 
 function formatClock(seconds) {
     if (!seconds || !isFinite(seconds)) return '0:00';
@@ -245,6 +298,15 @@ function loadAt(idx) {
 
     currentIdx.value = idx;
 
+    // A song with only words: silence both engines and leave them alone. It
+    // never ends on its own either, so nothing advances until someone says so.
+    if (sourceOf(idx) === 'none') {
+        if (audioEl.value) audioEl.value.pause();
+        if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
+        audioPlaying.value = false;
+        return;
+    }
+
     if (sourceOf(idx) === 'audio') {
         // Stop the video before the track starts, or both play at once.
         if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
@@ -317,6 +379,9 @@ const shortcutRows = computed(() => [
     { label: t('playlist.shortcut_volume'), keys: ['↑', '↓'] },
     { label: t('playlist.shortcut_track'), keys: ['N', 'P'] },
     { label: t('playlist.shortcut_mute'), keys: ['M'] },
+    { label: t('playlist.shortcut_lyrics'), keys: ['L'] },
+    { label: t('playlist.shortcut_zoom'), keys: ['-', '+'] },
+    { label: t('playlist.shortcut_block'), keys: ['[', ']'] },
     { label: t('playlist.close'), keys: ['Esc'] },
 ]);
 
@@ -404,6 +469,11 @@ function onKeydown(e) {
         KeyP:       () => playPrev(),
         KeyM:       () => toggleMute(),
         KeyK:       () => togglePlayback(),
+        KeyL:       () => toggleLyrics(),
+        Minus:        () => lyricsPanel.value?.zoomOut(),
+        Equal:        () => lyricsPanel.value?.zoomIn(),
+        BracketLeft:  () => lyricsPanel.value?.prevBlock(),
+        BracketRight: () => lyricsPanel.value?.nextBlock(),
         Escape:     () => (helpOpen.value ? (helpOpen.value = false) : close()),
         Slash:      () => (helpOpen.value = !helpOpen.value),
     }[e.code];
@@ -587,7 +657,10 @@ onBeforeUnmount(() => {
                     <!-- Player. The iframe stays mounted even while a track is
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
-                    <div class="shrink-0 lg:flex-1 bg-black flex flex-col min-h-0">
+                    <div
+                        class="shrink-0 bg-black flex flex-col min-h-0"
+                        :class="hasMedia ? 'lg:flex-1' : ''"
+                    >
                         <!-- The source bar keeps its place whatever plays below
                              it. It states a preference for the whole setlist,
                              so it does not belong to the current song and must
@@ -648,11 +721,14 @@ onBeforeUnmount(() => {
                                     radial-gradient(100% 70% at 50% 120%, rgba(167,139,250,0.10), rgba(167,139,250,0) 55%),
                                     radial-gradient(130% 90% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)"
                             />
-                            <div class="w-full aspect-video max-h-full" :class="isAudio ? 'invisible absolute inset-0' : 'relative'">
+                            <div
+                                class="w-full aspect-video max-h-full"
+                                :class="hasMedia && !isAudio ? 'relative' : 'invisible absolute inset-0'"
+                            >
                                 <div ref="playerEl" class="w-full h-full" />
 
                                 <div
-                                    v-if="!isAudio && !playerReady"
+                                    v-if="hasMedia && !isAudio && !playerReady"
                                     class="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3 px-6 text-center"
                                 >
                                     <template v-if="playerFailed">
@@ -682,6 +758,21 @@ onBeforeUnmount(() => {
                             <p v-if="usingPlaylist" class="text-xs font-medium text-slate-400 mt-3 px-4 text-center">
                                 {{ t('playlist.external_hint') }}
                             </p>
+
+                            <!-- Nothing to play, so nothing to look at: the
+                                 song says its name and stands aside. The void
+                                 that a hidden player leaves behind reads as a
+                                 failure, and the height belongs to the words. -->
+                            <div v-if="!hasMedia" class="relative w-full max-w-sm mx-auto px-6 py-5 sm:py-7 text-center">
+                                <p class="text-base sm:text-xl font-bold text-white leading-tight line-clamp-2 tracking-tight">{{ current?.name }}</p>
+                                <p v-if="current?.artist" class="text-xs sm:text-sm font-medium text-slate-400 mt-1 truncate">{{ current.artist }}</p>
+                                <p class="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 text-2xs font-bold text-slate-400 uppercase tracking-widest bg-white/5 rounded-full">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                    </svg>
+                                    {{ t('playlist.lyrics_only') }}
+                                </p>
+                            </div>
 
                             <!-- Track player.
                                  There is no video to look at, so the screen has
@@ -773,9 +864,82 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
 
-                    <!-- Queue. Hidden for an external playlist: its contents
-                         are YouTube's to know, and its own controls navigate it. -->
+                    <!-- The side panel: the running order, or the words.
+                         Hidden for an external playlist, whose contents are
+                         YouTube's to know and whose controls navigate it. -->
                     <div v-if="!usingPlaylist" class="flex-1 lg:flex-none lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
+                        <!-- Tabs, and only where there is a second thing to
+                             show: a band with no lyrics saved should find this
+                             screen exactly as it was. -->
+                        <div v-if="anyLyrics" class="shrink-0 flex items-center gap-1 px-2 pt-2 pb-1.5 border-b border-white/10">
+                            <button
+                                type="button"
+                                @click="panelTab = 'queue'"
+                                class="flex-1 h-9 flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg transition-colors"
+                                :class="panelTab === 'queue' ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10'"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+                                </svg>
+                                {{ t('playlist.tab_queue') }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="showLyrics"
+                                class="flex-1 h-9 flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg transition-colors"
+                                :class="panelTab === 'lyrics' ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10'"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                </svg>
+                                {{ t('playlist.tab_lyrics') }}
+                                <!-- A dot rather than a disabled tab: the tab
+                                     still works, it just has nothing for this
+                                     one song, and saying so beats blocking it. -->
+                                <span
+                                    v-if="!currentHasLyrics"
+                                    class="w-1.5 h-1.5 rounded-full bg-slate-500"
+                                    :title="t('songs.lyrics.none')"
+                                />
+                            </button>
+                        </div>
+
+                        <!-- The words, with their own size, mode and structure
+                             rail. The song controls go in its bar rather than
+                             above it, so there is one row of controls here. -->
+                        <div v-if="panelTab === 'lyrics'" class="flex-1 min-h-0">
+                            <LyricsPanel ref="lyricsPanel" :blocks="currentLyrics" dark>
+                                <template #controls>
+                                    <div class="flex items-center gap-0.5 ml-1 pl-1.5 border-l border-white/10">
+                                        <button
+                                            type="button"
+                                            @click="playPrev"
+                                            :disabled="currentIdx === 0"
+                                            class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-25 transition-colors"
+                                            :aria-label="t('playlist.prev')"
+                                        >
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 4h2v16H6V4zm12 0v16l-10-8 10-8z" />
+                                            </svg>
+                                        </button>
+                                        <span class="text-2xs font-bold text-slate-400 tabular-nums px-0.5">{{ currentIdx + 1 }}/{{ playable.length }}</span>
+                                        <button
+                                            type="button"
+                                            @click="playNext"
+                                            :disabled="currentIdx >= playable.length - 1"
+                                            class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-25 transition-colors"
+                                            :aria-label="t('playlist.next')"
+                                        >
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </LyricsPanel>
+                        </div>
+
+                        <template v-else>
                         <!-- Controls -->
                         <div class="flex items-center gap-2 px-4 py-2.5 border-b border-white/10 shrink-0">
                             <button
@@ -854,6 +1018,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </button>
                         </div>
+                        </template>
                     </div>
                 </div>
             </div>

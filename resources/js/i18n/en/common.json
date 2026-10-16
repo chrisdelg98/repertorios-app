@@ -123,7 +123,7 @@
         "play_all": "Play all",
         "public_cta": "Watch & play the full setlist",
         "empty_title": "No video",
-        "no_videos": "No song in this setlist has a track or a YouTube link.",
+        "no_videos": "This setlist has nothing to play and nothing to read.",
         "prev": "Previous",
         "next": "Next",
         "close": "Close",
@@ -144,7 +144,13 @@
         "shortcut_volume": "Volume up / down",
         "shortcut_track": "Next / previous song",
         "shortcut_mute": "Mute",
-        "shortcuts_note": "They work without clicking the player first. With a YouTube video, clicking the video hands the keys to YouTube: click outside it to get them back."
+        "shortcuts_note": "They work without clicking the player first. With a YouTube video, clicking the video hands the keys to YouTube: click outside it to get them back.",
+        "tab_queue": "Queue",
+        "tab_lyrics": "Lyrics",
+        "lyrics_only": "Lyrics only",
+        "shortcut_lyrics": "Show the lyrics",
+        "shortcut_zoom": "Lyrics size",
+        "shortcut_block": "Previous / next block"
     },
     "install": {
         "banner_title": "Add to Home Screen",

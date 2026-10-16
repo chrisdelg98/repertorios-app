@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { Head, useForm, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import MultiSelect from '@/Components/MultiSelect.vue';
@@ -502,6 +502,23 @@ function confirmDelete() {
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                 </svg>
                             </button>
+                            <!-- Lit when the song has words, so the library
+                                 answers "which of these can we sing from?"
+                                 without opening anything. -->
+                            <Link
+                                v-if="can_write"
+                                :href="'/songs/' + song.id + '/lyrics'"
+                                class="w-9 h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-lg transition-colors"
+                                :class="song.has_lyrics
+                                    ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'"
+                                :aria-label="song.has_lyrics ? t('songs.lyrics.edit') : t('songs.lyrics.add')"
+                                :title="song.has_lyrics ? t('songs.lyrics.edit') : t('songs.lyrics.add')"
+                            >
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                </svg>
+                            </Link>
                             <button
                                 v-if="can_write"
                                 @click="openEdit(song)"
@@ -549,6 +566,20 @@ function confirmDelete() {
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </button>
+                        <Link
+                            v-if="can_write"
+                            :href="'/songs/' + song.id + '/lyrics'"
+                            class="w-9 h-9 lg:w-10 lg:h-10 flex items-center justify-center rounded-lg transition-colors"
+                            :class="song.has_lyrics
+                                ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'"
+                            :aria-label="song.has_lyrics ? t('songs.lyrics.edit') : t('songs.lyrics.add')"
+                            :title="song.has_lyrics ? t('songs.lyrics.edit') : t('songs.lyrics.add')"
+                        >
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                            </svg>
+                        </Link>
                         <button
                             v-if="can_write"
                             @click="openEdit(song)"

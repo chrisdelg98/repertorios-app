@@ -47,3 +47,16 @@
         font-size: 16px !important;
     }
 }
+
+/* A row of chips that scrolls sideways without a scrollbar across it.
+   The bar is dense and thumb-height; a 15px gutter of browser chrome through
+   the middle of it costs more than the affordance is worth, and the overflow
+   is already obvious from a chip cut off at the edge. */
+@utility no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

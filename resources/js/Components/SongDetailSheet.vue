@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { youTubeEmbedUrl, parseYouTube, formatStart } from '@/Utils/youtube';
+import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
 
 const { t } = useI18n();
 
@@ -80,6 +81,21 @@ function resetNote() {
     editingNote.value = false;
 }
 
+/**
+ * The words take the whole sheet, or none of it.
+ *
+ * Reading a lyric needs height, and a panel wedged between the key and the
+ * notes gets a third of it and a scrollbar of its own inside another one. So
+ * pressing Letra swaps the sheet's contents rather than adding to them: one
+ * thing at a time, which is also how it is read.
+ */
+const lyrics = computed(() => props.song?.lyrics ?? []);
+const hasLyrics = computed(() => lyrics.value.length > 0);
+
+const showingLyrics = ref(false);
+
+watch(() => props.song, () => { showingLyrics.value = false; });
+
 const hasAnyDetail = computed(() => {
     const c = current.value;
     return !!(c && (c.key || c.bpm || c.youtube_url || shownNote.value || props.editableServiceNote));
@@ -113,12 +129,24 @@ const hasAnyDetail = computed(() => {
         >
             <div
                 v-if="song"
-                class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl max-h-[88vh] flex flex-col shadow-xl"
+                class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-lg lg:max-w-2xl z-50 bg-white rounded-t-2xl flex flex-col shadow-xl"
+                :class="showingLyrics ? 'h-[88vh]' : 'max-h-[88vh]'"
             >
                 <!-- Header -->
                 <div class="px-4 pt-3 pb-3 border-b border-slate-100">
                     <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
                     <div class="flex items-start justify-between gap-3">
+                        <button
+                            v-if="showingLyrics"
+                            type="button"
+                            @click="showingLyrics = false"
+                            class="shrink-0 w-8 h-8 -ml-1 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                            :aria-label="t('services.close')"
+                        >
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                            </svg>
+                        </button>
                         <div class="min-w-0">
                             <h2 class="text-base font-bold text-slate-900 truncate">{{ song.name }}</h2>
                             <p v-if="song.artist" class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ song.artist }}</p>
@@ -149,10 +177,30 @@ const hasAnyDetail = computed(() => {
                             <span v-if="v.key" class="opacity-70 ml-0.5">· {{ v.key }}</span>
                         </button>
                     </div>
+
+                    <!-- One press to the words, and it is the widest target in
+                         the header: during a service it is the only thing on
+                         this sheet anybody reaches for. -->
+                    <button
+                        v-if="hasLyrics && !showingLyrics"
+                        type="button"
+                        @click="showingLyrics = true"
+                        class="w-full flex items-center justify-center gap-2 mt-3 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                        </svg>
+                        {{ t('songs.lyrics.title') }}
+                    </button>
+                </div>
+
+                <!-- The words, given the room they need. -->
+                <div v-if="showingLyrics" class="flex-1 min-h-0">
+                    <LyricsPanel :blocks="lyrics" />
                 </div>
 
                 <!-- Body -->
-                <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                <div v-else class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                     <!-- Empty state -->
                     <p v-if="!hasAnyDetail" class="text-center text-sm text-slate-600 py-8">
                         {{ t('services.no_details') }}
