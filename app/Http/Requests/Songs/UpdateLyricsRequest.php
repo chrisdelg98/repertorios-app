@@ -19,6 +19,9 @@ class UpdateLyricsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Carried through the form so saving lands back where it started.
+            'return_to' => ['nullable', 'string', 'max:300'],
+
             'blocks'         => ['present', 'array', 'max:' . LyricSections::MAX_BLOCKS],
 
             // A section: identified, typed, and carrying its words.

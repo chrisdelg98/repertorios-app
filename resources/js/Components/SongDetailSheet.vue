@@ -214,7 +214,7 @@ const hasAnyDetail = computed(() => {
                         <p class="text-xs text-slate-500 italic">{{ t('songs.lyrics.none') }}</p>
                         <a
                             v-if="canEditLyrics"
-                            :href="`/songs/${songId}/lyrics`"
+                            :href="`/songs/${songId}/lyrics?from=${encodeURIComponent($page.url)}`"
                             class="shrink-0 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
                         >{{ t('songs.lyrics.add') }}</a>
                     </div>
@@ -223,7 +223,7 @@ const hasAnyDetail = computed(() => {
                          that opens them: reading is why anyone is here. -->
                     <a
                         v-if="hasLyrics && !showingLyrics && canEditLyrics"
-                        :href="`/songs/${songId}/lyrics`"
+                        :href="`/songs/${songId}/lyrics?from=${encodeURIComponent($page.url)}`"
                         class="block text-center text-2xs font-semibold text-slate-500 hover:text-indigo-600 mt-2 transition-colors"
                     >{{ t('songs.lyrics.edit') }}</a>
                 </div>

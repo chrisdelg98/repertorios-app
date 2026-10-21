@@ -14,6 +14,9 @@ import {
 const { t } = useI18n();
 
 const props = defineProps({
+    // Where to land after saving, when the words were opened from a service
+    // rather than from the library.
+    return_to: { type: String, default: null },
     song: Object,
     limits: Object,
 });
@@ -229,7 +232,7 @@ const previewing = ref(false);
 
 /* ── Saving ───────────────────────────────────────────────────────────── */
 
-const form = useForm({ blocks: [] });
+const form = useForm({ blocks: [], return_to: props.return_to ?? null });
 
 const initial = JSON.stringify(blocks.value);
 const dirty = computed(() => JSON.stringify(blocks.value) !== initial);
@@ -247,7 +250,9 @@ function save() {
 function leave() {
     if (dirty.value && !window.confirm(t('songs.lyrics.leave_confirm'))) return;
 
-    router.visit('/songs');
+    // The same place saving would land: leaving and finishing should not
+    // put you in two different rooms.
+    router.visit(props.return_to ?? '/songs');
 }
 
 /** The browser's own guard, for a closed tab rather than a tapped back arrow. */

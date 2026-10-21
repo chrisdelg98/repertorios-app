@@ -8,6 +8,7 @@ use App\Http\Requests\Songs\UpdateLyricsRequest;
 use App\Models\Song;
 use App\Support\LyricSections;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +26,7 @@ class SongLyricsController extends Controller
     /** Kinds that mean something with no words under them. */
     private const WORDLESS_KINDS = ['intro', 'instrumental', 'tag'];
 
-    public function edit(Song $song): Response
+    public function edit(Request $request, Song $song): Response
     {
         $this->requireWrite();
         abort_unless($song->band_id === $this->bandId(), 403);
@@ -37,6 +38,17 @@ class SongLyricsController extends Controller
                 'artist' => $song->artist ?? '',
                 'lyrics' => $song->lyrics ?? [],
             ],
+            /*
+             * Where to go back to, when the words were reached from somewhere
+             * that is not the library.
+             *
+             * Writing lyrics during a service and being returned to the
+             * library means finding that service again by hand. Only a path
+             * on this site is accepted: an absolute URL here would be an open
+             * redirect with the person's session attached.
+             */
+            'return_to' => $this->safeReturn($request->query('from')),
+
             'limits' => [
                 'max_blocks'      => LyricSections::MAX_BLOCKS,
                 'max_block_chars' => LyricSections::MAX_BLOCK_CHARS,
@@ -56,8 +68,10 @@ class SongLyricsController extends Controller
         // the column stays empty instead of holding a shrug.
         $song->update(['lyrics' => $blocks ?: null]);
 
+        $back = $this->safeReturn($request->input('return_to'));
+
         return redirect()
-            ->route('songs.index')
+            ->to($back ?? route('songs.index'))
             ->with('success', true);
     }
 
@@ -113,5 +127,17 @@ class SongLyricsController extends Controller
             $sections,
             fn (array $block) => !isset($block['ref']) || in_array($block['ref'], $ids, true)
         ));
+    }
+
+    /** A relative path on this site, or nothing at all. */
+    private function safeReturn(?string $path): ?string
+    {
+        if (!is_string($path) || $path === '') {
+            return null;
+        }
+
+        // Must start with a single slash: `//host` is a protocol-relative URL
+        // and leaves the site just as surely as `https://host`.
+        return preg_match('#^/(?!/)[^\s]*$#', $path) ? $path : null;
     }
 }
