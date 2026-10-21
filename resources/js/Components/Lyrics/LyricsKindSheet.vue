@@ -60,7 +60,7 @@ function choose(kind) {
         >
             <div
                 v-if="open"
-                class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full sm:max-w-md z-50 bg-white rounded-t-2xl max-h-[85vh] flex flex-col shadow-xl"
+                class="fixed bottom-0 left-1/2 lg:left-[calc(50%+8rem)] -translate-x-1/2 w-full sm:max-w-xl z-50 bg-white rounded-t-2xl max-h-[85vh] flex flex-col shadow-xl"
             >
                 <div class="px-4 pt-3 pb-3 border-b border-slate-100">
                     <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-3" />
