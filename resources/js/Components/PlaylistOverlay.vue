@@ -643,9 +643,12 @@ onBeforeUnmount(() => {
         >
             <div v-if="open" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex flex-col">
                 <!-- Header -->
-                <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
-                    <div class="min-w-0">
-                        <p class="text-2xs font-semibold text-indigo-300 uppercase tracking-widest">{{ t('playlist.title') }}</p>
+                <!-- The label is one line and the title is one line, both
+                     truncating. Before, the label wrapped onto two on a phone
+                     and pushed the song's name into the buttons. -->
+                <div class="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-white/10 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] sm:text-2xs font-semibold text-indigo-300 uppercase tracking-widest truncate">{{ t('playlist.title') }}</p>
                         <!-- An external playlist has no track of ours to name,
                              and "no video" reads as a failure rather than as
                              what it is. -->
@@ -664,7 +667,7 @@ onBeforeUnmount(() => {
                         v-if="!usingPlaylist"
                         type="button"
                         @click="toggleAutoplay"
-                        class="shrink-0 h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-2xs font-bold uppercase tracking-wide transition-colors ml-auto"
+                        class="shrink-0 h-9 px-2 sm:px-2.5 flex items-center gap-1 sm:gap-1.5 rounded-lg text-2xs font-bold uppercase tracking-wide transition-colors"
                         :class="autoplay ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'bg-amber-400/15 text-amber-300'"
                         :aria-pressed="!autoplay"
                         :title="autoplay ? t('playlist.autoplay_on') : t('playlist.autoplay_off')"
@@ -676,21 +679,6 @@ onBeforeUnmount(() => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
                         </svg>
                         {{ t('playlist.autoplay_short') }}
-                    </button>
-
-                    <button
-                        v-if="!usingPlaylist"
-                        type="button"
-                        @click="togglePlayer"
-                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
-                        :class="playerHidden ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white hover:bg-white/10'"
-                        :aria-pressed="playerHidden"
-                        :aria-label="t('playlist.lyrics_only')"
-                        :title="t('playlist.lyrics_only')"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
-                        </svg>
                     </button>
 
                     <button
@@ -1003,44 +991,6 @@ onBeforeUnmount(() => {
                         <!-- Tabs, and only where there is a second thing to
                              show: a band with no lyrics saved should find this
                              screen exactly as it was. -->
-                        <!-- What is playing and what follows it, kept in
-                             view while the lyrics are open. Reading the words
-                             and knowing the running order are the same job,
-                             and before this you had to leave one to check the
-                             other. -->
-                        <div
-                            v-if="panelTab === 'lyrics' && current"
-                            class="shrink-0 flex items-center gap-2 px-3 py-2 bg-white/5 border-b border-white/10"
-                        >
-                            <button
-                                type="button"
-                                @click="playPrev"
-                                :disabled="currentIdx === 0"
-                                class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-25 transition"
-                                :aria-label="t('playlist.prev')"
-                            >
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h2v16H6V4zm12 0v16l-10-8 10-8z" /></svg>
-                            </button>
-
-                            <div class="flex-1 min-w-0 text-center">
-                                <p class="text-xs font-bold text-white truncate">{{ current.name }}</p>
-                                <p class="text-2xs text-slate-400 truncate">
-                                    <template v-if="upNext">{{ t('playlist.up_next', { name: upNext.name }) }}</template>
-                                    <template v-else>{{ t('playlist.last_song') }}</template>
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                @click="playNext"
-                                :disabled="currentIdx >= playable.length - 1"
-                                class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-25 transition"
-                                :aria-label="t('playlist.next')"
-                            >
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" /></svg>
-                            </button>
-                        </div>
-
                         <div v-if="anyLyrics" class="shrink-0 flex items-center gap-1 px-2 pt-2 pb-1.5 border-b border-white/10">
                             <button
                                 type="button"
@@ -1077,9 +1027,26 @@ onBeforeUnmount(() => {
                         <!-- The words, with their own size, mode and structure
                              rail. The song controls go in its bar rather than
                              above it, so there is one row of controls here. -->
-                        <div v-if="panelTab === 'lyrics'" class="flex-1 min-h-0">
+                        <div v-if="panelTab === 'lyrics'" class="flex-1 min-h-0 flex flex-col">
+                            <div class="flex-1 min-h-0 flex flex-col">
                             <LyricsPanel ref="lyricsPanel" :blocks="currentLyrics" dark>
                                 <template #controls>
+                                    <!-- Putting the player away belongs with
+                                         the words, not in a header already
+                                         three buttons deep on a phone. -->
+                                    <button
+                                        type="button"
+                                        @click="togglePlayer"
+                                        class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors"
+                                        :class="playerHidden ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white hover:bg-white/10'"
+                                        :aria-pressed="playerHidden"
+                                        :title="t('playlist.lyrics_only')"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                        </svg>
+                                    </button>
+
                                     <div class="flex items-center gap-0.5 ml-1 pl-1.5 border-l border-white/10">
                                         <button
                                             type="button"
@@ -1107,6 +1074,29 @@ onBeforeUnmount(() => {
                                     </div>
                                 </template>
                             </LyricsPanel>
+                            </div>
+
+                            <!-- What follows, under the words rather than
+                                 above them.
+                                 It sat at the top with its own prev and next,
+                                 repeating the title already in the header and
+                                 the controls already in the row below — four
+                                 bars of chrome before a single line of lyric.
+                                 One line, at the end, which is where anyone
+                                 finishing a song is looking anyway. -->
+                            <button
+                                v-if="upNext"
+                                type="button"
+                                @click="playNext"
+                                class="shrink-0 flex items-center gap-2 px-4 py-2.5 border-t border-white/10 bg-white/5 hover:bg-white/10 text-left transition-colors"
+                            >
+                                <span class="flex-1 min-w-0 text-2xs font-medium text-slate-400 truncate">
+                                    {{ t('playlist.up_next', { name: upNext.name }) }}
+                                </span>
+                                <svg class="w-4 h-4 shrink-0 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
+                                </svg>
+                            </button>
                         </div>
 
                         <template v-else>
