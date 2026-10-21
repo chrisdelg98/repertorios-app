@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { youTubeEmbedUrl, parseYouTube, formatStart } from '@/Utils/youtube';
 import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
@@ -92,6 +93,16 @@ function resetNote() {
 const lyrics = computed(() => props.song?.lyrics ?? []);
 const hasLyrics = computed(() => lyrics.value.length > 0);
 
+/**
+ * Whether this sheet can offer to write the words.
+ *
+ * Silence is ambiguous: a song with no lyrics looked exactly like a song whose
+ * lyrics the sheet had not been told about. Saying "sin letra" settles that
+ * for everyone, and for anyone who can write it is also the way in.
+ */
+const songId = computed(() => props.song?.song_id ?? props.song?.id ?? null);
+const canEditLyrics = computed(() => !!usePage().props.auth?.can_write && !!songId.value);
+
 const showingLyrics = ref(false);
 
 watch(() => props.song, () => { showingLyrics.value = false; });
@@ -178,20 +189,43 @@ const hasAnyDetail = computed(() => {
                         </button>
                     </div>
 
-                    <!-- One press to the words, and it is the widest target in
-                         the header: during a service it is the only thing on
-                         this sheet anybody reaches for. -->
+                    <!-- One press to the words, and still the widest target
+                         on the sheet: during a service it is the only thing
+                         anybody reaches for. Outlined rather than filled —
+                         being the only control here is enough to be found,
+                         and a solid block of indigo shouted over a sheet
+                         whose subject is a song. -->
                     <button
                         v-if="hasLyrics && !showingLyrics"
                         type="button"
                         @click="showingLyrics = true"
-                        class="w-full flex items-center justify-center gap-2 mt-3 py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+                        class="w-full flex items-center justify-center gap-2 mt-3 py-2 text-sm font-semibold text-indigo-600 bg-white border border-indigo-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
                     >
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
                         </svg>
                         {{ t('songs.lyrics.title') }}
                     </button>
+
+                    <!-- No words yet. Said plainly, and made actionable for
+                         whoever can do something about it, in the quietest
+                         type on the sheet: it is information, not an errand. -->
+                    <div v-else-if="!showingLyrics" class="flex items-center justify-between gap-3 mt-3">
+                        <p class="text-xs text-slate-500 italic">{{ t('songs.lyrics.none') }}</p>
+                        <a
+                            v-if="canEditLyrics"
+                            :href="`/songs/${songId}/lyrics`"
+                            class="shrink-0 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        >{{ t('songs.lyrics.add') }}</a>
+                    </div>
+
+                    <!-- With words, editing is a footnote under the button
+                         that opens them: reading is why anyone is here. -->
+                    <a
+                        v-if="hasLyrics && !showingLyrics && canEditLyrics"
+                        :href="`/songs/${songId}/lyrics`"
+                        class="block text-center text-2xs font-semibold text-slate-500 hover:text-indigo-600 mt-2 transition-colors"
+                    >{{ t('songs.lyrics.edit') }}</a>
                 </div>
 
                 <!-- The words, given the room they need. -->

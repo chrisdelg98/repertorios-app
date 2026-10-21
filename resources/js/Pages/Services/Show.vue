@@ -550,6 +550,7 @@ function openDetail(ss) {
         youtube_url: ss.song_version.youtube_url,
         audio:       ss.song_version.audio ?? null,
         lyrics:      ss.song_version.song.lyrics ?? [],
+        song_id:     ss.song_version.song.id,
     };
 }
 
