@@ -152,7 +152,10 @@
         "shortcut_zoom": "Tamaño de la letra",
         "shortcut_block": "Bloque anterior / siguiente",
         "up_next": "Sigue: {name}",
-        "last_song": "Última canción"
+        "last_song": "Última canción",
+        "autoplay_short": "Auto",
+        "autoplay_on": "Reproducción automática activada · toca para apagarla",
+        "autoplay_off": "Reproducción automática apagada · toca para activarla"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

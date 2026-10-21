@@ -152,7 +152,10 @@
         "shortcut_zoom": "Lyrics size",
         "shortcut_block": "Previous / next block",
         "up_next": "Next: {name}",
-        "last_song": "Last song"
+        "last_song": "Last song",
+        "autoplay_short": "Auto",
+        "autoplay_on": "Autoplay on · tap to turn it off",
+        "autoplay_off": "Autoplay off · tap to turn it on"
     },
     "install": {
         "banner_title": "Add to Home Screen",

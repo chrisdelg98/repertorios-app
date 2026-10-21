@@ -219,6 +219,20 @@ function onAudioEnded() {
     playNext();
 }
 
+/** Loads the track without playing it: the queue moved, nobody pressed play. */
+async function cueAudio() {
+    await nextTick();
+
+    const el = audioEl.value;
+    if (!el) return;
+
+    audioTime.value = 0;
+    audioLength.value = 0;
+    audioPlaying.value = false;
+
+    try { el.load(); } catch {}
+}
+
 /** Starts the audio for the song that just became current. */
 async function startAudio() {
     await nextTick();
@@ -296,6 +310,12 @@ function loadAt(idx) {
     const song = playable.value[idx];
     if (!song) return;
 
+    // Read before anything stops: whether sound was coming out a moment ago
+    // is what decides whether it should keep coming out.
+    const wasPlaying = autoplay.value || audioPlaying.value || (() => {
+        try { return ytPlayer?.getPlayerState() === 1; } catch { return false; }
+    })();
+
     currentIdx.value = idx;
 
     // A song with only words: silence both engines and leave them alone. It
@@ -310,7 +330,10 @@ function loadAt(idx) {
     if (sourceOf(idx) === 'audio') {
         // Stop the video before the track starts, or both play at once.
         if (ytPlayer) { try { ytPlayer.stopVideo(); } catch {} }
-        startAudio();
+
+        // Only carry on playing if something already was. Stepping through
+        // the setlist to find a song is not the same as asking to hear it.
+        wasPlaying ? startAudio() : cueAudio();
         return;
     }
 
@@ -326,7 +349,20 @@ function loadAt(idx) {
     // wait for.
     playerReady.value = true;
 
-    ytPlayer.loadVideoById({
+    /*
+     * `loadVideoById` plays; `cueVideoById` only loads.
+     *
+     * With autoplay on this always plays, which is the rehearsal. With it off
+     * it plays only if sound was already coming out, so walking the setlist at
+     * a service stays silent.
+     */
+    const playing = autoplay.value || (() => {
+        try { return ytPlayer.getPlayerState() === 1; } catch { return false; }
+    })();
+
+    const load = playing ? 'loadVideoById' : 'cueVideoById';
+
+    ytPlayer[load]({
         videoId: song._videoId,
         startSeconds: song._start || 0,
     });
@@ -372,6 +408,50 @@ function playPrev() {
 }
 
 const upNext = computed(() => playable.value[currentIdx.value + 1] ?? null);
+
+/**
+ * Put the player away and leave the words.
+ *
+ * Standing at a service, the video is the part nobody needs: it takes the
+ * height the lyrics want and offers a picture of an album cover. Hidden with
+ * v-show rather than v-if, so the iframe survives — tearing it down would stop
+ * whatever is playing and cost a reload to bring back.
+ */
+const playerHidden = ref(false);
+
+/**
+ * Whether moving through the setlist starts the sound.
+ *
+ * On is the behaviour everyone knows and the one that suits a rehearsal: press
+ * play once and the evening runs itself. Off is for standing at a service,
+ * where stepping through the songs to find the words should not announce
+ * itself to the room. One press either way, and it is remembered.
+ */
+const AUTOPLAY_KEY = 'repertorios.playlist.autoplay';
+
+const autoplay = ref(true);
+
+try {
+    autoplay.value = localStorage.getItem(AUTOPLAY_KEY) !== 'off';
+} catch {
+    // Private windows: the familiar behaviour stands.
+}
+
+function toggleAutoplay() {
+    autoplay.value = !autoplay.value;
+
+    try {
+        localStorage.setItem(AUTOPLAY_KEY, autoplay.value ? 'on' : 'off');
+    } catch {}
+}
+
+function togglePlayer() {
+    playerHidden.value = !playerHidden.value;
+
+    // Hiding the player while reading implies reading, so the words come
+    // forward with it.
+    if (playerHidden.value && anyLyrics.value) showLyrics();
+}
 
 const helpOpen = ref(false);
 
@@ -581,10 +661,43 @@ onBeforeUnmount(() => {
                         </p>
                     </div>
                     <button
+                        v-if="!usingPlaylist"
+                        type="button"
+                        @click="toggleAutoplay"
+                        class="shrink-0 h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-2xs font-bold uppercase tracking-wide transition-colors ml-auto"
+                        :class="autoplay ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'bg-amber-400/15 text-amber-300'"
+                        :aria-pressed="!autoplay"
+                        :title="autoplay ? t('playlist.autoplay_on') : t('playlist.autoplay_off')"
+                    >
+                        <svg v-if="autoplay" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                        </svg>
+                        {{ t('playlist.autoplay_short') }}
+                    </button>
+
+                    <button
+                        v-if="!usingPlaylist"
+                        type="button"
+                        @click="togglePlayer"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
+                        :class="playerHidden ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white hover:bg-white/10'"
+                        :aria-pressed="playerHidden"
+                        :aria-label="t('playlist.lyrics_only')"
+                        :title="t('playlist.lyrics_only')"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                        </svg>
+                    </button>
+
+                    <button
                         v-if="hasKeyboard"
                         type="button"
                         @click="helpOpen = true"
-                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-auto mr-1"
+                        class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors mr-1"
                         :aria-label="t('playlist.shortcuts_title')"
                         :title="t('playlist.shortcuts_title')"
                     >
@@ -667,6 +780,7 @@ onBeforeUnmount(() => {
                          playing: destroying and rebuilding it on every switch
                          costs a reload of the YouTube API each time. -->
                     <div
+                        v-show="!playerHidden"
                         class="shrink-0 bg-black flex flex-col min-h-0"
                         :class="hasMedia ? 'lg:flex-1' : ''"
                     >
@@ -879,7 +993,13 @@ onBeforeUnmount(() => {
                     <!-- Wider than the video deserves on a desktop. The
                          lyrics are what someone stands and reads from; the
                          video is what plays while they do. -->
-                    <div v-if="!usingPlaylist" class="flex-1 lg:flex-none lg:w-[28rem] xl:w-[34rem] lg:border-l lg:border-white/10 flex flex-col min-h-0">
+                    <div
+                        v-if="!usingPlaylist"
+                        class="flex-1 flex flex-col min-h-0"
+                        :class="playerHidden
+                            ? 'lg:max-w-3xl lg:mx-auto lg:w-full'
+                            : 'lg:flex-none lg:w-[28rem] xl:w-[34rem] lg:border-l lg:border-white/10'"
+                    >
                         <!-- Tabs, and only where there is a second thing to
                              show: a band with no lyrics saved should find this
                              screen exactly as it was. -->
