@@ -145,12 +145,14 @@
         "shortcut_track": "Canción siguiente / anterior",
         "shortcut_mute": "Silenciar",
         "shortcuts_note": "Funcionan sin hacer clic en el reproductor. Con un video de YouTube, si tocas el video primero, YouTube se queda con las teclas: haz clic fuera para recuperarlas.",
-        "tab_queue": "Cola",
+        "tab_queue": "Repertorio",
         "tab_lyrics": "Letra",
         "lyrics_only": "Solo letra",
         "shortcut_lyrics": "Mostrar la letra",
         "shortcut_zoom": "Tamaño de la letra",
-        "shortcut_block": "Bloque anterior / siguiente"
+        "shortcut_block": "Bloque anterior / siguiente",
+        "up_next": "Sigue: {name}",
+        "last_song": "Última canción"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

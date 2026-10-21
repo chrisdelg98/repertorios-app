@@ -371,6 +371,8 @@ function playPrev() {
     if (currentIdx.value > 0) loadAt(currentIdx.value - 1);
 }
 
+const upNext = computed(() => playable.value[currentIdx.value + 1] ?? null);
+
 const helpOpen = ref(false);
 
 const shortcutRows = computed(() => [
@@ -514,7 +516,14 @@ watch(() => props.open, (isOpen) => {
         // reach a YouTube song later, and loading it then would stall playback.
         loadYouTubeApi();
 
-        if (sourceOf(0) === 'audio') startAudio();
+        /*
+         * Nothing plays until someone asks.
+         *
+         * Two people open this screen: one rehearsing at home, who presses
+         * play, and one standing at a service who only wants the words.
+         * Sound starting by itself serves the first and embarrasses the second,
+         * and the second is the one who cannot stop it quickly.
+         */
 
         return;
     }
@@ -867,10 +876,51 @@ onBeforeUnmount(() => {
                     <!-- The side panel: the running order, or the words.
                          Hidden for an external playlist, whose contents are
                          YouTube's to know and whose controls navigate it. -->
-                    <div v-if="!usingPlaylist" class="flex-1 lg:flex-none lg:w-96 lg:border-l lg:border-white/10 flex flex-col min-h-0">
+                    <!-- Wider than the video deserves on a desktop. The
+                         lyrics are what someone stands and reads from; the
+                         video is what plays while they do. -->
+                    <div v-if="!usingPlaylist" class="flex-1 lg:flex-none lg:w-[28rem] xl:w-[34rem] lg:border-l lg:border-white/10 flex flex-col min-h-0">
                         <!-- Tabs, and only where there is a second thing to
                              show: a band with no lyrics saved should find this
                              screen exactly as it was. -->
+                        <!-- What is playing and what follows it, kept in
+                             view while the lyrics are open. Reading the words
+                             and knowing the running order are the same job,
+                             and before this you had to leave one to check the
+                             other. -->
+                        <div
+                            v-if="panelTab === 'lyrics' && current"
+                            class="shrink-0 flex items-center gap-2 px-3 py-2 bg-white/5 border-b border-white/10"
+                        >
+                            <button
+                                type="button"
+                                @click="playPrev"
+                                :disabled="currentIdx === 0"
+                                class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-25 transition"
+                                :aria-label="t('playlist.prev')"
+                            >
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h2v16H6V4zm12 0v16l-10-8 10-8z" /></svg>
+                            </button>
+
+                            <div class="flex-1 min-w-0 text-center">
+                                <p class="text-xs font-bold text-white truncate">{{ current.name }}</p>
+                                <p class="text-2xs text-slate-400 truncate">
+                                    <template v-if="upNext">{{ t('playlist.up_next', { name: upNext.name }) }}</template>
+                                    <template v-else>{{ t('playlist.last_song') }}</template>
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                @click="playNext"
+                                :disabled="currentIdx >= playable.length - 1"
+                                class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-25 transition"
+                                :aria-label="t('playlist.next')"
+                            >
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" /></svg>
+                            </button>
+                        </div>
+
                         <div v-if="anyLyrics" class="shrink-0 flex items-center gap-1 px-2 pt-2 pb-1.5 border-b border-white/10">
                             <button
                                 type="button"

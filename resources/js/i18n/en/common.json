@@ -145,12 +145,14 @@
         "shortcut_track": "Next / previous song",
         "shortcut_mute": "Mute",
         "shortcuts_note": "They work without clicking the player first. With a YouTube video, clicking the video hands the keys to YouTube: click outside it to get them back.",
-        "tab_queue": "Queue",
+        "tab_queue": "Setlist",
         "tab_lyrics": "Lyrics",
         "lyrics_only": "Lyrics only",
         "shortcut_lyrics": "Show the lyrics",
         "shortcut_zoom": "Lyrics size",
-        "shortcut_block": "Previous / next block"
+        "shortcut_block": "Previous / next block",
+        "up_next": "Next: {name}",
+        "last_song": "Last song"
     },
     "install": {
         "banner_title": "Add to Home Screen",
