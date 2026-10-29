@@ -453,6 +453,27 @@ function togglePlayer() {
     if (playerHidden.value && anyLyrics.value) showLyrics();
 }
 
+const viewsOpen = ref(false);
+
+/** What the panel can show. The setlist is not one of them — it is the panel. */
+const panelViews = computed(() => [
+    { id: 'queue', label: t('playlist.tab_queue'), empty: false },
+    { id: 'lyrics', label: t('playlist.tab_lyrics'), empty: !currentHasLyrics.value },
+]);
+
+const currentViewLabel = computed(() =>
+    panelViews.value.find(v => v.id === panelTab.value)?.label ?? ''
+);
+
+function chooseView(id) {
+    viewsOpen.value = false;
+    id === 'lyrics' ? showLyrics() : (panelTab.value = 'queue');
+}
+
+function onViewsDocClick(e) {
+    if (!e.target.closest('[data-panel-views]')) viewsOpen.value = false;
+}
+
 const helpOpen = ref(false);
 
 const shortcutRows = computed(() => [
@@ -570,6 +591,7 @@ function onKeydown(e) {
 
 onMounted(() => {
     document.addEventListener('keydown', onKeydown);
+    document.addEventListener('click', onViewsDocClick);
 
     try {
         hasKeyboard.value = !window.matchMedia('(pointer: coarse)').matches
@@ -579,7 +601,10 @@ onMounted(() => {
     }
 });
 
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
+onBeforeUnmount(() => {
+    document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('click', onViewsDocClick);
+});
 
 function close() {
     emit('close');
@@ -991,37 +1016,83 @@ onBeforeUnmount(() => {
                         <!-- Tabs, and only where there is a second thing to
                              show: a band with no lyrics saved should find this
                              screen exactly as it was. -->
-                        <div v-if="anyLyrics" class="shrink-0 flex items-center gap-1 px-2 pt-2 pb-1.5 border-b border-white/10">
-                            <button
-                                type="button"
-                                @click="panelTab = 'queue'"
-                                class="flex-1 h-9 flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg transition-colors"
-                                :class="panelTab === 'queue' ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10'"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
-                                </svg>
-                                {{ t('playlist.tab_queue') }}
-                            </button>
-                            <button
-                                type="button"
-                                @click="showLyrics"
-                                class="flex-1 h-9 flex items-center justify-center gap-1.5 text-xs font-bold rounded-lg transition-colors"
-                                :class="panelTab === 'lyrics' ? 'bg-white text-slate-900' : 'text-slate-300 hover:bg-white/10'"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
-                                </svg>
-                                {{ t('playlist.tab_lyrics') }}
-                                <!-- A dot rather than a disabled tab: the tab
-                                     still works, it just has nothing for this
-                                     one song, and saying so beats blocking it. -->
-                                <span
-                                    v-if="!currentHasLyrics"
-                                    class="w-1.5 h-1.5 rounded-full bg-slate-500"
-                                    :title="t('songs.lyrics.none')"
-                                />
-                            </button>
+                        <!-- The setlist is the panel; everything else is a
+                             view laid over it.
+                             Two tabs split the attention evenly between a list
+                             people open this screen for and a reading mode
+                             they ask for sometimes — and two tabs become four
+                             the moment charts arrive. A menu names what you
+                             are looking at and keeps the rest out of sight. -->
+                        <div
+                            v-if="anyLyrics"
+                            class="shrink-0 flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10"
+                            data-panel-views
+                        >
+                            <p class="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">
+                                {{ currentViewLabel }}
+                            </p>
+
+                            <div class="relative shrink-0">
+                                <button
+                                    type="button"
+                                    @click.stop="viewsOpen = !viewsOpen"
+                                    class="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-xs font-bold transition-colors"
+                                    :class="panelTab === 'queue'
+                                        ? 'text-slate-300 hover:text-white hover:bg-white/10'
+                                        : 'bg-white text-slate-900'"
+                                    :aria-expanded="viewsOpen"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                    </svg>
+                                    {{ t('playlist.views') }}
+                                    <svg
+                                        class="w-3 h-3 transition-transform"
+                                        :class="viewsOpen ? 'rotate-180' : ''"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <Transition
+                                    enter-active-class="transition duration-150 ease-out"
+                                    enter-from-class="opacity-0 scale-95"
+                                    enter-to-class="opacity-100 scale-100"
+                                    leave-active-class="transition duration-100 ease-in"
+                                    leave-from-class="opacity-100 scale-100"
+                                    leave-to-class="opacity-0 scale-95"
+                                >
+                                    <div
+                                        v-if="viewsOpen"
+                                        class="absolute right-0 top-full mt-1 w-48 z-30 origin-top-right bg-slate-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1"
+                                    >
+                                        <button
+                                            v-for="view in panelViews"
+                                            :key="view.id"
+                                            type="button"
+                                            @click.stop="chooseView(view.id)"
+                                            class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-semibold transition-colors"
+                                            :class="panelTab === view.id ? 'text-white bg-white/10' : 'text-slate-300 hover:bg-white/5'"
+                                        >
+                                            <span class="flex-1 truncate">{{ view.label }}</span>
+
+                                            <!-- A dot rather than a disabled
+                                                 row: the view still opens, it
+                                                 just has nothing for this one
+                                                 song. -->
+                                            <span v-if="view.empty" class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                                            <svg
+                                                v-else-if="panelTab === view.id"
+                                                class="w-3.5 h-3.5 shrink-0"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </Transition>
+                            </div>
                         </div>
 
                         <!-- The words, with their own size, mode and structure

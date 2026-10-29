@@ -155,7 +155,8 @@
         "last_song": "Última canción",
         "autoplay_short": "Auto",
         "autoplay_on": "Reproducción automática activada · toca para apagarla",
-        "autoplay_off": "Reproducción automática apagada · toca para activarla"
+        "autoplay_off": "Reproducción automática apagada · toca para activarla",
+        "views": "Ver"
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",
