@@ -137,8 +137,13 @@ class ServiceController extends Controller
                             'artist' => $ss->songVersion->song->artist ?? '',
                             // The words travel with the setlist: they are what
                             // the service mode reads from, and they are the one
-                            // thing here that still works with no signal.
-                            'lyrics' => $ss->songVersion->song->lyrics ?? [],
+                            // thing here that still works with no signal. The
+                            // chart rides along for the same reason — it is
+                            // positions into those same words, and weighs
+                            // almost nothing beside them.
+                            'lyrics'     => $ss->songVersion->song->lyrics ?? [],
+                            'chords'     => $ss->songVersion->song->chords ?? (object) [],
+                            'chords_key' => $ss->songVersion->song->chords_key,
                         ],
                     ],
                 ]),

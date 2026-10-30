@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
+import { sep } from 'node:path';
 
 export default defineConfig({
     plugins: [
@@ -95,6 +96,10 @@ export default defineConfig({
                 cleanupOutdatedCaches: true,
                 navigateFallback: null,
                 globPatterns: ['**/*.{js,css,ico,png,svg}'],
+                // The PDF writer is half a megabyte and belongs to one button
+                // in the platform panel. Precaching it would make every phone
+                // in every band carry it to open a setlist.
+                globIgnores: ['**/jspdf-*.js'],
                 runtimeCaching: [
                     {
                         /*
@@ -156,6 +161,32 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                /*
+                 * Everything the PDF writer drags in, under one prefix.
+                 *
+                 * jsPDF lazily pulls html2canvas, canvg and dompurify for
+                 * doc.html(), which nothing here calls. Left to themselves
+                 * they land in chunks named after their entry file and get
+                 * precached — four hundred kilobytes on every phone for a
+                 * feature none of them can reach. Naming them keeps them out
+                 * of the worker's net without merging them into jsPDF, where
+                 * they would be downloaded by whoever does press the button.
+                 */
+                manualChunks(id) {
+                    const path = id.split(sep).join('/');
+
+                    for (const dep of ['jspdf', 'html2canvas', 'canvg', 'dompurify']) {
+                        if (path.includes(`node_modules/${dep}/`)) {
+                            return dep === 'jspdf' ? 'jspdf' : `jspdf-${dep}`;
+                        }
+                    }
+                },
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./resources/js', import.meta.url)),

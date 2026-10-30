@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Songs;
 
 use App\Http\Controllers\Concerns\BandAware;
+use App\Http\Controllers\Concerns\SafeReturn;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Songs\UpdateLyricsRequest;
 use App\Models\Song;
@@ -22,6 +23,7 @@ use Inertia\Response;
 class SongLyricsController extends Controller
 {
     use BandAware;
+    use SafeReturn;
 
     /** Kinds that mean something with no words under them. */
     private const WORDLESS_KINDS = ['intro', 'instrumental', 'tag'];
@@ -127,17 +129,5 @@ class SongLyricsController extends Controller
             $sections,
             fn (array $block) => !isset($block['ref']) || in_array($block['ref'], $ids, true)
         ));
-    }
-
-    /** A relative path on this site, or nothing at all. */
-    private function safeReturn(?string $path): ?string
-    {
-        if (!is_string($path) || $path === '') {
-            return null;
-        }
-
-        // Must start with a single slash: `//host` is a protocol-relative URL
-        // and leaves the site just as surely as `https://host`.
-        return preg_match('#^/(?!/)[^\s]*$#', $path) ? $path : null;
     }
 }

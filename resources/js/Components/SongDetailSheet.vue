@@ -220,12 +220,25 @@ const hasAnyDetail = computed(() => {
                     </div>
 
                     <!-- With words, editing is a footnote under the button
-                         that opens them: reading is why anyone is here. -->
-                    <a
+                         that opens them: reading is why anyone is here. The
+                         chords sit beside it, since they are written over
+                         those same words and reached for at the same moment. -->
+                    <div
                         v-if="hasLyrics && !showingLyrics && canEditLyrics"
-                        :href="`/songs/${songId}/lyrics?from=${encodeURIComponent($page.url)}`"
-                        class="block text-center text-2xs font-semibold text-slate-500 hover:text-indigo-600 mt-2 transition-colors"
-                    >{{ t('songs.lyrics.edit') }}</a>
+                        class="flex items-center justify-center gap-3 mt-2"
+                    >
+                        <a
+                            :href="`/songs/${songId}/lyrics?from=${encodeURIComponent($page.url)}`"
+                            class="text-2xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+                        >{{ t('songs.lyrics.edit') }}</a>
+
+                        <span class="w-px h-3 bg-slate-200"></span>
+
+                        <a
+                            :href="`/songs/${songId}/chords?from=${encodeURIComponent($page.url)}`"
+                            class="text-2xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+                        >{{ t('songs.chords.title') }}</a>
+                    </div>
                 </div>
 
                 <!-- The words, given the room they need. -->

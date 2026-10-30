@@ -28,6 +28,7 @@ use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ScheduleTemplateController;
 use App\Http\Controllers\Songs\SongAudioController;
+use App\Http\Controllers\Songs\SongChordsController;
 use App\Http\Controllers\Songs\SongLyricsController;
 use App\Http\Controllers\Songs\SongController;
 use Illuminate\Foundation\Application;
@@ -202,6 +203,8 @@ Route::middleware('band.access')->group(function () {
     // keyboard exactly where someone is about to type the most.
     Route::get('/songs/{song}/lyrics', [SongLyricsController::class, 'edit'])->name('songs.lyrics.edit');
     Route::put('/songs/{song}/lyrics', [SongLyricsController::class, 'update'])->name('songs.lyrics.update');
+    Route::get('/songs/{song}/chords', [SongChordsController::class, 'edit'])->name('songs.chords.edit');
+    Route::put('/songs/{song}/chords', [SongChordsController::class, 'update'])->name('songs.chords.update');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
 
     // Settings — admin only

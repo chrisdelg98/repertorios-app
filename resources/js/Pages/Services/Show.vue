@@ -550,6 +550,8 @@ function openDetail(ss) {
         youtube_url: ss.song_version.youtube_url,
         audio:       ss.song_version.audio ?? null,
         lyrics:      ss.song_version.song.lyrics ?? [],
+        chords:      ss.song_version.song.chords ?? {},
+        chords_key:  ss.song_version.song.chords_key ?? null,
         song_id:     ss.song_version.song.id,
     };
 }
@@ -590,6 +592,8 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     youtube_url: ss.song_version.youtube_url,
     audio:       ss.song_version.audio ?? null,
     lyrics:      ss.song_version.song.lyrics ?? [],
+    chords:      ss.song_version.song.chords ?? {},
+    chords_key:  ss.song_version.song.chords_key ?? null,
 })));
 
 // "Play all" is offered when anything can be played, from either source.

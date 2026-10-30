@@ -12,7 +12,7 @@ class Song extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['band_id', 'name', 'normalized_name', 'artist', 'lyrics'];
+    protected $fillable = ['band_id', 'name', 'normalized_name', 'artist', 'lyrics', 'chords', 'chords_key'];
 
     /**
      * The words are never sent with a list of songs.
@@ -22,19 +22,24 @@ class Song extends Model
      * it. Whoever actually needs the words — the editor, the service page, the
      * player — asks for them with makeVisible('lyrics').
      */
-    protected $hidden = ['lyrics'];
+    protected $hidden = ['lyrics', 'chords'];
 
     /** So a list can show which songs have words without carrying any. */
-    protected $appends = ['has_lyrics'];
+    protected $appends = ['has_lyrics', 'has_chords'];
 
     protected function casts(): array
     {
-        return ['lyrics' => 'array'];
+        return ['lyrics' => 'array', 'chords' => 'array'];
     }
 
     public function getHasLyricsAttribute(): bool
     {
         return !empty($this->lyrics);
+    }
+
+    public function getHasChordsAttribute(): bool
+    {
+        return !empty($this->chords);
     }
 
     /** How many sections, for a list that wants to say more than yes or no. */

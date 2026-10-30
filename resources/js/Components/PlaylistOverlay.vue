@@ -3,6 +3,9 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { parseYouTube, formatStart, parsePlaylist } from '@/Utils/youtube';
 import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
+import ChordChartReader from '@/Components/Chords/ChordChartReader.vue';
+import { chartSheet, transposeChord } from '@/Utils/chords';
+import { decorate } from '@/Utils/lyrics';
 
 const { t } = useI18n();
 
@@ -37,6 +40,8 @@ const playable = computed(() =>
             return {
                 ...s,
                 _lyrics: lyrics,
+                _chords: s.chords ?? {},
+                _chordsKey: s.chords_key ?? null,
                 _audioUrl: audioUrl,
                 _videoId: parsed?.id ?? null,
                 _start: parsed?.start ?? 0,
@@ -168,6 +173,47 @@ const lyricsPanel = ref(null);
 
 const currentLyrics = computed(() => current.value?._lyrics ?? []);
 const currentHasLyrics = computed(() => currentLyrics.value.length > 0);
+
+/*
+ * The chart, read rather than written.
+ *
+ * One entry per appearance, the same resolution the editor uses, so a chorus
+ * sung three times shows its chords three times and one set loose to modulate
+ * shows its own.
+ */
+const currentChart = computed(() => chartSheet(decorate(currentLyrics.value), current.value?._chords ?? {})
+    .map(entry => ({
+        id: entry.chordKey,
+        kind: entry.kind,
+        label: entry.label || t('songs.lyrics.kinds.' + entry.kind) + (entry.num ? ' ' + entry.num : ''),
+        text: entry.text,
+    })));
+
+const currentHasChords = computed(() => {
+    const chart = current.value?._chords ?? {};
+
+    return currentChart.value.some(block => (chart[block.id] ?? []).some(line => line?.length));
+});
+
+/**
+ * How far the chart is being moved, in semitones.
+ *
+ * Moved here and not saved: the band's chart stays in the key it was written
+ * in, and this is one singer on one morning asking for it a tone down. Where
+ * the written key is known the resulting key is named, because that is the
+ * question actually being asked — not "two up" but "what are we in".
+ */
+const chartSteps = ref(0);
+
+const writtenKey = computed(() => current.value?._chordsKey ?? null);
+
+const sungKey = computed(() => (
+    writtenKey.value ? transposeChord(writtenKey.value, chartSteps.value) : ''
+));
+
+// A different song is a different chart: carrying a transposition across would
+// put the next song in a key nobody asked for.
+watch(currentIdx, () => { chartSteps.value = 0; });
 const anyLyrics = computed(() => playable.value.some(song => song._lyrics?.length));
 
 /** Whether anything is actually playing, as opposed to only being read. */
@@ -175,6 +221,10 @@ const hasMedia = computed(() => currentSource.value === 'audio' || currentSource
 
 function showLyrics() {
     panelTab.value = 'lyrics';
+}
+
+function showChords() {
+    panelTab.value = 'chords';
 }
 
 function toggleLyrics() {
@@ -459,6 +509,7 @@ const viewsOpen = ref(false);
 const panelViews = computed(() => [
     { id: 'queue', label: t('playlist.tab_queue'), empty: false },
     { id: 'lyrics', label: t('playlist.tab_lyrics'), empty: !currentHasLyrics.value },
+    { id: 'chords', label: t('songs.chords.tab'), empty: !currentHasChords.value },
 ]);
 
 const currentViewLabel = computed(() =>
@@ -467,7 +518,7 @@ const currentViewLabel = computed(() =>
 
 function chooseView(id) {
     viewsOpen.value = false;
-    id === 'lyrics' ? showLyrics() : (panelTab.value = 'queue');
+    panelTab.value = ['lyrics', 'chords'].includes(id) ? id : 'queue';
 }
 
 function onViewsDocClick(e) {
@@ -1168,6 +1219,90 @@ onBeforeUnmount(() => {
                                     <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
                                 </svg>
                             </button>
+                        </div>
+
+                        <!-- The chart, read on a stand in a dark room. The
+                             same reader the editor previews with, so what was
+                             written is what is seen here. -->
+                        <div v-else-if="panelTab === 'chords'" class="flex-1 min-h-0 flex flex-col">
+                            <div class="flex items-center gap-2 px-4 py-2 border-b border-white/10 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="togglePlayer"
+                                    class="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors"
+                                    :class="playerHidden ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white hover:bg-white/10'"
+                                    :aria-pressed="playerHidden"
+                                    :title="t('playlist.lyrics_only')"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
+                                    </svg>
+                                </button>
+
+                                <!-- Moved, never saved: the band's chart stays
+                                     in the key it was written in. -->
+                                <div class="flex items-center gap-0.5 ml-1 pl-1.5 border-l border-white/10">
+                                    <button
+                                        type="button"
+                                        @click="chartSteps -= 1"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                                        :aria-label="t('songs.chords.down')"
+                                    >−</button>
+
+                                    <button
+                                        type="button"
+                                        @click="chartSteps = 0"
+                                        :disabled="!chartSteps"
+                                        class="min-w-[3rem] h-8 px-1 flex items-center justify-center rounded-lg text-2xs font-bold tabular-nums transition-colors"
+                                        :class="chartSteps
+                                            ? 'text-white bg-white/10 hover:bg-white/20'
+                                            : 'text-slate-400'"
+                                        :title="t('songs.chords.reset')"
+                                    >{{ sungKey || (chartSteps > 0 ? '+' + chartSteps : chartSteps) }}</button>
+
+                                    <button
+                                        type="button"
+                                        @click="chartSteps += 1"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                                        :aria-label="t('songs.chords.up')"
+                                    >+</button>
+                                </div>
+
+                                <div class="flex items-center gap-0.5 ml-auto">
+                                    <button
+                                        type="button"
+                                        @click="playPrev"
+                                        :disabled="currentIdx === 0"
+                                        class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-25 transition-colors"
+                                        :aria-label="t('playlist.prev')"
+                                    >
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 4h2v16H6V4zm12 0v16l-10-8 10-8z" />
+                                        </svg>
+                                    </button>
+                                    <span class="text-2xs font-bold text-slate-400 tabular-nums px-0.5">{{ currentIdx + 1 }}/{{ playable.length }}</span>
+                                    <button
+                                        type="button"
+                                        @click="playNext"
+                                        :disabled="currentIdx >= playable.length - 1"
+                                        class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-25 transition-colors"
+                                        :aria-label="t('playlist.next')"
+                                    >
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+                                <ChordChartReader
+                                    :blocks="currentChart"
+                                    :chords="current?._chords ?? {}"
+                                    :semitones="chartSteps"
+                                    dark
+                                />
+                            </div>
                         </div>
 
                         <template v-else>
