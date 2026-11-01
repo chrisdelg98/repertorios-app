@@ -5,6 +5,8 @@ import { useI18n } from 'vue-i18n';
 import VideoScrubber from '@/Components/Chords/VideoScrubber.vue';
 import ChordChartReader from '@/Components/Chords/ChordChartReader.vue';
 import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
+import PanelPicker from '@/Components/PanelPicker.vue';
+import PanelIcon from '@/Components/PanelIcon.vue';
 import { chartSheet, transposeChord } from '@/Utils/chords';
 import { decorate } from '@/Utils/lyrics';
 
@@ -92,38 +94,99 @@ const hasChords = computed(() => {
 });
 
 // ── How the room is divided ──────────────────────────────────────
-/** Three panels, off by default: two is what reads at this width. */
-const split = ref(false);
 const showQueue = ref(true);
 
-/** With two panels, which of the two things the one pane is showing. */
-const pane = ref('media');
+/*
+ * The panels are slots, and a slot holds whatever it is given.
+ *
+ * One by default and two on request, beside the running order. What each one
+ * shows is chosen in its own head, from the same list — so "video beside the
+ * chart" and "the words beside the chart" are the same gesture rather than two
+ * different controls.
+ *
+ * Three renderers exist: the recording, the chart, the words. A slot names
+ * one, and no two slots name the same.
+ */
+const slots = ref(['media']);
 
-/** In either layout, which of the two readings is up. */
-const reading = ref('chords');
+const split = computed(() => slots.value.length > 1);
 
-const readings = computed(() => [
-    { id: 'chords', label: t('songs.chords.tab'), ready: hasChords.value },
-    { id: 'lyrics', label: t('playlist.tab_lyrics'), ready: lyrics.value.length > 0 },
-]);
+/** Flexbox order, so the panels rearrange without the DOM moving. */
+const ORDER = ['order-1', 'order-2', 'order-3'];
 
 /*
- * Where the recording's panel sits. Always present, never moved: in three
- * panels it is a column, in two it is either the whole pane or off screen.
+ * What can go in a slot. Picking a recording also changes what is playing,
+ * which is why the two kinds are divided by a rule rather than mixed.
  */
-const stageClass = computed(() => {
-    if (split.value) return 'flex-1 min-w-0 flex flex-col border-r border-white/10';
+const contents = computed(() => [
+    { id: 'video', group: 'media', label: t('playlist.advanced.video'), ready: !!song.value?.youtube_url },
+    { id: 'audio', group: 'media', label: t('playlist.advanced.track'), ready: !!song.value?.audio?.url },
+    { id: 'lyrics', group: 'text', label: t('playlist.tab_lyrics'), ready: lyrics.value.length > 0 },
+    { id: 'chords', group: 'text', label: t('songs.chords.tab'), ready: hasChords.value },
+]);
 
-    return pane.value === 'media'
-        ? 'flex-1 min-w-0 flex flex-col'
-        : 'absolute -left-[9999px] top-0 w-[32rem] h-72';
-});
+/** The media slot shows whichever recording is loaded, by its own name. */
+function shownIn(index) {
+    const held = index < 0 ? null : slots.value[index];
 
-const textClass = computed(() => {
-    if (split.value) return 'flex-1 min-w-0 flex flex-col min-h-0';
+    return held === 'media' ? (isVideo.value ? 'video' : 'audio') : held;
+}
 
-    return pane.value === 'text' ? 'flex-1 min-w-0 flex flex-col min-h-0' : 'hidden';
-});
+function pick(index, id) {
+    if (index < 0) return;
+
+    const wanted = id === 'video' || id === 'audio' ? 'media' : id;
+
+    if (wanted === 'media') {
+        const kind = id === 'video' ? 'youtube' : 'audio';
+        const n = sources.value.findIndex(item => item.kind === kind);
+
+        if (n >= 0) sourceIndex.value = n;
+    }
+
+    const next = [...slots.value];
+    const elsewhere = next.indexOf(wanted);
+
+    // Already open in another slot: the two trade places rather than one
+    // vanishing, so every slot keeps something in it.
+    if (elsewhere !== -1 && elsewhere !== index) next[elsewhere] = next[index];
+
+    next[index] = wanted;
+    slots.value = next;
+}
+
+function toggleSplit() {
+    if (split.value) {
+        slots.value = slots.value.slice(0, 1);
+        return;
+    }
+
+    // The third gets whatever is not already up.
+    const spare = ['media', 'chords', 'lyrics'].find(id => !slots.value.includes(id));
+
+    slots.value = [...slots.value, spare ?? 'lyrics'];
+}
+
+/*
+ * Where a panel sits, and whether it sits anywhere.
+ *
+ * The recording is never unmounted and never re-parented: an iframe moved in
+ * the DOM reloads, and a four-second loop that restarts is the point lost. Out
+ * of play it goes off screen and keeps running.
+ */
+function panelClass(id) {
+    const index = slots.value.indexOf(id);
+
+    if (index === -1) {
+        return id === 'media'
+            ? 'absolute -left-[9999px] top-0 w-[32rem] h-72'
+            : 'hidden';
+    }
+
+    const edge = index < slots.value.length - 1 ? 'border-r border-white/10' : '';
+
+    return `${ORDER[index]} flex-1 min-w-0 flex flex-col min-h-0 ${edge}`;
+}
 
 // ── How it is read ───────────────────────────────────────────────
 /** One column or two: a whole song at once, or a bigger one to scroll. */
@@ -154,9 +217,6 @@ const sungKey = computed(() => (
 watch(() => props.index, () => {
     sourceIndex.value = 0;
     steps.value = 0;
-
-    if (reading.value === 'chords' && !hasChords.value) reading.value = 'lyrics';
-    if (reading.value === 'lyrics' && !lyrics.value.length && hasChords.value) reading.value = 'chords';
 });
 
 function edit() {
@@ -169,7 +229,7 @@ function edit() {
 </script>
 
 <template>
-    <div class="flex-1 min-h-0 flex flex-col">
+    <div class="flex-1 min-h-0 flex flex-col bg-slate-900">
         <!-- Head: which song, how the room is divided, and the way back -->
         <div class="flex items-center gap-2 px-4 py-2 border-b border-white/10 shrink-0">
             <div class="flex-1 min-w-0">
@@ -198,7 +258,7 @@ function edit() {
 
                 <button
                     type="button"
-                    @click="split = !split"
+                    @click="toggleSplit"
                     class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
                     :class="split ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/10'"
                     :aria-label="split ? t('playlist.advanced.join') : t('playlist.advanced.split')"
@@ -241,11 +301,11 @@ function edit() {
 
         <!-- The transport, the full width of what it governs -->
         <div class="shrink-0 px-3 py-2 border-b border-white/10">
+            <!-- The sources are chosen in the panel that shows them, so the
+                 transport is only transport. -->
             <VideoScrubber
                 v-if="source && stageReady"
-                v-model:source-index="sourceIndex"
                 :source="source"
-                :sources="sources"
                 :stage="stageReady"
                 dark
             />
@@ -297,29 +357,21 @@ function edit() {
                 </button>
             </div>
 
-            <!-- The recording. Always mounted, only ever restyled. -->
-            <div :class="stageClass">
-                <div v-if="!split" class="shrink-0 flex items-center px-3 py-1.5 border-b border-white/10">
-                    <button
-                        type="button"
-                        @click="pane = 'text'"
-                        class="h-8 px-2.5 flex items-center gap-1.5 text-2xs font-semibold rounded-lg text-slate-300 hover:bg-white/5 transition-colors"
-                    >
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M4 10h16M4 14h12M4 18h7" />
-                        </svg>
-                        {{ t('playlist.advanced.show_text') }}
-                    </button>
+            <!-- The recording. Always mounted, only ever restyled: an
+                 iframe moved in the DOM reloads. -->
+            <div :class="panelClass('media')">
+                <div class="shrink-0 flex items-center px-3 py-1.5 border-b border-white/10">
+                    <PanelPicker
+                        :value="shownIn(slots.indexOf('media'))"
+                        :options="contents"
+                        @select="pick(slots.indexOf('media'), $event)"
+                    />
                 </div>
 
                 <div class="flex-1 min-h-0 flex items-center justify-center p-4 bg-black/20">
                     <!-- A track has no picture; saying so beats a black box. -->
                     <div v-show="!isVideo" class="text-center">
-                        <svg class="w-10 h-10 text-slate-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 18V5l10-2v13" />
-                            <circle cx="6.5" cy="18" r="2.5" />
-                            <circle cx="16.5" cy="16" r="2.5" />
-                        </svg>
+                        <PanelIcon name="audio" class="w-10 h-10 text-slate-600 mx-auto mb-2" />
                         <p class="text-2xs text-slate-500">{{ t('playlist.advanced.track_only') }}</p>
                     </div>
 
@@ -329,35 +381,16 @@ function edit() {
                 </div>
             </div>
 
-            <!-- The words, or the chart -->
-            <div :class="textClass">
+            <!-- The chart -->
+            <div :class="panelClass('chords')">
                 <div class="flex items-center gap-1 px-3 py-1.5 border-b border-white/10 shrink-0">
-                    <button
-                        v-for="item in readings"
-                        :key="item.id"
-                        type="button"
-                        @click="reading = item.id"
-                        class="px-2.5 h-8 flex items-center text-2xs font-semibold rounded-lg transition-colors"
-                        :class="reading === item.id
-                            ? 'bg-white/15 text-white'
-                            : item.ready ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600'"
-                    >{{ item.label }}</button>
-
-                    <button
-                        v-if="!split"
-                        type="button"
-                        @click="pane = 'media'"
-                        class="h-8 px-2.5 flex items-center gap-1.5 text-2xs font-semibold rounded-lg text-slate-300 hover:bg-white/5 transition-colors"
-                    >
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.5-2.5v9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-                        </svg>
-                        {{ t('playlist.advanced.show_media') }}
-                    </button>
+                    <PanelPicker
+                        :value="shownIn(slots.indexOf('chords'))"
+                        :options="contents"
+                        @select="pick(slots.indexOf('chords'), $event)"
+                    />
 
                     <div class="ml-auto flex items-center gap-0.5">
-                        <!-- A whole song on one screen, or a bigger one to
-                             scroll. On a stand the first wins. -->
                         <button
                             type="button"
                             @click="columns = columns === 1 ? 2 : 1"
@@ -372,53 +405,51 @@ function edit() {
                             </svg>
                         </button>
 
-                        <template v-if="reading === 'chords'">
-                            <button
-                                type="button"
-                                @click="resize(-1)"
-                                :disabled="sizeStep === 0"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
-                                :aria-label="t('songs.lyrics.zoom_out')"
-                            >A−</button>
-                            <button
-                                type="button"
-                                @click="resize(1)"
-                                :disabled="sizeStep === 3"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
-                                :aria-label="t('songs.lyrics.zoom_in')"
-                            >A+</button>
+                        <button
+                            type="button"
+                            @click="resize(-1)"
+                            :disabled="sizeStep === 0"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
+                            :aria-label="t('songs.lyrics.zoom_out')"
+                        >A−</button>
+                        <button
+                            type="button"
+                            @click="resize(1)"
+                            :disabled="sizeStep === 3"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
+                            :aria-label="t('songs.lyrics.zoom_in')"
+                        >A+</button>
 
-                            <span class="w-px h-5 bg-white/10 mx-1"></span>
+                        <span class="w-px h-5 bg-white/10 mx-1"></span>
 
-                            <!-- Moved for this rehearsal only. What the band
-                                 wrote down is not touched from here. -->
-                            <button
-                                type="button"
-                                @click="steps -= 1"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                :aria-label="t('songs.chords.down')"
-                            >−</button>
+                        <!-- Moved for this rehearsal only. What the band wrote
+                             down is not touched from here. -->
+                        <button
+                            type="button"
+                            @click="steps -= 1"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                            :aria-label="t('songs.chords.down')"
+                        >−</button>
 
-                            <button
-                                type="button"
-                                @click="steps = 0"
-                                :disabled="!steps"
-                                class="min-w-[2.75rem] h-8 px-1 flex items-center justify-center rounded-lg text-2xs font-bold tabular-nums transition-colors"
-                                :class="steps ? 'text-white bg-white/10 hover:bg-white/20' : 'text-slate-400'"
-                                :title="t('songs.chords.reset')"
-                            >{{ sungKey || (steps > 0 ? '+' + steps : steps) }}</button>
+                        <button
+                            type="button"
+                            @click="steps = 0"
+                            :disabled="!steps"
+                            class="min-w-[2.75rem] h-8 px-1 flex items-center justify-center rounded-lg text-2xs font-bold tabular-nums transition-colors"
+                            :class="steps ? 'text-white bg-white/10 hover:bg-white/20' : 'text-slate-400'"
+                            :title="t('songs.chords.reset')"
+                        >{{ sungKey || (steps > 0 ? '+' + steps : steps) }}</button>
 
-                            <button
-                                type="button"
-                                @click="steps += 1"
-                                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                :aria-label="t('songs.chords.up')"
-                            >+</button>
-                        </template>
+                        <button
+                            type="button"
+                            @click="steps += 1"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                            :aria-label="t('songs.chords.up')"
+                        >+</button>
                     </div>
                 </div>
 
-                <div v-if="reading === 'chords'" class="flex-1 min-h-0 overflow-y-auto px-5 py-4">
+                <div class="flex-1 min-h-0 overflow-y-auto px-5 py-4">
                     <ChordChartReader
                         :blocks="chart"
                         :chords="song?._chords ?? {}"
@@ -428,8 +459,19 @@ function edit() {
                         dark
                     />
                 </div>
+            </div>
 
-                <div v-else class="flex-1 min-h-0">
+            <!-- The words -->
+            <div :class="panelClass('lyrics')">
+                <div class="flex items-center px-3 py-1.5 border-b border-white/10 shrink-0">
+                    <PanelPicker
+                        :value="shownIn(slots.indexOf('lyrics'))"
+                        :options="contents"
+                        @select="pick(slots.indexOf('lyrics'), $event)"
+                    />
+                </div>
+
+                <div class="flex-1 min-h-0">
                     <LyricsPanel :blocks="lyrics" :columns="columns" dark />
                 </div>
             </div>

@@ -170,7 +170,8 @@
             "show_media": "Show the video",
             "track_only": "This source is a track: there is nothing to watch.",
             "join": "Show one at a time",
-            "columns": "Read in two columns"
+            "columns": "Read in two columns",
+            "video": "Video"
         }
     },
     "install": {

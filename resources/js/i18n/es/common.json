@@ -170,7 +170,8 @@
             "show_media": "Ver el video",
             "track_only": "Esta fuente es una pista: no hay nada que ver.",
             "join": "Ver uno solo a la vez",
-            "columns": "Ver en dos columnas"
+            "columns": "Ver en dos columnas",
+            "video": "Video"
         }
     },
     "install": {
