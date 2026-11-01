@@ -171,7 +171,20 @@
         "accidental": "Accidental",
         "bass": "Bass",
         "major": "major",
-        "no_video": "None of this song’s versions has a YouTube link, so there is nothing to listen to while you place the chords.",
-        "repeat_hint": "It is the same section again."
+        "no_video": "None of this song’s versions has a track or a YouTube link, so there is nothing to listen to while you place the chords.",
+        "repeat_hint": "It is the same section again.",
+        "source_failed": "This recording could not be loaded.",
+        "scrub": {
+            "play": "Play (space)",
+            "pause": "Pause (space)",
+            "back": "{n} seconds back",
+            "forward": "{n} seconds forward",
+            "speed": "Speed",
+            "loop_a": "Mark the start of the loop (A)",
+            "loop_b": "Mark the end of the loop (B)",
+            "loop": "Repeat A–B (L)",
+            "loop_clear": "Clear the loop",
+            "video": "Show the video"
+        }
     }
 }

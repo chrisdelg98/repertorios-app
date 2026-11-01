@@ -25,6 +25,11 @@ const props = defineProps({
     dark: { type: Boolean, default: false },
     /** Shown in the empty state, when there is somewhere to go and write them. */
     writeUrl: { type: String, default: '' },
+    /*
+     * Two columns put a whole song on one screen. Only the flowing mode takes
+     * them: reading one block at a time is already one thing at a time.
+     */
+    columns: { type: Number, default: 1 },
 });
 
 const blocksRef = computed(() => props.blocks ?? []);
@@ -222,13 +227,15 @@ const railIcon = computed(() => railState.value === 'full'
             <div
                 v-if="!inBlocks"
                 ref="scroller"
-                class="flex-1 min-w-0 overflow-y-auto px-4 sm:px-6 py-5 space-y-6"
+                class="flex-1 min-w-0 overflow-y-auto px-4 sm:px-6 py-5"
+                :class="columns > 1 ? 'columns-2 gap-10' : 'space-y-6'"
             >
                 <section
                     v-for="(entry, index) in entries"
                     :key="entry.key"
                     :ref="el => setSectionEl(el, index)"
                     class="scroll-mt-4"
+                    :class="columns > 1 ? 'break-inside-avoid mb-6' : ''"
                 >
                     <!-- The label is a marker, not a heading: it is set small
                          and coloured so it reads as an aside, because the thing

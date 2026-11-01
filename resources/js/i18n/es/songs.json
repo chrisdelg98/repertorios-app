@@ -171,7 +171,20 @@
         "accidental": "Alteración",
         "bass": "Bajo",
         "major": "mayor",
-        "no_video": "Esta canción no tiene ningún enlace de YouTube en sus versiones, así que no hay nada que escuchar mientras colocas los acordes.",
-        "repeat_hint": "Es la misma sección repetida."
+        "no_video": "Esta canción no tiene pista ni enlace de YouTube en sus versiones, así que no hay nada que escuchar mientras colocas los acordes.",
+        "repeat_hint": "Es la misma sección repetida.",
+        "source_failed": "No se pudo cargar esta pista.",
+        "scrub": {
+            "play": "Reproducir (espacio)",
+            "pause": "Pausar (espacio)",
+            "back": "{n} segundos atrás",
+            "forward": "{n} segundos adelante",
+            "speed": "Velocidad",
+            "loop_a": "Marcar el inicio del bucle (A)",
+            "loop_b": "Marcar el final del bucle (B)",
+            "loop": "Repetir A–B (L)",
+            "loop_clear": "Quitar el bucle",
+            "video": "Ver el video"
+        }
     }
 }

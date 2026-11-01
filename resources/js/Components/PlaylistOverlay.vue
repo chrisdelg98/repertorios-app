@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { parseYouTube, formatStart, parsePlaylist } from '@/Utils/youtube';
 import LyricsPanel from '@/Components/Lyrics/LyricsPanel.vue';
 import ChordChartReader from '@/Components/Chords/ChordChartReader.vue';
+import AdvancedPlayer from '@/Components/AdvancedPlayer.vue';
 import { chartSheet, transposeChord } from '@/Utils/chords';
 import { decorate } from '@/Utils/lyrics';
 
@@ -14,6 +15,8 @@ const props = defineProps({
     songs: { type: Array,   default: () => [] }, // { name, artist, version, key, youtube_url, audio, notes, lyrics }
     /** A whole YouTube playlist, used when no setlist was built by hand. */
     playlistUrl: { type: String, default: '' },
+    /** Whether the way through to the chord editor is offered at all. */
+    canWrite: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['close']);
@@ -467,6 +470,15 @@ const upNext = computed(() => playable.value[currentIdx.value + 1] ?? null);
  * v-show rather than v-if, so the iframe survives — tearing it down would stop
  * whatever is playing and cost a reload to bring back.
  */
+/*
+ * The other player: the same setlist, worked rather than run.
+ *
+ * Desktop and tablet only for now. The controls are small and there are many
+ * of them, and a phone is where the ordinary player is actually used — in a
+ * service, where none of this is wanted.
+ */
+const advanced = ref(false);
+
 const playerHidden = ref(false);
 
 /**
@@ -609,6 +621,22 @@ function toggleMute() {
 function onKeydown(e) {
     if (!props.open) return;
 
+    /*
+     * The study player brings its own keys, bound to its own transport. Both
+     * listen on the document, so without this a press on space would start
+     * the setlist playing behind the recording being worked on.
+     *
+     * Escape still belongs here: it is the way out of everything.
+     */
+    if (advanced.value) {
+        if (e.code === 'Escape') {
+            e.preventDefault();
+            advanced.value = false;
+        }
+
+        return;
+    }
+
     const tag = e.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -722,7 +750,7 @@ onBeforeUnmount(() => {
                 <!-- The label is one line and the title is one line, both
                      truncating. Before, the label wrapped onto two on a phone
                      and pushed the song's name into the buttons. -->
-                <div class="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-white/10 shrink-0">
+                <div v-if="!advanced" class="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-white/10 shrink-0">
                     <div class="flex-1 min-w-0">
                         <p class="text-[10px] sm:text-2xs font-semibold text-indigo-300 uppercase tracking-widest truncate">{{ t('playlist.title') }}</p>
                         <!-- An external playlist has no track of ours to name,
@@ -739,22 +767,19 @@ onBeforeUnmount(() => {
                             <span v-if="current?.artist" class="font-normal text-slate-300"> · {{ current.artist }}</span>
                         </p>
                     </div>
+                    <!-- Where autoplay used to be. Autoplay belongs with the
+                         song controls; this is a different player. -->
                     <button
-                        v-if="!usingPlaylist"
+                        v-if="!usingPlaylist && playable.length"
                         type="button"
-                        @click="toggleAutoplay"
-                        class="shrink-0 h-9 px-2 sm:px-2.5 flex items-center gap-1 sm:gap-1.5 rounded-lg text-2xs font-bold uppercase tracking-wide transition-colors"
-                        :class="autoplay ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'bg-amber-400/15 text-amber-300'"
-                        :aria-pressed="!autoplay"
-                        :title="autoplay ? t('playlist.autoplay_on') : t('playlist.autoplay_off')"
+                        @click="advanced = true"
+                        class="hidden lg:flex shrink-0 w-9 h-9 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        :aria-label="t('playlist.advanced.open')"
+                        :title="t('playlist.advanced.open')"
                     >
-                        <svg v-if="autoplay" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 5v14M10 8v8M14 4v16M18 9v6" />
                         </svg>
-                        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-                        </svg>
-                        {{ t('playlist.autoplay_short') }}
                     </button>
 
                     <button
@@ -827,8 +852,17 @@ onBeforeUnmount(() => {
                     </div>
                 </Transition>
 
+                <AdvancedPlayer
+                    v-if="advanced"
+                    :songs="playable"
+                    :index="currentIdx"
+                    :can-write="canWrite"
+                    @select="loadAt"
+                    @exit="advanced = false"
+                />
+
                 <!-- Empty state: no playable videos -->
-                <div v-if="!playable.length && !usingPlaylist" class="flex-1 flex items-center justify-center px-6 text-center">
+                <div v-else-if="!playable.length && !usingPlaylist" class="flex-1 flex items-center justify-center px-6 text-center">
                     <div>
                         <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
@@ -1328,6 +1362,26 @@ onBeforeUnmount(() => {
                                     <path d="M16 4h2v16h-2V4zM6 4l10 8-10 8V4z" />
                                 </svg>
                             </button>
+                            <!-- Autoplay sits with the controls it governs:
+                                 what happens when this song ends. -->
+                            <button
+                                v-if="!usingPlaylist"
+                                type="button"
+                                @click="toggleAutoplay"
+                                class="h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-2xs font-bold uppercase tracking-wide transition-colors"
+                                :class="autoplay ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'bg-amber-400/15 text-amber-300'"
+                                :aria-pressed="!autoplay"
+                                :title="autoplay ? t('playlist.autoplay_on') : t('playlist.autoplay_off')"
+                            >
+                                <svg v-if="autoplay" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                                </svg>
+                                {{ t('playlist.autoplay_short') }}
+                            </button>
+
                             <p class="text-xs text-slate-300 ml-auto">{{ currentIdx + 1 }} / {{ playable.length }}</p>
                         </div>
 

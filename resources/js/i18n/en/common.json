@@ -156,7 +156,22 @@
         "autoplay_short": "Auto",
         "autoplay_on": "Autoplay on · tap to turn it off",
         "autoplay_off": "Autoplay off · tap to turn it on",
-        "views": "View"
+        "views": "View",
+        "advanced": {
+            "title": "Practice mode",
+            "open": "Practice mode",
+            "back": "Back to the player",
+            "edit": "Edit the chords",
+            "track": "Track",
+            "nothing_to_play": "This song has no track and no video.",
+            "queue": "Show the songs",
+            "split": "Show the video and the words together",
+            "show_text": "Show the words",
+            "show_media": "Show the video",
+            "track_only": "This source is a track: there is nothing to watch.",
+            "join": "Show one at a time",
+            "columns": "Read in two columns"
+        }
     },
     "install": {
         "banner_title": "Add to Home Screen",

@@ -40,20 +40,45 @@ class SongChordsController extends Controller
                 'key'    => $song->chords_key,
                 /*
                  * Working a chord out means listening to the recording a
-                 * second at a time, so the links come with the words. A song
-                 * can have several arrangements and they rarely agree on the
-                 * chords, hence all of them rather than the first.
+                 * second at a time, so whatever can be listened to comes with
+                 * the words. A song can have several arrangements and they
+                 * rarely agree on the chords, hence all of them rather than
+                 * the first.
+                 *
+                 * A track and a video of the same version are two entries,
+                 * not one with a switch: which of them a chord is being heard
+                 * on is the choice being made, and the track is usually the
+                 * clearer of the two.
                  */
-                'videos' => $song->versions()
-                    ->whereNotNull('youtube_url')
+                'sources' => $song->versions()
                     ->orderBy('name')
-                    ->get(['id', 'name', 'key', 'youtube_url'])
-                    ->map(fn ($version) => [
-                        'id'   => $version->id,
-                        'name' => $version->name ?: 'Versión',
-                        'key'  => $version->key,
-                        'url'  => $version->youtube_url,
-                    ])
+                    ->get()
+                    ->flatMap(function ($version) {
+                        $name = $version->name ?: 'Versión';
+                        $sources = [];
+
+                        if ($version->audio) {
+                            $sources[] = [
+                                'id'   => 'a' . $version->id,
+                                'kind' => 'audio',
+                                'name' => $name,
+                                'key'  => $version->key,
+                                'url'  => $version->audio['url'],
+                            ];
+                        }
+
+                        if (filled($version->youtube_url)) {
+                            $sources[] = [
+                                'id'   => 'y' . $version->id,
+                                'kind' => 'youtube',
+                                'name' => $name,
+                                'key'  => $version->key,
+                                'url'  => $version->youtube_url,
+                            ];
+                        }
+
+                        return $sources;
+                    })
                     ->values(),
             ],
             'return_to' => $this->safeReturn($request->query('from')),

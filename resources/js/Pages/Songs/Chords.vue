@@ -62,21 +62,21 @@ const readerBlocks = computed(() => sheet.value.map(entry => ({
 // ── The recording it is taken from ───────────────────────────────
 // Declared above the watch below, which runs immediately and resets it: a
 // const read before its own line is a crash, not a hoisted undefined.
-const videoIndex = ref(0);
+const sourceIndex = ref(0);
 
-const videos = computed(() => props.song?.videos ?? []);
-const video = computed(() => videos.value[videoIndex.value] ?? null);
+const sources = computed(() => props.song?.sources ?? []);
+const source = computed(() => sources.value[sourceIndex.value] ?? null);
 
 watch(() => props.song, (song) => {
     chords.value = song?.chords ? JSON.parse(JSON.stringify(song.chords)) : {};
     songKey.value = song?.key ?? null;
-    videoIndex.value = 0;
+    sourceIndex.value = 0;
 
     // A version usually records the key it was played in. Offering it saves
     // retyping what the band already wrote down, and it is only a default:
     // the chart is not saved until somebody presses save.
     if (!songKey.value) {
-        songKey.value = song?.videos?.find(v => v.key)?.key ?? null;
+        songKey.value = song?.sources?.find(v => v.key)?.key ?? null;
     }
 }, { immediate: true });
 
@@ -514,21 +514,36 @@ const chordCount = computed(() => sheet.value.reduce(
             <template v-else>
             <!-- Between the song and the chart, because it is used while
                  looking at both. -->
-            <div v-if="videos.length" class="sticky top-0 z-20 -mx-4 px-4 lg:-mx-2 lg:px-2 pt-1 pb-3 bg-slate-50 space-y-2">
-                <div v-if="videos.length > 1" class="flex flex-wrap items-center gap-1.5">
+            <div v-if="sources.length" class="sticky top-0 z-20 -mx-4 px-4 lg:-mx-2 lg:px-2 pt-1 pb-3 bg-slate-50 space-y-2">
+                <!-- The track and the video of one version are two choices,
+                     not one with a switch: which of them a chord is being
+                     heard on is the choice being made, and a track is usually
+                     the clearer of the two. -->
+                <div v-if="sources.length > 1" class="flex flex-wrap items-center gap-1.5">
                     <button
-                        v-for="(v, n) in videos"
-                        :key="v.id"
+                        v-for="(item, n) in sources"
+                        :key="item.id"
                         type="button"
-                        @click="videoIndex = n"
-                        class="px-2.5 py-1 text-2xs font-semibold rounded-lg border transition-colors"
-                        :class="n === videoIndex
+                        @click="sourceIndex = n"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-2xs font-semibold rounded-lg border transition-colors"
+                        :class="n === sourceIndex
                             ? 'bg-slate-900 border-slate-900 text-white'
                             : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400'"
-                    >{{ v.name }}<span v-if="v.key" class="opacity-60"> · {{ v.key }}</span></button>
+                    >
+                        <svg v-if="item.kind === 'audio'" class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 18V5l10-2v13" />
+                            <circle cx="6.5" cy="18" r="2.5" />
+                            <circle cx="16.5" cy="16" r="2.5" />
+                        </svg>
+                        <svg v-else class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 4l12 8-12 8z" />
+                        </svg>
+
+                        {{ item.name }}<span v-if="item.key" class="opacity-60"> · {{ item.key }}</span>
+                    </button>
                 </div>
 
-                <VideoScrubber :url="video?.url ?? ''" />
+                <VideoScrubber :source="source" />
             </div>
 
             <p v-else class="mb-4 text-2xs text-slate-500">

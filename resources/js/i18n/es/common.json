@@ -156,7 +156,22 @@
         "autoplay_short": "Auto",
         "autoplay_on": "Reproducción automática activada · toca para apagarla",
         "autoplay_off": "Reproducción automática apagada · toca para activarla",
-        "views": "Ver"
+        "views": "Ver",
+        "advanced": {
+            "title": "Modo estudio",
+            "open": "Modo estudio",
+            "back": "Volver al reproductor",
+            "edit": "Editar los acordes",
+            "track": "Pista",
+            "nothing_to_play": "Esta canción no tiene pista ni video.",
+            "queue": "Mostrar las canciones",
+            "split": "Ver el video y la letra a la vez",
+            "show_text": "Ver la letra",
+            "show_media": "Ver el video",
+            "track_only": "Esta fuente es una pista: no hay nada que ver.",
+            "join": "Ver uno solo a la vez",
+            "columns": "Ver en dos columnas"
+        }
     },
     "install": {
         "banner_title": "Agregar a la pantalla de inicio",

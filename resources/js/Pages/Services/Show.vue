@@ -594,6 +594,7 @@ const playlistSongs = computed(() => localSongs.value.map(ss => ({
     lyrics:      ss.song_version.song.lyrics ?? [],
     chords:      ss.song_version.song.chords ?? {},
     chords_key:  ss.song_version.song.chords_key ?? null,
+    song_id:     ss.song_version.song.id,
 })));
 
 // "Play all" is offered when anything can be played, from either source.
@@ -1615,6 +1616,7 @@ function scheduleReorder() {
             :open="playlistOpen"
             :songs="playlistSongs"
             :playlist-url="service.playlist_url ?? ''"
+            :can-write="can_write"
             @close="playlistOpen = false"
         />
     <OfflineServiceSheet

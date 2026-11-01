@@ -21,6 +21,12 @@ const props = defineProps({
     /** Reads on dark in the player, on light in the editor. */
     dark: { type: Boolean, default: false },
     size: { type: String, default: 'text-base' },
+    /*
+     * Two columns put a whole song on one screen, which is the difference
+     * between reading a chart and scrolling one. Sections are kept whole: a
+     * verse split down the middle is worse than a scroll.
+     */
+    columns: { type: Number, default: 1 },
 });
 
 function linesOf(block) {
@@ -36,11 +42,15 @@ const hasAny = computed(() => props.blocks.some(b => (b?.text ?? '').trim()));
 </script>
 
 <template>
-    <div v-if="hasAny" class="space-y-5">
+    <div v-if="hasAny" :class="columns > 1 ? 'columns-2 gap-10' : 'space-y-5'">
         <!-- Keyed by position, not by id: the same chorus appears three
              times in a song and all three carry the id of the one section it
              really is. -->
-        <section v-for="(block, b) in blocks" :key="b">
+        <section
+            v-for="(block, b) in blocks"
+            :key="b"
+            :class="columns > 1 ? 'break-inside-avoid mb-5' : ''"
+        >
             <p
                 class="text-2xs font-bold uppercase tracking-widest mb-1.5"
                 :class="dark ? 'text-indigo-300' : 'text-indigo-600'"
