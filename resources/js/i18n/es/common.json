@@ -263,7 +263,8 @@
         "name_label": "Nombre de la banda",
         "name_placeholder": "Ej. Ministerio de Alabanza",
         "create_button": "Crear banda",
-        "join_hint": "¿Te invitaron a otra banda? Abre su enlace de invitación con tu sesión iniciada y quedas dentro — sin crear otra cuenta."
+        "join_hint": "¿Te invitaron a otra banda? Abre su enlace de invitación con tu sesión iniciada y quedas dentro — sin crear otra cuenta.",
+        "switch_needs_network": "Necesita conexión"
     },
     "push": {
         "sheet_eyebrow": "Notificaciones",

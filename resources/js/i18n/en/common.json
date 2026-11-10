@@ -263,7 +263,8 @@
         "name_label": "Band name",
         "name_placeholder": "e.g. Worship Team",
         "create_button": "Create band",
-        "join_hint": "Invited to another band? Open its invite link while logged in and you are in — no second account needed."
+        "join_hint": "Invited to another band? Open its invite link while logged in and you are in — no second account needed.",
+        "switch_needs_network": "Needs a connection"
     },
     "push": {
         "sheet_eyebrow": "Notifications",

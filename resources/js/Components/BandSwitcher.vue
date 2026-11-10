@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import Logo from '@/Components/Logo.vue';
-import { forgetCachedPages } from '@/Composables/useOffline';
+import { forgetCachedPages, useOffline } from '@/Composables/useOffline';
 
 const props = defineProps({
     // Mobile header variant: smaller logo, tighter type.
@@ -12,6 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n();
 const page = usePage();
+const { isOffline } = useOffline();
 
 const auth        = computed(() => page.props.auth);
 const memberships = computed(() => auth.value?.memberships ?? []);
@@ -36,13 +37,25 @@ function switchTo(band) {
         open.value = false;
         return;
     }
+
+    // Switching is a write, and with no signal it cannot happen. Attempting it
+    // anyway left the menu spinning at something that was never going to
+    // finish.
+    if (isOffline.value) return;
+
     switching.value = band.id;
 
-    // The cache holds the band being left behind. Kept, it would be served
-    // offline under the new band's name.
-    forgetCachedPages();
-
     router.post(`/bands/${band.id}/switch`, {}, {
+        /*
+         * The cache holds the band being left behind, and is only wrong once
+         * the switch has actually happened.
+         *
+         * Clearing it first meant a switch that failed — offline, or on a
+         * connection that dropped mid-request — took the old band's pages with
+         * it and left the app with nothing at all to fall back on. That is how
+         * a tap on the band name turned the whole app into an error page.
+         */
+        onSuccess: () => forgetCachedPages(),
         onFinish: () => {
             switching.value = null;
             open.value = false;
@@ -138,7 +151,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
                     type="button"
                     @click.stop="switchTo(band)"
                     class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors disabled:opacity-50"
-                    :disabled="switching !== null"
+                    :disabled="switching !== null || (isOffline && !band.is_active)"
                 >
                     <!-- The gradient is the fallback, not a frame: a logo with a
                          transparent background would otherwise show it through. -->
@@ -152,8 +165,12 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
                     <span class="flex-1 min-w-0">
                         <span class="block text-sm font-semibold text-slate-900 truncate leading-tight">{{ band.name }}</span>
-                        <span class="block text-xs font-medium text-slate-600 mt-0.5">
-                            {{ band.role === 'admin' ? t('bands.role_admin') : t('bands.role_member') }}
+                        <!-- Said once, on the row that cannot be used, rather
+                             than as a banner over a menu that mostly works. -->
+                        <span class="block text-xs font-medium mt-0.5" :class="isOffline && !band.is_active ? 'text-amber-700' : 'text-slate-600'">
+                            {{ isOffline && !band.is_active
+                                ? t('bands.switch_needs_network')
+                                : band.role === 'admin' ? t('bands.role_admin') : t('bands.role_member') }}
                         </span>
                     </span>
 

@@ -5,7 +5,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue';
 import BandSwitcher from '@/Components/BandSwitcher.vue';
 import OfflineBanner from '@/Components/OfflineBanner.vue';
-import { forgetCachedPages } from '@/Composables/useOffline';
+import { cacheShell, forgetCachedPages } from '@/Composables/useOffline';
 import WelcomeOverlay from '@/Components/WelcomeOverlay.vue';
 import InstallSheet from '@/Components/InstallSheet.vue';
 import { useInstall } from '@/Composables/useInstall';
@@ -58,7 +58,12 @@ function onDocClick(e) {
     if (!e.target.closest('[data-profile-menu]')) menuOpen.value = false;
 }
 
-onMounted(() => document.addEventListener('click', onDocClick));
+onMounted(() => {
+    document.addEventListener('click', onDocClick);
+
+    // So the tabs along the bottom still go somewhere with no signal.
+    cacheShell();
+});
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
 const userInitial = computed(() => {

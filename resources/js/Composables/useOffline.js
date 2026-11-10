@@ -139,6 +139,46 @@ export async function cachePage(url) {
     return results.every(r => r.status === 'fulfilled' && r.value.ok);
 }
 
+/*
+ * The screens the app is navigated with.
+ *
+ * A page is only cached in the shape it was last asked for, and the two shapes
+ * are stored apart because Inertia answers with `Vary: X-Inertia`. Opening the
+ * app caches the dashboard as a document; nothing ever cached it as a payload,
+ * so tapping Inicio from inside the app with no signal found nothing and fell
+ * through to the browser's own error page.
+ *
+ * These four are the tabs along the bottom. Whatever else is wanted offline is
+ * a deliberate download; these are the way around.
+ */
+const SHELL = ['/dashboard', '/services', '/songs', '/calendar'];
+
+let shellWarmed = false;
+
+/**
+ * Pull the shell into the cache, once, quietly.
+ *
+ * Deferred because it competes with the page somebody is actually looking at,
+ * and skipped when there is no network to read it from — a failed warm would
+ * leave nothing cached and nothing said.
+ */
+export function cacheShell() {
+    if (shellWarmed || typeof window === 'undefined') return;
+    if (navigator.onLine === false) return;
+
+    shellWarmed = true;
+
+    const run = () => {
+        SHELL.forEach((url) => { cachePage(url).catch(() => {}); });
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(run, { timeout: 8000 });
+    } else {
+        window.setTimeout(run, 2500);
+    }
+}
+
 /**
  * Throw away every cached page.
  *
