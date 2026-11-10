@@ -272,6 +272,103 @@ function onAudioEnded() {
     playNext();
 }
 
+/*
+ * The lock screen, the notification, and the button on the headphones.
+ *
+ * A track already goes on playing when the phone is put down — the browser
+ * does that on its own. What it will not do is say what is playing or offer a
+ * way to stop it, so the only way back to a pause button was to unlock the
+ * phone and find the app again. Telling the browser what is in the player is
+ * what turns it into something you can leave running while you read a chart in
+ * another app.
+ *
+ * Only for tracks. A video plays inside somebody else's iframe, which stops
+ * when the app goes to the background; that is their decision and there is
+ * nothing on this side that changes it.
+ */
+function publishNowPlaying() {
+    if (!('mediaSession' in navigator)) return;
+
+    if (!isAudio.value || !current.value) {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+        return;
+    }
+
+    try {
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+            title: current.value.name ?? '',
+            artist: current.value.artist ?? '',
+            artwork: [
+                { src: '/icons/icon-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
+                { src: '/icons/icon-512x512.png?v=2', sizes: '512x512', type: 'image/png' },
+            ],
+        });
+
+        navigator.mediaSession.playbackState = audioPlaying.value ? 'playing' : 'paused';
+    } catch {
+        // An older browser with half of the API. Nothing is lost but the
+        // notification; the track keeps playing either way.
+    }
+}
+
+/** Where in the track, so the lock screen can draw its own scrubber. */
+function publishPosition() {
+    if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+    if (!isAudio.value || !audioLength.value) return;
+
+    try {
+        navigator.mediaSession.setPositionState({
+            duration: audioLength.value,
+            playbackRate: 1,
+            position: Math.min(Math.max(0, audioTime.value), audioLength.value),
+        });
+    } catch { /* a position the browser disagrees with is not worth a crash */ }
+}
+
+function bindMediaKeys() {
+    if (!('mediaSession' in navigator)) return;
+
+    const on = (action, handler) => {
+        try {
+            navigator.mediaSession.setActionHandler(action, handler);
+        } catch {
+            // Not every browser offers every action, and the ones it refuses
+            // simply do not appear on the notification.
+        }
+    };
+
+    on('play', () => audioEl.value?.play().catch(() => {}));
+    on('pause', () => audioEl.value?.pause());
+    on('stop', () => audioEl.value?.pause());
+    on('previoustrack', () => playPrev());
+    on('nexttrack', () => playNext());
+    on('seekbackward', (details) => seekBy(-(details?.seekOffset ?? 10)));
+    on('seekforward', (details) => seekBy(details?.seekOffset ?? 10));
+    on('seekto', (details) => {
+        const el = audioEl.value;
+
+        if (el && Number.isFinite(details?.seekTime)) {
+            el.currentTime = details.seekTime;
+            publishPosition();
+        }
+    });
+}
+
+function releaseMediaKeys() {
+    if (!('mediaSession' in navigator)) return;
+
+    ['play', 'pause', 'stop', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward', 'seekto']
+        .forEach((action) => {
+            try { navigator.mediaSession.setActionHandler(action, null); } catch { /* never mind */ }
+        });
+
+    try {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+    } catch { /* never mind */ }
+}
+
 /** Loads the track without playing it: the queue moved, nobody pressed play. */
 async function cueAudio() {
     await nextTick();
@@ -668,6 +765,11 @@ function onKeydown(e) {
     handled();
 }
 
+watch([current, isAudio, audioPlaying], () => {
+    publishNowPlaying();
+    publishPosition();
+});
+
 onMounted(() => {
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('click', onViewsDocClick);
@@ -683,6 +785,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('click', onViewsDocClick);
+    releaseMediaKeys();
 });
 
 function close() {
@@ -699,6 +802,7 @@ watch(() => props.open, (isOpen) => {
         // The API is loaded even when the first song is a track: the queue can
         // reach a YouTube song later, and loading it then would stall playback.
         loadYouTubeApi();
+        bindMediaKeys();
 
         /*
          * Nothing plays until someone asks.
@@ -719,6 +823,10 @@ watch(() => props.open, (isOpen) => {
 
     if (audioEl.value) audioEl.value.pause();
     audioPlaying.value = false;
+
+    // Closed means closed: a notification left behind would offer a play
+    // button for a player that is no longer on screen.
+    releaseMediaKeys();
 }, { immediate: true });
 
 // Build player when API ready + DOM mounted (open state)
@@ -1021,7 +1129,8 @@ onBeforeUnmount(() => {
                                     @play="audioPlaying = true"
                                     @pause="audioPlaying = false"
                                     @timeupdate="audioTime = audioEl?.currentTime ?? 0"
-                                    @loadedmetadata="audioLength = audioEl?.duration ?? 0"
+                                    @loadedmetadata="audioLength = audioEl?.duration ?? 0; publishPosition()"
+                                    @seeked="publishPosition()"
                                     @ended="onAudioEnded"
                                 />
 
